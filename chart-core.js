@@ -258,7 +258,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   const pad=(hi-lo)*0.08||hi*0.01;lo-=pad;hi+=pad;
   if(S.view.man&&S.view.hi>S.view.lo){lo=S.view.lo;hi=S.view.hi}
   const mT=6,mB=mainH-6,Y=p=>mT+(hi-p)/(hi-lo)*(mB-mT),P=y=>hi-(y-mT)/(mB-mT)*(hi-lo);
-  const tags=[],lbls=[],lightTh=th.bg===THEME.light.bg,C=h=>lightTh&&isLight(h)?th.fg:h;
+  const tags=[],lbls=[],lbR=[],lightTh=th.bg===THEME.light.bg,C=h=>lightTh&&isLight(h)?th.fg:h;
   const last0=k.length-1,LE=Math.max(0,Math.min(pw-4,(last0-from+0.5+4)*cw));
   const font=(s,b)=>ctx.font=`${b?"600 ":""}${s}px "JetBrains Mono",ui-monospace,monospace`;
   const line=(x1,y1,x2,y2,col,w=1,dash)=>{ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([])};
@@ -364,7 +364,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   font(10,1);ctx.textAlign="left";let prevL=-99;
   mg.forEach(l=>{if(l.y<mT-4||l.y>mB+4)return;const t=`${l.n} (${fmt(l.p)})`,w=ctx.measureText(t).width;const y=Math.max(l.y,prevL+12);prevL=y;
     let x=LE+5;if(x+w>pw-3){x=pw-3-w;ctx.fillStyle=lightTh?"rgba(255,255,255,.82)":"rgba(14,19,27,.78)";ctx.fillRect(x-3,y-6,w+6,12)}
-    ctx.fillStyle=l.col;ctx.fillText(t,x,y)});
+    ctx.fillStyle=l.col;ctx.fillText(t,x,y);lbR.push({x:x-3,y:y-7,w:w+6,h:14})});
   ctx.restore();
 
   // Unterfenster
@@ -422,7 +422,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   if(Y(price)>=mT&&Y(price)<=mB)line(0,Y(price),pw,Y(price),price>=k[last].o?th.up:th.red,1,[1,3]);
 
   // Fadenkreuz
-  const L={pw,mainH,panes,X,Y,P,cw,from,to,i0,i1,TA,H,W,lo,hi,mT,mB,AX};
+  const L={pw,mainH,panes,X,Y,P,cw,from,to,i0,i1,TA,H,W,lo,hi,mT,mB,AX,lbR};
   if(S.cross){const {x,y}=S.cross;const i=Math.round(from+x/cw-0.5);if(i>=0&&i<=last&&x<pw){const cx=X(i);line(cx,0,cx,H-TA,th.cross,1,[3,3]);
       if(y<mainH){line(0,y,pw,y,th.cross,1,[3,3]);tagDraw(ctx,pw,y,th.grey,fmt(P(y)),AX,th,true)}
       font(10,1);const tl=tlab(k[i].t,tf,true),tw=ctx.measureText(tl).width+12;ctx.fillStyle=th.grey;ctx.fillRect(cx-tw/2,H-TA+2,tw,TA-4);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(tl,cx,H-TA/2);L.ci=i}}

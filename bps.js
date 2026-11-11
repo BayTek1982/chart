@@ -345,13 +345,24 @@ function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=
     if(b.tip)BP.hit.push({x:Math.max(0,x1),y:y1,w:Math.min(x2,L.pw)-Math.max(0,x1),h:Math.max(4,y2-y1),tip:b.tip,box:1})}
   for(const l of R.Ls){ctx.strokeStyle=l.col;ctx.lineWidth=l.w||1;ctx.setLineDash(l.dash||[]);ctx.beginPath();ctx.moveTo(X(l.x1),Y(l.y1));ctx.lineTo(X(l.x2),Y(l.y2));ctx.stroke()}ctx.setLineDash([]);
   ctx.textBaseline="middle";
-  const all=R.K.concat(R.Ts).filter(t=>t&&t.t&&t.x>=L.i0-30&&t.x<=L.i1+400),pl=[];
-  for(const t of all){const fs=FS[t.sz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const lines=String(t.t).split("\n"),w=Math.max(...lines.map(s=>ctx.measureText(s).width)),h=(fs+2)*lines.length,px=X(t.x),py=Y(t.y);let x,y;
-    if(t.pos==="a"){x=px-w/2;y=py-(t.box?8:5)-h/2}else if(t.pos==="b"){x=px-w/2;y=py+(t.box?8:5)+h/2}else if(t.pos==="r"){x=Math.min(px+5,L.pw-w-6);y=py}else if(t.pos==="ar"){x=px-w;y=py-3-h/2}else if(t.pos==="br"){x=px-w;y=py+3+h/2}else{x=px-6-w;y=py}
-    // Kollisionen vermeiden (gleiche Spalte)
-    if(!t.box){for(let g=0;g<12;g++){const hit=pl.find(p=>x<p.x+p.w&&x+w>p.x&&Math.abs(y-p.y)<(h+p.h)/2+3);if(!hit)break;y=hit.y+(y>=hit.y?1:-1)*((h+hit.h)/2+3)}}
-    pl.push({x,y,w,h});
+  const all=R.K.concat(R.Ts).filter(t=>t&&t.t&&t.x>=L.i0-30&&t.x<=L.i1+400),pl=[],H=L.mainH;
+  // Belegte Flächen anderer Indikatoren (Beschriftungen), damit sich nichts überlagert
+  const ext=(L.lbR||[]).concat(BS.hit||[],BF.hit||[],BW.hit||[]).filter(r=>r.w<L.pw*.6&&r.h<80);
+  {const cr=cv.getBoundingClientRect();document.querySelectorAll("#box .ov .t,#box .ov .o,#box .ov .lg,#box .bwt:not([hidden]),#heatTab:not([hidden])").forEach(o=>{const r=o.getBoundingClientRect();if(r.width&&r.height)ext.push({x:r.left-cr.left,y:r.top-cr.top,w:r.width,h:r.height})})}
+  const hitAt=(x,y,w,h)=>{for(const r of pl.concat(ext))if(x<r.x+r.w&&x+w>r.x&&y-h/2<r.y+r.h&&y+h/2>r.y)return r;return null};
+  const items=all.map(t=>{const fs=FS[t.sz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const lines=String(t.t).split("\n"),w=Math.max(...lines.map(s=>ctx.measureText(s).width)),h=(fs+2)*lines.length,px=X(t.x),py=Y(t.y);let x,y,cl=false;
+    if(t.pos==="a"){x=px-w/2;y=py-(t.box?8:5)-h/2}else if(t.pos==="b"){x=px-w/2;y=py+(t.box?8:5)+h/2}else if(t.pos==="r"){x=px+5;if(x+w>L.pw-6){x=L.pw-w-6;cl=true}y=py}else if(t.pos==="ar"){x=px-w;y=py-3-h/2}else if(t.pos==="br"){x=px-w;y=py+3+h/2}else{x=px-6-w;y=py}
+    return{t,fs,lines,w,h,x,y,py,cl}}).sort((a,b)=>(a.t.box?0:1)-(b.t.box?0:1)||a.y-b.y);
+  for(const it of items){const{t,fs,lines,w,h,py}=it;let y=it.y;
+    let x=it.x;
+    if(!t.box){const pad=2,maxD=h*1.3,find=(xx,dir)=>{let yy=it.y;for(let g=0;g<12;g++){const r=hitAt(xx-pad,yy,w+2*pad,h+pad);if(!r)return yy;yy=dir>0?r.y+r.h+h/2+pad+1:r.y-h/2-pad-1;if(Math.abs(yy-it.y)>maxD)return null}return null};
+      // erst knapp über/unter der Linie, sonst entlang der Linie nach links rücken (nie weit weg vom Preis)
+      let done=false;for(let sh=0;sh<6&&!done;sh++){const xx=it.x-sh*(w+12);if(xx<4)break;const dn=find(xx,1),up=find(xx,-1),okD=dn!=null&&dn+h/2<H,okU=up!=null&&up-h/2>0;
+        if(okD||okU){y=okD&&okU?(Math.abs(dn-it.y)<=Math.abs(up-it.y)?dn:up):okD?dn:up;x=xx;done=true}}
+      if(!done){x=it.x;y=it.y}}
+    pl.push({x:x-2,y:y-h/2-1,w:w+4,h:h+2});
     if(t.box){ctx.fillStyle=t.box;ctx.beginPath();ctx.roundRect?ctx.roundRect(x-4,y-h/2-2,w+8,h+4,3):ctx.rect(x-4,y-h/2-2,w+8,h+4);ctx.fill()}
+    else if(it.cl||x<it.x||Math.abs(y-py)>h*.6){ctx.fillStyle=th.bg;ctx.globalAlpha=.8;ctx.fillRect(x-3,y-h/2-1,w+6,h+2);ctx.globalAlpha=1}
     lines.forEach((s,q)=>{const yy=y-h/2+(fs+2)*(q+.5);ctx.textAlign="left";if(!t.box){ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(s,x,yy)}ctx.fillStyle=t.col;ctx.fillText(s,x,yy)});
     if(t.tip)BP.hit.push({x:x-4,y:y-h/2-3,w:w+8,h:h+6,tip:t.tip})}
   ctx.restore();

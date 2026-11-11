@@ -104,6 +104,9 @@ html,body{height:100%;overflow:hidden}
 @media (max-width:999px){.side{height:58vh}}
 .gh{display:flex;align-items:center;gap:10px;font-weight:800;font-size:.98rem;cursor:pointer;margin-top:6px}
 .gh.off{cursor:default;color:var(--muted)}
+.gh .gt{flex:1;display:flex;justify-content:space-between;align-items:center;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:4px 0;cursor:pointer}
+.gt .ga{opacity:.6;font-size:.9rem;padding:0 4px}button.gt.label{display:flex;width:100%;justify-content:space-between;background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 0}
+.grp.zu{padding-bottom:4px}
 .gnote{font-size:.76rem;color:var(--muted);margin:3px 0 0}
 #anaBody{border:0;border-radius:0;background:none}#anaBody .rows{grid-template-columns:1fr}
 .ccol{display:flex;flex-direction:column;gap:6px;min-width:0;min-height:0;height:100%}
@@ -217,7 +220,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=16"></script>
+<script src="chart-core.js?v=17"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -345,7 +348,7 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
   const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP});
-  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){if(window.bpsPaint)bpsPaint(th);bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
+  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
 function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t,col})};
@@ -722,11 +725,15 @@ function renderDlg(){const c=S.cfg;let h=`<div class="grp"><div class="label">Pr
     `</div><div class="prof" style="margin-top:6px">`+[1,2,3].map(n=>`<button class="btn ghost" data-save="${n}" style="font-size:.76rem;padding:6px 9px">💾 als Profil ${n}</button>`).join("")+
     `<button class="btn ghost" data-reset style="font-size:.76rem;padding:6px 9px">↺ Standard</button></div></div>`;
   h+=`<div class="grp"><div class="label">Pivot-Länge (Hochs/Tiefs)</div><div class="it"><div class="pr"><label><input type="checkbox" data-p="pivot.auto" ${c.pivot.auto?"checked":""}> automatisch je Zeitrahmen (5m 5 · 15m 10 · 30m 5 · 1H 7 · 2H 10 · 4H 14 · 12H 12 · 1D 12 · 1W 15)</label><label>fest <input type="number" data-p="pivot.len" value="${c.pivot.len}" min="2" max="50"></label></div></div></div>`;
-  SCHEMA.forEach((g,gi)=>{h+=`<div class="grp">`+(g.own?(g.items.length?`<label class="gh"><input type="checkbox" data-grp="${gi}" ${g.items.some(it=>!it.always&&c[it.k].on)?"checked":""}> ${esc(g.g)}</label>`:`<div class="gh off">${esc(g.g)}</div>`)+(g.note?`<p class="gnote">${esc(g.note)}</p>`:""):`<div class="label">${g.g}</div>`);g.items.forEach(it=>{const o=c[it.k];
+  SCHEMA.forEach((g,gi)=>{const op=!!GOPEN[g.g],ar=`<span class="ga">${op?"▾":"▸"}</span>`;
+    h+=`<div class="grp${op?"":" zu"}">`+(g.own?(g.items.length?`<div class="gh"><input type="checkbox" data-grp="${gi}" aria-label="${esc(g.g)} an/aus" ${g.items.some(it=>!it.always&&c[it.k].on)?"checked":""}><button type="button" class="gt" data-gt="${esc(g.g)}">${esc(g.g)}${ar}</button></div>`:`<div class="gh off">${esc(g.g)}</div>`)+(op&&g.note?`<p class="gnote">${esc(g.note)}</p>`:""):`<button type="button" class="gt label" data-gt="${esc(g.g)}">${g.g}${ar}</button>`);
+    if(!op&&g.items.length){h+=`</div>`;return}g.items.forEach(it=>{const o=c[it.k];
     const params=it.ma?[{k:"type",t:"Art",type:"sel",o:[["EMA","EMA"],["SMA","SMA"]]},{k:"len",t:"Länge",type:"num",min:1,max:500},{k:"col",t:"Farbe",type:"col"}]:(it.p||[]);
     const title=it.ma?`${it.t}: ${o.type} ${o.len}`:it.t;
     h+=`<div class="it" style="margin-top:6px"><div class="hd"><label>${it.always?"":`<input type="checkbox" data-on="${it.k}" ${o.on?"checked":""}>`}<span>${esc(title)}${it.d?`<small>${esc(it.d)}</small>`:""}</span></label>${it.i?`<button type="button" class="ib" data-ib="${it.k}" aria-label="Info">ⓘ</button>`:""}</div>${it.i?`<div class="itx" id="ix-${it.k}" ${S.openInfo===it.k?"":"hidden"}>${esc(it.i)}</div>`:""}${params.length&&(o.on||it.always)?`<div class="pr">${params.map(p=>pInput(it.k,p)).join("")}</div>`:""}</div>`});h+=`</div>`});
   $("dlgBody").innerHTML=h}
+let GOPEN=LS("blcGrpOpen")||{};
+$("dlgBody").addEventListener("click",e=>{const b=e.target.closest("[data-gt]");if(!b)return;const k=b.dataset.gt;GOPEN[k]=!GOPEN[k];LS("blcGrpOpen",GOPEN);renderDlg()});
 function sideOpen(o){$("side").hidden=!o;$("stage").classList.toggle("open",o);if(o)renderDlg();paint()}
 $("indBtn").onclick=()=>sideOpen($("side").hidden);$("sideX").onclick=()=>sideOpen(false);
 $("dlgBody").addEventListener("change",e=>{const t=e.target;
@@ -1641,7 +1648,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
     for(const[y,t,col]of items){const xx=Math.max(4,Math.min(L.pw-4,lx));ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t,xx,Y(y)+dy);ctx.fillStyle=c.vplOwn?c.vplTxtC:col;ctx.fillText(t,xx,Y(y)+dy)}}
   ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
-<script src="bps.js?v=2"></script>
+<script src="bps.js?v=3"></script>
 <script src="wl.js?v=1"></script>
 </body>
 </html>

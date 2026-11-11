@@ -182,7 +182,7 @@ html,body{height:100%;overflow:hidden}
     <button class="autob" id="autoB" hidden title="Preisachse wieder automatisch">Auto</button>
     <div class="tools" id="tools"></div><button id="toolTg" type="button" title="Zeichenwerkzeuge ein-/ausblenden">✎</button>
     <div id="heatTab" hidden></div>
-    <div class="bwt" id="bsBias" hidden></div><div class="bwt" id="bsLs" hidden></div><div class="bwt" id="bfVp" hidden></div><div class="bwt" id="bfRk" hidden></div><div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
+    <div class="bwt" id="bpMt" hidden></div><div class="bwt" id="bpVt" hidden></div><div class="bwt" id="bsBias" hidden></div><div class="bwt" id="bsLs" hidden></div><div class="bwt" id="bfVp" hidden></div><div class="bwt" id="bfRk" hidden></div><div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
     <div class="ebar" id="ebar" hidden></div>
     <div class="loading" id="loading">Lädt …</div>
   </div>
@@ -198,7 +198,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=15"></script>
+<script src="chart-core.js?v=16"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -310,7 +310,7 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
   const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP});
-  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
+  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){if(window.bpsPaint)bpsPaint(th);bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
 function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t,col})};
@@ -610,10 +610,64 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   C("rsiCol","⑨ Kerzen färben bei RSI-Extrem"),N("rsiHi","⑨ Obere Grenze",50,100),COL("cRsiHi","⑨ Farbe oben"),N("rsiLo","⑨ Untere Grenze",0,50),COL("cRsiLo","⑨ Farbe unten"),
   C("swOn","⑩ Liquidität markieren"),N("swPv","⑩ Pivot für Hochs/Tiefs",2,50),C("swFrm","⑩ Rahmen"),C("swWck","⑩ Docht"),C("swLn","⑩ Linie zum Level"),N("swMax","⑩ Anzahl Linien",1,20),COL("cSwBu","⑩ Farbe unten (bullisch)"),COL("cSwBe","⑩ Farbe oben (bärisch)")],
   i:"SK-System nach deinen Regeln: 0-A-B-C, B mindestens 50 %, B-Nachführung, Ziel 161,8–200 %, Korrekturlevel B→C und Gesamtkorrektur 0→C. Fahre mit der Maus über ein Kürzel im Chart (am Handy: antippen) für die Erklärung. Tabellen: Doppelklick legt sie in den Hintergrund, noch einmal minimiert sie. Ohne Alarme und ohne manuelle Punkte."}}
+ {const C=(k,t)=>({k,t,type:"chk"}),N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),COL=(k,t)=>({k,t,type:"col"}),SL=(k,t,o)=>({k,t,type:"sel",o}),
+   LS=[["s","Durchgezogen"],["d","Gestrichelt"],["p","Gepunktet"]],GR=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],
+   LM=[["0b","Wie 0b"],["aus","Aus"],["tf","Nur Timeframe"],["kurz","Kürzel"],["voll","Voller Name"]],LZ=[["0b","Wie 0b"]].concat(GR),LP=[["0b","Wie 0b"],["an","An"],["aus","Aus"]],
+   LO=[["r","Rechts neben Ende"],["ao","Über der Linie (rechts)"],["uo","Unter der Linie (rechts)"],["m","Über der Linie (Mitte)"],["l","Links am Anfang"]],
+   POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],
+   TF=[["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"]],
+   PER=[["tag","Laufender Tag"],["vtag","Vortag"],["woche","Laufende Woche"],["vwoche","Vorwoche"],["2w","Letzte 2 Wochen"],["monat","Laufender Monat"],["vmonat","Vormonat"],["xt","Letzte X Tage"]],
+   lab=(p,n,m,z,pr,o)=>[SL(m,p+" "+n+"Beschriftung",LM),SL(z,p+" "+n+"Größe",LZ),SL(pr,p+" "+n+"Preis",LP),SL(o,p+" "+n+"Position",LO)];
+  ALL.bps={k:"bps",t:"Pattern Scanner",d:"Kerzenmuster, Chart-Pattern, Trendlinien, Zonen, Seitwärtskasten, HTF/MTF, Volumenprofil-Level",p:[
+   C("mK","0) Kerzenmuster"),C("mC","0) Chart-Pattern"),C("mT","0) Trendlinien"),C("mS","0) S/R-Zonen"),C("mR","0) Seitwärtskasten"),C("mH","0) HTF-Level"),C("mV","0) Volumenprofil-Level"),C("mM","0) MTF-Trendlinien"),
+   SL("kPre","0) Kerzenmuster-Auswahl",[["eigen","Eigene Auswahl"],["top","Nur Top-Setups"]]),SL("tfMin","0) Anzeige erst ab Timeframe",[["","Immer"],["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["4h","4h"],["1d","1D"]]),
+   SL("lbMode","0b) Beschriftung",[["aus","Aus"],["tf","Nur Timeframe"],["kurz","Kürzel"],["voll","Voller Name"]]),SL("lbSz","0b) Größe",GR),C("lbPr","0b) Preis anzeigen"),
+   SL("kTrend","1) Trendfilter",[["ema","EMA"],["aus","Aus"]]),N("kTrLen","1) EMA-Länge für Trendfilter",2,200),SL("kZone","1) Wo anzeigen",[["swing","Nur an Swing-Hoch/Tief"],["ueberall","Überall"]]),N("kZoneLen","1) Swing-Bereich (Kerzen)",3,100),
+   C("kSide","1) Seitwärtsfilter (ADX)"),N("kAdx","1) ab ADX",5,50),C("kVolF","1) Volumen-Filter"),N("kVolX","1) mind. x Durchschnitt",0.5,10,0.1),SL("kConf","1) Anzeige-Zeitpunkt",[["sofort","Sofort"],["best","Nach Bestätigung"]]),
+   C("kRules","1) Docht-Regeln aus meinem Guide"),N("kWick","1) Docht-Regel: Mindestdocht (% der Kerze)",1,30),N("kMinAtr","1) Mindestgröße der Kerze (x ATR)",0,5,0.1),N("kDoji","1) Doji: max. Körper (% der Kerze)",1,30),
+   N("kWickX","1) Hammer/Star: Docht mind. x-mal so lang wie Körper",1,10,0.1),N("kTail","1) Hammer/Star: Gegendocht max. (% der Kerze)",0,40),SL("kTxt","1) Beschriftung",[["kurz","Kürzel"],["voll","Voller Name"]]),SL("kSz","1) Größe",GR.slice(0,3)),
+   COL("kBull","1) Bullisch"),COL("kBear","1) Bärisch"),N("kMax","1) Max. Anzahl Markierungen",10,400),
+   N("twTol","2) Tweezer: max. Abstand der Tiefs/Hochs (x ATR)",0.01,2,0.05),N("wkMin","2) Tweezer/Wicks: Docht mind. (% der Kerze)",10,80),N("awMin","2) Wicks: Dochtlängen-Unterschied min. (%)",0,50),N("awMax","2) max. (%)",1,60),
+   C("bH","3) Hammer (H)"),C("bIH","3) Inverted Hammer (IH)"),C("bDD","3) Dragonfly Doji (DD)"),C("bST","3) Spinning Top (ST)"),C("bMS","3) Morning Star (MS)"),C("bMDS","3) Morning Doji Star (MDS)"),C("b3W","3) Three White Soldiers (3WS)"),C("b3L","3) Three Line Strike (3LS)"),
+   C("bEN","3) Bullish Engulfing (BE)"),C("bTB","3) Tweezer Bottom (TB)"),C("bAW","3) Advancing Wicks (AW)"),C("bPL","3) Piercing Line (PL)"),C("bHA","3) Bullish Harami (HA)"),C("bKI","3) Bullish Kicker (KI)"),C("bMB","3) Bullish Marubozu (MB)"),
+   C("sHM","4) Hanging Man (HM)"),C("sSS","4) Shooting Star (SS)"),C("sGD","4) Gravestone Doji (GD)"),C("sST","4) Spinning Top (ST)"),C("sES","4) Evening Star (ES)"),C("sEDS","4) Evening Doji Star (EDS)"),C("s3B","4) Three Black Crows (3BC)"),C("s3L","4) Three Line Strike (3LS)"),
+   C("sEN","4) Bearish Engulfing (BE)"),C("sTT","4) Tweezer Top (TT)"),C("sRW","4) Retracing Wicks (RW)"),C("sDC","4) Dark Cloud Cover (DC)"),C("sHA","4) Bearish Harami (HA)"),C("sKI","4) Bearish Kicker (KI)"),C("sMB","4) Bearish Marubozu (MB)"),
+   N("cPiv","6) Swing-Stärke (Kerzen links/rechts)",2,20),N("cFlat","6) Toleranz 'flach' (ATR pro Kerze)",0.005,1,0.005),N("cPar","6) Toleranz 'parallel' (ATR pro Kerze)",0.005,1,0.005),N("cMinH","6) Mindesthöhe Muster (x ATR)",0.5,20,0.1),
+   N("cPole","6) Fahnenstange mind. (x ATR)",1,30,0.5),N("cPoleLen","6) Fahnenstange: max. Länge (Kerzen)",3,100),N("cEq","6) Double/Triple Top: Toleranz (x ATR)",0.1,5,0.1),N("cHs","6) Kopf-Schulter: Toleranz Schultern (x ATR)",0.1,5,0.1),
+   N("cMaxAge","6) Max. Alter ohne Ausbruch (Kerzen)",10,400),C("cLate","6) Verspätet erkannte Muster verwerfen"),C("cVolF","6) Ausbruch nur mit Volumen"),N("cVolX","6) mind. x Durchschnitt",0.5,10,0.1),N("sfpMin","6) SFP: Mindest-Durchstich (x ATR)",0,5,0.05),
+   C("pTri","7) Dreiecke"),C("pWed","7) Keile"),C("pFlag","7) Flaggen"),C("pPen","7) Wimpel"),C("pRect","7) Rechtecke"),C("pDT","7) Double Top/Bottom"),C("pTT","7) Triple Top/Bottom"),C("pHS","7) Kopf-Schulter"),C("pSFP","7) SFP / Sweep"),
+   C("cForm","7) Muster schon während der Entstehung zeigen"),C("cTgt","7) Kursziel nach Ausbruch anzeigen"),COL("cBull","7) Bullisch"),COL("cBear","7) Bärisch"),COL("cNeu","7) Neutral"),SL("cTxt","7) Beschriftung",[["kurz","Kürzel"],["voll","Voller Name"]]),
+   SL("cSz","7) Schriftgröße",GR.slice(0,3)),N("cKeep","7) Anzahl angezeigter Muster",1,30),N("cFade","7) Linien ausblenden nach (Kerzen, 0 = nie)",0,500),C("cNoOv","7) Keine überlappenden Muster"),C("cTrF","7) Nur in Trendrichtung"),N("cTrLen","7) EMA",20,500),
+   SL("cFSt","7) Linienart in Entstehung",LS),SL("cBSt","7) nach Ausbruch",LS),SL("cTSt","7) Linienart Kursziel",LS),N("cTExt","7) Länge Kursziel",5,300),C("cLbl","7) Schilder anzeigen (Musternamen)"),...lab("7)","Kursziel: ","gzM","gzS","gzP","gzO"),
+   N("tPiv","9) Swing-Stärke (Kerzen links/rechts)",2,20),N("tMinT","9) Mindestanzahl Berührungen",2,6),N("tTouch","9) Berührungs-Toleranz (x ATR)",0.05,3,0.05),N("tClose","9) Schluss-Toleranz (x ATR)",0,3,0.05),N("tMaxLen","9) Max. Länge (Kerzen)",20,450),
+   N("tBrk","9) Ausbruch: Schluss mind. (x ATR) jenseits",0,3,0.05),C("tVolF","9) Ausbruch nur mit Volumen"),N("tVolX","9) mind. x Durchschnitt",0.5,10,0.1),N("tRetB","9) Retest: max. Kerzen nach Ausbruch",2,100),N("tRetTol","9) Retest-Toleranz (x ATR)",0,3,0.05),
+   N("tSfpMin","9) Trendlinien-SFP: Mindest-Durchstich (x ATR)",0,3,0.05),SL("tSrc","9) Linie über",[["docht","Docht"],["koerper","Körper"]]),
+   C("tSup","10) Unterstützung (steigend)"),C("tRes","10) Widerstand (fallend)"),C("tSfp","10) Trendlinien-SFP anzeigen"),COL("tSupC","10) Unterstützung"),COL("tResC","10) Widerstand"),N("tW","10) Linienstärke",1,4),SL("tSt","10) Linienart aktiv",LS),SL("tBSt","10) gebrochen",LS),
+   N("tExt","10) Linie verlängern um (Kerzen)",0,300),C("tLbl","10) Schilder anzeigen (TL▲/▼, RT, SFP)"),C("tDup","10) Ausblenden, wenn deckungsgleich mit Haupt-Linie"),...lab("10)","","gtM","gtS","gtP","gtO"),SL("tLSz","10) Schildgröße",GR.slice(0,3)),
+   N("tKeep","10) Gebrochene Linien behalten",0,20),C("tHide","10) Erledigte Linien automatisch ausblenden"),
+   C("t2On","10a) Langfristige Trendlinien anzeigen"),N("t2Piv","10a) Swing-Stärke",5,50),N("t2MinT","10a) Mindestanzahl Berührungen",2,5),COL("t2C","10a) Farbe"),N("t2W","10a) Stärke",1,4),SL("t2St","10a) Linienart aktiv",LS),SL("t2BSt","10a) gebrochen",LS),N("t2Ext","10a) Linie verlängern um (Kerzen)",0,300),...lab("10a)","","g2M","g2S","g2P","g2O"),
+   N("zPiv","11) Swing-Stärke (Kerzen links/rechts)",3,30),N("zLook","11) Rückblick (Kerzen)",50,450),N("zWid","11) Zonenbreite (x ATR)",0.1,5,0.1),N("zMinT","11) Mindestanzahl Berührungen",2,10),N("zMax","11) Max. Anzahl Zonen",1,12),
+   COL("zSupC","11) Unterstützung"),COL("zResC","11) Widerstand"),COL("zInC","11) Kurs in Zone"),SL("zNear","11) Welche Zonen zeigen",[["near","Nur nächste über/unter Kurs"],["alle","Alle"]]),C("zTxt","11) Anzahl Berührungen anzeigen"),SL("zBord","11) Rahmen",[["kein","Kein Rahmen"]].concat(LS)),
+   N("rLen","12) Mindestdauer (Kerzen)",5,200),N("rMult","12) Max. Höhe (x ATR 100)",0.5,20,0.1),C("rBack","12) Rückwärts bis zum echten Start"),N("rBackMax","12) max. Kerzen",10,450),C("rGrow","12) Mitwachsen in der Entstehung"),N("rGrowTol","12) bis (x ATR)",0.1,5,0.1),
+   SL("rMode","12) Nach dem Ausbruch",[["akt","Bis zur aktuellen Kerze"],["x","Nach Ausbruch X Kerzen"],["stehen","Am Ausbruch stehen bleiben"],["retest","Bis zum Retest"],["weg","Nach Ausbruch ausblenden"]]),N("rKeep","12) X Kerzen",0,500),
+   COL("rCol","12) Kasten"),N("rTr","12) Transparenz Kasten",0,100),COL("rMidC","12) Mittellinie"),SL("rBSt","12) Rahmen",LS),SL("rMSt","12) Mittellinie Linienart",LS),...lab("12)","","grM","grS","grP","grO"),
+   N("rImp","12) Rückwärtssuche stoppt an Impulskerzen ab (x ATR)",0.5,10,0.1),C("rFa","12) Fehlausbruch: Rückkehr in den Kasten"),N("rFaB","12) innerhalb (Kerzen)",1,300),COL("rFaC","12) Farbe Fehlausbruch"),
+   SL("hTf","13) Timeframe",[["1h","1h"],["4h","4h"],["1d","1D"],["1w","1W"]]),COL("hCol","13) Farbe"),N("hW","13) Stärke",1,4),SL("hSt","13) Linienart",LS),N("hExt","13) verlängern um",0,300),...lab("13)","","ghM","ghS","ghP","ghO"),
+   N("mPiv","14) Swing-Stärke (Kerzen des jeweiligen TF)",2,30),N("mCnt","14) Rückblick (Anzahl Wendepunkte)",3,30),SL("mSrc","14) Linie über",[["docht","Docht"],["koerper","Körper"]]),C("mSup","14) Unterstützung"),C("mRes","14) Widerstand"),
+   COL("mSupC","14) Farbe Unterstützung"),COL("mResC","14) Farbe Widerstand"),C("mLbl","14) Schilder anzeigen (z. B. 4h▼, RT 4h)"),...lab("14)","","gmM","gmS","gmP","gmO"),
+   C("m1On","14) Chart-TF"),SL("m1St","14) Chart-TF Linienart",LS),N("m1W","14) Chart-TF Stärke",1,4),N("m1Ext","14) Chart-TF Verl.",0,300),
+   ...[2,3,4,5].flatMap(i=>[C("m"+i+"On","14) Linie "+i),SL("m"+i+"Tf","14) Linie "+i+" Timeframe",TF),SL("m"+i+"St","14) Linie "+i+" Linienart",LS),N("m"+i+"W","14) Linie "+i+" Stärke",1,4),N("m"+i+"Ext","14) Linie "+i+" Verl.",0,300)]),
+   C("tbOn","15) MTF-Tabelle anzeigen"),SL("tbPos","15) Position",POS),SL("tbSz","15) Größe",GR.slice(0,3)),N("tbMax","15) Max. Abstand (%)",1,500),
+   N("vpRows","16) Zeilen (Genauigkeit)",20,200),N("vpVA","16) Value Area (%)",50,90),N("vpExt","16) Linien verlängern um (Kerzen)",0,300),N("vpStep","16) Beschriftung versetzen um",0,60),N("vpX","16) Periode 'Letzte X Tage': X =",1,90),
+   C("vpConf","16) Konfluenz zusammenfassen"),N("vpConfTol","16) bis (% Abstand)",0.01,2,0.01),N("vpFillT","16) Transparenz der Value-Area-Fläche",50,98),
+   ...[1,2,3,4].flatMap(i=>[C("v"+i+"On","16) VAH/VAL "+i),SL("v"+i+"Per","16) VAH/VAL "+i+" Periode",PER),C("v"+i+"Fill","16) VAH/VAL "+i+" Fläche"),COL("v"+i+"Col","16) VAH/VAL "+i+" Farbe"),N("v"+i+"W","16) VAH/VAL "+i+" Stärke",1,4),SL("v"+i+"St","16) VAH/VAL "+i+" Linienart",LS),...lab("16)","VAH/VAL "+i+" ","v"+i+"M","v"+i+"S","v"+i+"P","v"+i+"O")]),
+   C("vcOn","16) POC"),SL("vcPer","16) POC Periode",PER),COL("vcCol","16) POC Farbe"),N("vcW","16) POC Stärke",1,4),SL("vcSt","16) POC Linienart",LS),...lab("16)","POC ","vcM","vcS","vcP","vcO"),
+   C("vtOn","17) VP-Tabelle anzeigen"),SL("vtPos","17) Position",POS),SL("vtSz","17) Größe",GR.slice(0,3)),C("vtPoc","17) Spalte POC"),C("vtLage","17) Spalte Lage")],
+   i:"Nachbau deines Pattern Scanner V2.5. Standard wie in deinem Code: Trendlinien, Seitwärtskasten, HTF-Level, Volumenprofil-Level und MTF-Trendlinien an; Kerzenmuster, Chart-Pattern und S/R-Zonen aus (Schnellschalter unter 0). Achtung: „Anzeige erst ab Timeframe“ steht wie bei dir auf 15m – auf 1m und 5m bleibt der Chart dann leer. Tippe auf ein Schild für die Erklärung. Tabellen: Doppelklick legt sie in den Hintergrund, noch einmal minimiert, ein drittes Mal normal."}}
  const G=[
   ["Bayazit Strategie Indikator v2.26","Nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB, Volume Profile, Marktstruktur, Linien/VWAP, Checkliste. Ohne Intermarket und Alarme.",["bsi"]],
   ["Bayazit Wellen Indikator V2.30","Nachbau aus deinem Pine-Code: SK-System, Setup-Tabelle mit Positions-Box, MTF-Tabelle, Elliott, RSI-Divergenz, Liquidität. Ohne Alarme.",["bwi"]],
-  ["Bayazit Pattern Scanner V2.5","Automatische Trendlinien und S/R-Zonen.",["tl","sr"]],
+  ["Bayazit Pattern Scanner V2.5","Nach deinem Pine-Code: Kerzenmuster, Chart-Pattern + SFP, Trendlinien, S/R-Zonen, Seitwärtskasten, HTF-Level, MTF-Trendlinien + Tabelle, Volumenprofil-Level + Tabelle. Ohne Alarme.",["bps"]],
   ["Bayazit Fibonacci Trend V2.4","Nach deinem Pine-Code: Struktur, Fibonacci, Kerzen nach Trend, Volumenprofil-Level, Haupt-Trendlinien, Linien/VWAP, S/R-Zonen, FVG, Orderblöcke, Risiko-Tabelle. Ohne Alarme.",["bft"]],
   ["Bayazit Risiko-Indikator (0 bis 1)","",["risk"]],
   ["Bayazit Hitze (Kurs / 20-Wochen-Schnitt)","Früher „Blasen-Risiko“. Säulen ab 1,0, Farbzonen, Tabelle, Kerzen einfärben. Ohne Alarme.",["heat"]],
@@ -864,7 +918,7 @@ function bodMain(th){const c=S.cfg.bod,R=BOD.R;if(!c.on||!R||!L||(!c.kerzen&&!c.
 $("bodSeg").addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b)return;S.cfg.bod.modus=b.dataset.m;save();paint();if(!$("side").hidden&&sideM==="ind"){const sc=$("side").scrollTop;renderDlg();$("side").scrollTop=sc}});
 $("bodBox").addEventListener("click",e=>{const t=e.target.closest("[data-tip]"),tip=$("bodTip");if(!t){tip.hidden=true;return}
   tip.textContent=t.dataset.tip;tip.hidden=false});
-{const rc0=recompute;recompute=function(){bodCalc();bsiCalc();bftCalc();bwiCalc();if(S.cfg.heat.on&&S.ext)heatCalc(S.ext);rc0()}}
+{const rc0=recompute;recompute=function(){bodCalc();if(window.bpsCalc)try{bpsCalc()}catch(e){console.error(e)}bsiCalc();bftCalc();bwiCalc();if(S.cfg.heat.on&&S.ext)heatCalc(S.ext);rc0()}}
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("bodBox"));
 bodCalc();
 
@@ -1096,14 +1150,14 @@ function bwiPaint(th){const c=S.cfg.bwi,R=BW.R,rt=$("bwRt"),tb=$("bwTb"),mt=$("b
     mt.style.gridTemplateColumns="auto auto auto";mt.innerHTML=h;bwPlace(mt,c.mPos,c.mOffX,c.mOffY,c.mSz)}else mt.hidden=true}
 
 // Erklärtext beim Drüberfahren (Maus) bzw. Antippen
-{const tip=$("bwTip"),find=e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const HT=BW.hit.concat(BF.hit,BS.hit);for(let i=HT.length-1;i>=0;i--){const h=HT[i];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return{h,x,y}}return null};
+{const tip=$("bwTip"),find=e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const HT=BW.hit.concat(BF.hit,BS.hit,window.BP?BP.hit:[]);for(let i=HT.length-1;i>=0;i--){const h=HT[i];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return{h,x,y}}return null};
   const show=f=>{if(!f){tip.hidden=true;return}tip.textContent=f.h.tip;tip.hidden=false;const bx=$("box").getBoundingClientRect();tip.style.left=Math.min(f.x+14,bx.width-270)+"px";tip.style.top=Math.max(4,Math.min(f.y+16,bx.height-150))+"px"};
-  cv.addEventListener("pointermove",e=>{if(e.pointerType==="mouse")show(BW.hit.length||BF.hit.length||BS.hit.length?find(e):null)});cv.addEventListener("pointerleave",()=>{tip.hidden=true});cv.addEventListener("click",e=>{const f=find(e);if(f){show(f);clearTimeout(tip._t);tip._t=setTimeout(()=>{tip.hidden=true},6000)}})}
+  cv.addEventListener("pointermove",e=>{if(e.pointerType==="mouse")show(BW.hit.length||BF.hit.length||BS.hit.length||(window.BP&&BP.hit.length)?find(e):null)});cv.addEventListener("pointerleave",()=>{tip.hidden=true});cv.addEventListener("click",e=>{const f=find(e);if(f){show(f);clearTimeout(tip._t);tip._t=setTimeout(()=>{tip.hidden=true},6000)}})}
 
 // Tabellen per Doppelklick: normal → Hintergrund (durchscheinend) → minimiert → normal
 {const KEY="blcTab";let st={};try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
   const ap=el=>{const v=st[el.id]||0;el.classList.toggle("tbg",v===1);el.classList.toggle("tmin",v===2);el.title=v===2?"Doppelklick: wieder einblenden":"Doppelklick: in den Hintergrund / minimieren"};
-  ["bwRt","bwTb","bwMt","bodTab","heatTab","bfVp","bfRk","bsBias","bsLs"].forEach(id=>{const el=$(id);if(!el)return;ap(el);el.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();st[id]=((st[id]||0)+1)%3;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}ap(el)})})}
+  ["bwRt","bwTb","bwMt","bodTab","heatTab","bfVp","bfRk","bsBias","bsLs","bpMt","bpVt"].forEach(id=>{const el=$(id);if(!el)return;ap(el);el.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();st[id]=((st[id]||0)+1)%3;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}ap(el)})})}
 
 // alte Einzel-Schalter aus dem Chart-Bot sind im Wellen Indikator aufgegangen
 S.cfg.sk.on=false;S.cfg.rsic.on=false;S.cfg.liq.on=false;
@@ -1546,5 +1600,6 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
     for(const[y,t,col]of items){const xx=Math.max(4,Math.min(L.pw-4,lx));ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t,xx,Y(y)+dy);ctx.fillStyle=c.vplOwn?c.vplTxtC:col;ctx.fillText(t,xx,Y(y)+dy)}}
   ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
+<script src="bps.js?v=1"></script>
 </body>
 </html>

@@ -73,11 +73,37 @@ const DEF={
     msOn:true,msLen:5,msLbl:true,msKeep:6,msBos:true,msBosTxt:false,msCh:true,msLnKeep:6,msEq:true,msEqTol:0.15,msSw:true,msInt:false,msIntLen:2,msBullC:"#26a69a",msBearC:"#ef5350",msNeuC:"#b0bec5",msSz:"winzig",msTbl:true,
     maOn:true,maBars:1500,maLbl:true,maSz:"winzig",m1On:true,m1T:"EMA",m1Len:21,m1Tf:"",m1Col:"#ffeb3b",m1W:1,m2On:true,m2T:"EMA",m2Len:50,m2Tf:"",m2Col:"#ff9800",m2W:1,m3On:true,m3T:"SMA",m3Len:200,m3Tf:"",m3Col:"#e91e63",m3W:2,
     gcOn:true,bmOn:false,bmCol:"#00bcd4",vwDOn:true,vwDCol:"#ab47bc",vwDN:3,vwWOn:true,vwWCol:"#5c6bc0",vwWN:2,ckOn:true,ckGood:5,ckMid:3},
+  bps:{on:true,mK:false,mC:false,mT:true,mS:false,mR:true,mH:true,mV:true,mM:true,kPre:"eigen",tfMin:"15m",lbMode:"kurz",lbSz:"normal",lbPr:true,
+    kTrend:"ema",kTrLen:20,kZone:"swing",kZoneLen:10,kSide:true,kAdx:18,kVolF:false,kVolX:1.2,kConf:"sofort",kRules:true,kWick:5,kMinAtr:0.5,kDoji:10,kWickX:2,kTail:15,kTxt:"kurz",kSz:"winzig",kBull:"#26a69a",kBear:"#ef5350",kMax:100,
+    twTol:0.15,wkMin:30,awMin:5,awMax:20,
+    bH:true,bIH:true,bDD:true,bST:false,bMS:true,bMDS:true,b3W:false,b3L:true,bEN:true,bTB:true,bAW:true,bPL:false,bHA:false,bKI:false,bMB:false,
+    sHM:true,sSS:true,sGD:true,sST:false,sES:true,sEDS:true,s3B:false,s3L:true,sEN:true,sTT:true,sRW:true,sDC:false,sHA:false,sKI:false,sMB:false,
+    cPiv:8,cFlat:0.03,cPar:0.03,cMinH:2.5,cPole:3,cPoleLen:15,cEq:0.5,cHs:1,cMaxAge:100,cLate:true,cVolF:false,cVolX:1.5,sfpMin:0.1,
+    pTri:false,pWed:true,pFlag:true,pPen:false,pRect:false,pDT:true,pTT:true,pHS:true,pSFP:false,cForm:true,cTgt:true,cBull:"#26a69a",cBear:"#ef5350",cNeu:"#b0bec5",cTxt:"kurz",cSz:"winzig",cKeep:2,cFade:30,cNoOv:true,cTrF:false,cTrLen:200,
+    cFSt:"d",cBSt:"s",cTSt:"p",cTExt:20,cLbl:false,gzM:"0b",gzS:"0b",gzP:"0b",gzO:"r",
+    tPiv:8,tMinT:3,tTouch:0.3,tClose:0.1,tMaxLen:300,tBrk:0.1,tVolF:false,tVolX:1.5,tRetB:20,tRetTol:0.2,tSfpMin:0.1,tSrc:"docht",
+    tSup:true,tRes:true,tSfp:false,tSupC:"#9598a1",tResC:"#9598a1",tW:1,tSt:"s",tBSt:"p",tExt:0,tLbl:false,tDup:true,gtM:"0b",gtS:"0b",gtP:"0b",gtO:"r",tLSz:"winzig",tKeep:1,tHide:true,
+    t2On:false,t2Piv:20,t2MinT:2,t2C:"#b8a14a",t2W:1,t2St:"s",t2BSt:"p",t2Ext:0,g2M:"0b",g2S:"0b",g2P:"0b",g2O:"r",
+    zPiv:10,zLook:400,zWid:0.6,zMinT:3,zMax:5,zSupC:"#787b86",zResC:"#787b86",zInC:"#787b86",zNear:"near",zTxt:true,zBord:"kein",
+    rLen:20,rMult:3,rBack:true,rBackMax:200,rGrow:true,rGrowTol:0.5,rMode:"x",rKeep:10,rCol:"#2962ff",rTr:82,rMidC:"#2962ff",rBSt:"s",rMSt:"d",grM:"0b",grS:"0b",grP:"0b",grO:"r",rImp:1.5,rFa:true,rFaB:30,rFaC:"#ff9800",
+    hTf:"1d",hCol:"#5c6bc0",hW:1,hSt:"s",hExt:10,ghM:"0b",ghS:"0b",ghP:"0b",ghO:"r",
+    mPiv:8,mCnt:12,mSrc:"koerper",mSup:true,mRes:true,mSupC:"#ffeb3b",mResC:"#9c27b0",mLbl:false,gmM:"voll",gmS:"normal",gmP:"0b",gmO:"r",
+    m1On:true,m1St:"s",m1W:3,m1Ext:20,m2On:true,m2Tf:"1h",m2St:"d",m2W:1,m2Ext:20,m3On:true,m3Tf:"4h",m3St:"d",m3W:2,m3Ext:20,m4On:true,m4Tf:"1d",m4St:"p",m4W:2,m4Ext:20,m5On:true,m5Tf:"1w",m5St:"p",m5W:3,m5Ext:20,
+    tbOn:true,tbPos:"ml",tbSz:"klein",tbMax:30,
+    vpRows:60,vpVA:70,vpExt:15,vpStep:8,vpX:30,vpConf:true,vpConfTol:0.05,vpFillT:92,
+    v1On:true,v1Per:"vwoche",v1Fill:false,v1Col:"#64b5f6",v1W:2,v1St:"s",v1M:"voll",v1S:"normal",v1P:"0b",v1O:"r",
+    v2On:true,v2Per:"vtag",v2Fill:false,v2Col:"#ffb74d",v2W:1,v2St:"d",v2M:"voll",v2S:"normal",v2P:"0b",v2O:"r",
+    v3On:true,v3Per:"monat",v3Fill:false,v3Col:"#1e88e5",v3W:3,v3St:"s",v3M:"voll",v3S:"normal",v3P:"0b",v3O:"r",
+    v4On:false,v4Per:"2w",v4Fill:false,v4Col:"#64b5f6",v4W:2,v4St:"d",v4M:"0b",v4S:"0b",v4P:"0b",v4O:"r",
+    vcOn:true,vcPer:"tag",vcCol:"#ce93d8",vcW:2,vcSt:"p",vcM:"voll",vcS:"normal",vcP:"0b",vcO:"r",
+    vtOn:true,vtPos:"um",vtSz:"klein",vtPoc:true,vtLage:true},
   bod:{on:false,modus:"oi",cvdReset:"nie",kerzen:false,grau:true,marker:false,markerSig:true,sigLen:20,sigMult:1.5,bezug:"k",n:20,stunden:24,extrem:3,lageLen:100,tab:true,erw:true,tabOrt:"ur",tabGr:"klein",tabAbst:0,tabSchritt:1.5,
     fL:"#4caf50",fSQ:"#ff9800",fS:"#ffeb3b",fLQ:"#e91e63",fKauf:"#4caf50",fVerk:"#f23645"}
 };
 const clone=o=>JSON.parse(JSON.stringify(o));
-function withDefaults(cfg){const out=clone(DEF);if(cfg)for(const k in cfg)if(out[k]&&typeof cfg[k]==="object")Object.assign(out[k],cfg[k]);return out}
+function withDefaults(cfg){const out=clone(DEF);if(cfg)for(const k in cfg)if(out[k]&&typeof cfg[k]==="object")Object.assign(out[k],cfg[k]);
+  // Pattern Scanner ersetzt die alten automatischen Trendlinien/Zonen
+  if(cfg&&!cfg.bps)out.bps.on=!!(cfg.tl&&cfg.tl.on!==false||cfg.sr&&cfg.sr.on);out.tl.on=false;out.sr.on=false;return out}
 
 
 // ---------- Dynamische Fibonacci (wie BSI v2.26) ----------

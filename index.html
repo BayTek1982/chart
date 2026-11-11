@@ -56,6 +56,9 @@ canvas{display:block;width:100%;height:100%;cursor:crosshair}
 .itx{font-size:.8rem;line-height:1.45;color:var(--fg);background:var(--chip);border-radius:8px;padding:8px 10px}
 .it .pr label.cl{gap:4px}.rs{background:none;border:0;color:var(--muted);cursor:pointer;font-size:.85rem;padding:0 2px}
 .ov .t a.tvl{pointer-events:auto;font:600 .72rem var(--f-num);color:var(--muted);text-decoration:none;margin-left:8px;border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.ov .t .ovFl{pointer-events:auto;width:13px;height:13px;border-radius:50%;border:1.5px solid var(--muted);background:var(--c,transparent);margin-right:7px;vertical-align:1px;cursor:pointer;padding:0}
+.ov .t .ovFl.set{border-color:var(--c)}.flPop{position:absolute;z-index:30;display:flex;gap:7px;padding:7px 9px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.flPop button{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);background:var(--c);cursor:pointer;padding:0;color:#999;font-size:10px}
 .ov .t a.tvl:hover{color:var(--gold);border-color:var(--gold)}
 .tools{position:absolute;left:6px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:3px;z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:4px;opacity:.92}
 .tools button{width:30px;height:28px;border:0;border-radius:6px;background:none;color:var(--fg);cursor:pointer;font:700 .8rem var(--f-num);display:grid;place-items:center}
@@ -358,7 +361,7 @@ function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t
   add(c.sk.on,"SK","#f0a33a");add(c.gz.on,"Golden Zone","#f0a33a");add(c.fib.on,"Fibonacci","#26c6da");add(c.dfib.on,"Dyn. Fib (BSI)","#ff9800");add(c.ms.on,"Struktur","#8d99ab");
   add(c.tl.on,"Trendlinien","#ffeb3b");add(c.sr.on,"S/R","#8d99ab");add(c.vp.on,"Volumenprofil","#ba68c8");add(c.liq.on,"Liquidität","#2979ff");add(c.fvg.on,"FVG","#3ccf8a");
   add(c.ob.on,"OB","#3ccf8a");add(c.rsic.on,"RSI-Kerzen","#ffeb3b");add(c.lsob.on,"LSOB","#2979ff");add(c.rsi.on,"RSI","#b388ff");add(c.macd.on,"MACD","#5b9bff");add(c.risk.on,"Risiko","#e6d200");add(c.heat.on,"Hitze","#18c7e6");return l}
-function legend(){$("ovL").innerHTML=legendItems().map(x=>`<span style="color:${x.col}">${esc(x.t)}</span>`).join("");$("ovT").innerHTML=`${esc(S.mkt==="k"?S.sym+"/USDT":S.sym)}<small>${TFLAB[S.tf]} · ${esc(S.src)} · ${esc(curText())}</small><a class="tvl" href="${tvUrl()}" target="_blank" rel="noopener" title="In TradingView öffnen">↗ TV</a>`;
+function legend(){$("ovL").innerHTML=legendItems().map(x=>`<span style="color:${x.col}">${esc(x.t)}</span>`).join("");$("ovT").innerHTML=`${window.wlFlagBtn?wlFlagBtn():""}${esc(S.mkt==="k"?S.sym+"/USDT":S.sym)}<small>${TFLAB[S.tf]} · ${esc(S.src)} · ${esc(curText())}</small><a class="tvl" href="${tvUrl()}" target="_blank" rel="noopener" title="In TradingView öffnen">↗ TV</a>`;
   document.querySelectorAll("#curSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cur===S.cur));
   document.title=`${S.sym} ${TFLAB[S.tf]} · Live-Chart`}
 function analysis(){const rows=S.k.length?CC.summary(S.k,S.I,S.cfg,S.tf):[];
@@ -503,7 +506,7 @@ function sugList(q){const Q=norm(q),out=[];if(!Q)return out;const seen=new Set()
   S.list.a.forEach((x,i)=>{const sc=score(x.s.replace(/\..*$/,""),x.n);if(sc<9)out.push({s:x.s,m:"a",n:x.n||"Aktie / Index",sc,r:5000+i})});
   return out.sort((a,b)=>a.sc-b.sc||a.r-b.r).slice(0,30)}
 function showSug(){const q=$("sym").value.trim();if(!q){$("sug").hidden=true;return}const m=sugList(q);sugI=m.length?0:-1;
-  $("sug").innerHTML=m.length?m.map((x,i)=>`<button data-s="${esc(x.s)}" data-m="${x.m}" class="${i===0?"on":""}"><b>${esc(x.s)}${x.m==="k"?"<small>/USDT</small>":""}</b><small>${esc(x.n)}${x.m==="a"?" · Aktie":""}</small></button>`).join(""):`<div class="sugE">Suche „${esc(q)}“ …</div>`;
+  $("sug").innerHTML=m.length?m.map((x,i)=>`<button data-s="${esc(x.s)}" data-m="${x.m}" class="${i===0?"on":""}"><b>${x.m==="k"&&window.wlFlag&&wlFlag(x.s)?`<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${wlFlag(x.s)};margin-right:6px"></i>`:""}${esc(x.s)}${x.m==="k"?"<small>/USDT</small>":""}</b><small>${esc(x.n)}${x.m==="a"?" · Aktie":""}</small></button>`).join(""):`<div class="sugE">Suche „${esc(q)}“ …</div>`;
   $("sug").hidden=false;
   // Namenssuche (z. B. „Bitcoin“) über CoinGecko, nur Coins, die es an der Börse gibt
   const Q=norm(q);if(Q.length>=3&&Q!==geQ){clearTimeout(geT);geT=setTimeout(async()=>{geQ=Q;try{const j=await getJSON("https://api.coingecko.com/api/v3/search?query="+encodeURIComponent(q),8000);
@@ -1681,6 +1684,6 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
 <script src="bps.js?v=4"></script>
-<script src="wl.js?v=2"></script>
+<script src="wl.js?v=3"></script>
 </body>
 </html>

@@ -25,13 +25,16 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   if(imp)h+=`<div class="wlImp"><b>Listen</b><div class="row"><button class="btn ghost" data-a="new">Neue Liste</button><button class="btn ghost" data-a="ren">Umbenennen</button><button class="btn ghost" data-a="del">Liste löschen</button></div>
     <b>Import aus TradingView</b><p>In TradingView: Watchlist-Menü → „Liste exportieren“. Die Datei hier auswählen oder den Inhalt einfügen (z. B. <code>###KRYPTO,OKX:BTCUSDT.P,OKX:ETHUSDT.P</code>).</p>
     <textarea id="wlTxt" rows="3" placeholder="OKX:BTCUSDT.P, OKX:ETHUSDT.P …"></textarea><div class="row"><input type="file" id="wlFile" accept=".txt,text/plain"><button class="btn" data-a="imp">In neue Liste importieren</button><button class="btn ghost" data-a="impAdd">Zur aktuellen Liste</button></div>
-    <b>Export</b><div class="row"><button class="btn ghost" data-a="exp">Im TradingView-Format kopieren</button></div></div>`;
+    <b>Export</b><div class="row"><button class="btn ghost" data-a="exp">Im TradingView-Format kopieren</button></div>
+    <b>Auf Handy / PC übertragen</b><p>Erstellt einen Link mit allen Listen und Fähnchen. Öffne ihn auf dem anderen Gerät, dann wird alles übernommen.</p><div class="row"><button class="btn" data-a="sync">Übertragungs-Link erstellen</button></div></div>`;
   h+=`<div class="wlHd"><span>Symbol</span><span>Kurs</span><span>Tag</span></div><div class="wlRows">`;let n=0;
-  l.items.forEach((s,i)=>{if(s.startsWith("###")){if(!filt)h+=`<div class="wlSec" data-i="${i}">${esc(s.slice(3))}${edit?`<button data-rm="${i}" title="Entfernen">✕</button>`:""}</div>`;return}
+  const rows=filt?[...new Set(W.lists.flatMap(x=>x.items).concat(Object.keys(FLAG)))].filter(s=>!s.startsWith("###")&&FLAG[s]===filt).sort():l.items;
+  if(filt)h+=`<div class="wlSec">Alle mit ${FL[filt][1].toLowerCase()}em Fähnchen</div>`;
+  rows.forEach((s,i)=>{if(s.startsWith("###")){if(!filt)h+=`<div class="wlSec" data-i="${i}">${esc(s.slice(3))}${edit?`<button data-rm="${i}" title="Entfernen">✕</button>`:""}</div>`;return}
     const f=FLAG[s]||0;if(filt&&f!==filt)return;n++;const q=Q[s]||{};
-    h+=`<div class="wlRow${s===cur?" cur":""}" data-s="${esc(s)}" data-i="${i}" ${edit?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>
+    h+=`<div class="wlRow${s===cur?" cur":""}" data-s="${esc(s)}" data-i="${filt?-1:i}" ${edit&&!filt?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>
       <span class="sy">${esc(s)}<small>${S.ex==="okx"?".P":""}</small></span><span class="px">${q.p?CC.fmt(q.p):"–"}</span><span class="ch ${q.ch>0?"up":q.ch<0?"dn":""}">${pct(q.ch)}</span>
-      ${edit?`<span class="ed"><button data-mv="${i}" data-d="-1" title="Nach oben">▲</button><button data-mv="${i}" data-d="1" title="Nach unten">▼</button><button data-rm="${i}" title="Entfernen">✕</button></span>`:""}</div>`;
+      ${edit&&!filt?`<span class="ed"><button data-mv="${i}" data-d="-1" title="Nach oben">▲</button><button data-mv="${i}" data-d="1" title="Nach unten">▼</button><button data-rm="${i}" title="Entfernen">✕</button></span>`:""}</div>`;
     if(pop===s)h+=`<div class="wlPop">${FL.map((x,k)=>`<button data-setf="${k}" data-s="${esc(s)}" class="dot" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("")}</div>`});
   h+=`</div>`;if(!n)h+=`<p class="wlE">${filt?"Keine Symbole mit diesem Fähnchen.":"Noch leer – oben mit ＋ das aktuelle Symbol hinzufügen oder unter ⋯ importieren."}</p>`;
   h+=`<p class="wlE">Tipp: Antippen öffnet den Chart · Punkt links = Fähnchen · ↑/↓ wechselt das Symbol (Tastatur) · Änderung ${S.ex==="okx"?"seit 0 Uhr UTC":"24 Std."}</p>`;
@@ -49,6 +52,8 @@ function act(a){const l=L();
   if(a==="imp"||a==="impAdd"){const it=parse($("wlTxt").value);if(!it.length){toast("Nichts zum Importieren gefunden");return}
     if(a==="imp"){W.lists.push({name:"Import "+new Date().toLocaleDateString("de-DE"),items:it});W.cur=W.lists.length-1}else it.forEach(s=>{if(!l.items.includes(s))l.items.push(s)});
     saveW();imp=false;toast(it.filter(s=>!s.startsWith("###")).length+" Symbole importiert");quotes()}
+  if(a==="sync"){const pl=btoa(unescape(encodeURIComponent(JSON.stringify({l:W.lists,f:FLAG})))),url=location.origin+location.pathname+"#wl="+pl;
+    if(navigator.share)navigator.share({title:"Meine Watchlist",url}).catch(()=>{});else(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast("Link kopiert – auf dem anderen Gerät öffnen")).catch(()=>prompt("Diesen Link auf dem anderen Gerät öffnen:",url))}
   if(a==="exp"){const t=l.items.map(s=>s.startsWith("###")?s:(S.ex==="okx"?"OKX:"+s+"USDT.P":"BINANCE:"+s+"USDT")).join(",");
     (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Liste kopiert – in TradingView unter „Liste importieren“ einfügen")).catch(()=>prompt("Zum Kopieren:",t))}
   draw()}
@@ -70,6 +75,17 @@ function setup(){const b=$("wlBody");
   document.addEventListener("keydown",e=>{if(!open()||e.target.closest("input,textarea,select"))return;if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
     const it=L().items.filter(s=>!s.startsWith("###")&&(!filt||(FLAG[s]||0)===filt));if(!it.length)return;e.preventDefault();
     let i=it.indexOf(S.sym);i=i<0?0:(i+(e.key==="ArrowDown"?1:-1)+it.length)%it.length;pick(it[i],"k");setTimeout(draw,50)})}
-window.wlShow=()=>{draw();quotes()};window.wlFlag=s=>FLAG[s]?FL[FLAG[s]][0]:null;
+window.wlShow=()=>{draw();quotes()};
+window.wlFlagBtn=()=>{if(S.mkt!=="k")return"";const f=FLAG[S.sym]||0;return`<button class="ovFl${f?" set":""}" id="ovFl" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen setzen"></button>`};
+document.addEventListener("click",e=>{const old=document.querySelector(".flPop");
+  const b=e.target.closest("#ovFl");if(b){e.stopPropagation();if(old){old.remove();return}const r=b.getBoundingClientRect(),p=document.createElement("div");p.className="flPop";
+    p.innerHTML=FL.map((x,k)=>`<button data-k="${k}" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("");p.style.left=(r.left+scrollX)+"px";p.style.top=(r.bottom+scrollY+6)+"px";document.body.appendChild(p);return}
+  const c=e.target.closest(".flPop [data-k]");if(c){const k=+c.dataset.k;if(k)FLAG[S.sym]=k;else delete FLAG[S.sym];saveF();if(typeof legend==="function")legend();if(open())draw()}
+  if(old)old.remove()},true);
+// Übertragungs-Link öffnen (#wl=…)
+(()=>{const m=location.hash.match(/[#&]wl=([^&]+)/);if(!m)return;try{const o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+  if(o&&Array.isArray(o.l)&&o.l.length&&confirm(`Watchlist übernehmen? (${o.l.length} Liste(n), ${Object.keys(o.f||{}).length} Fähnchen)\nOK = ersetzt die Listen auf diesem Gerät.`)){W.lists=o.l;W.cur=0;FLAG=o.f||{};saveW();saveF();toast("Watchlist übernommen")}}catch(e){toast("Link ungültig")}
+  history.replaceState(null,"",location.pathname+location.search)})();window.wlFlag=s=>FLAG[s]?FL[FLAG[s]][0]:null;
 setup();setInterval(()=>{if(open()&&document.visibilityState==="visible")quotes()},5000);
 })();
+if(typeof legend==="function")try{legend()}catch(e){}

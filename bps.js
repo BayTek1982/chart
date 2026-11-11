@@ -345,7 +345,7 @@ function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=
     if(b.tip)BP.hit.push({x:Math.max(0,x1),y:y1,w:Math.min(x2,L.pw)-Math.max(0,x1),h:Math.max(4,y2-y1),tip:b.tip,box:1})}
   for(const l of R.Ls){ctx.strokeStyle=l.col;ctx.lineWidth=l.w||1;ctx.setLineDash(l.dash||[]);ctx.beginPath();ctx.moveTo(X(l.x1),Y(l.y1));ctx.lineTo(X(l.x2),Y(l.y2));ctx.stroke()}ctx.setLineDash([]);
   ctx.textBaseline="middle";
-  const all=R.K.concat(R.Ts).filter(t=>t&&t.t&&t.x>=L.i0-30&&t.x<=L.i1+400),pl=[],H=L.mainH;
+  const edge=liveEdge(),all=R.K.concat(R.Ts).filter(t=>t&&t.t&&t.x>=L.i0-30&&t.x<=L.i1+400&&(edge||t.pos!=="r"||X(t.x)<=L.pw)),pl=[],H=L.mainH;
   // Belegte Flächen anderer Indikatoren (Beschriftungen), damit sich nichts überlagert
   const ext=(L.lbR||[]).concat(BS.hit||[],BF.hit||[],BW.hit||[]).filter(r=>r.w<L.pw*.6&&r.h<80);
   {const cr=cv.getBoundingClientRect();document.querySelectorAll("#box .ov .t,#box .ov .o,#box .ov .lg,#box .bwt:not([hidden]),#heatTab:not([hidden])").forEach(o=>{const r=o.getBoundingClientRect();if(r.width&&r.height)ext.push({x:r.left-cr.left,y:r.top-cr.top,w:r.width,h:r.height})})}
@@ -355,9 +355,9 @@ function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=
     return{t,fs,lines,w,h,x,y,py,cl}}).sort((a,b)=>(a.t.box?0:1)-(b.t.box?0:1)||a.y-b.y);
   for(const it of items){const{t,fs,lines,w,h,py}=it;let y=it.y;
     let x=it.x;
-    if(!t.box){const pad=2,maxD=h*1.3,find=(xx,dir)=>{let yy=it.y;for(let g=0;g<12;g++){const r=hitAt(xx-pad,yy,w+2*pad,h+pad);if(!r)return yy;yy=dir>0?r.y+r.h+h/2+pad+1:r.y-h/2-pad-1;if(Math.abs(yy-it.y)>maxD)return null}return null};
+    if(!t.box){const pad=2,maxD=h*3.2,find=(xx,dir)=>{let yy=it.y;for(let g=0;g<20;g++){const r=hitAt(xx-pad,yy,w+2*pad,h+pad);if(!r)return yy;yy=dir>0?r.y+r.h+h/2+pad+1:r.y-h/2-pad-1;if(Math.abs(yy-it.y)>maxD)return null}return null};
       // erst knapp über/unter der Linie, sonst entlang der Linie nach links rücken (nie weit weg vom Preis)
-      let done=false;for(let sh=0;sh<6&&!done;sh++){const xx=it.x-sh*(w+12);if(xx<4)break;const dn=find(xx,1),up=find(xx,-1),okD=dn!=null&&dn+h/2<H,okU=up!=null&&up-h/2>0;
+      let done=false;for(let sh=0;sh<1&&!done;sh++){const xx=it.x;const dn=find(xx,1),up=find(xx,-1),okD=dn!=null&&dn+h/2<H,okU=up!=null&&up-h/2>0;
         if(okD||okU){y=okD&&okU?(Math.abs(dn-it.y)<=Math.abs(up-it.y)?dn:up):okD?dn:up;x=xx;done=true}}
       if(!done){x=it.x;y=it.y}}
     pl.push({x:x-2,y:y-h/2-1,w:w+4,h:h+2});

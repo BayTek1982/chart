@@ -362,7 +362,8 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   // Beschriftung am Linienende: Name (Preis); fast gleiche Preise zusammenfassen
   lbls.sort((a,b)=>a.y-b.y);const mg=[];lbls.forEach(l=>{const m=mg[mg.length-1];if(m&&Math.abs(m.p-l.p)<=Math.abs(l.p)*0.0008){if(!m.n.split(" · ").includes(l.n))m.n+=" · "+l.n}else mg.push({...l})});
   font(10,1);ctx.textAlign="left";let prevL=-99;
-  mg.forEach(l=>{if(l.y<mT-4||l.y>mB+4)return;const t=`${l.n} (${fmt(l.p)})`,w=ctx.measureText(t).width;const y=Math.max(l.y,prevL+12);prevL=y;
+  const edgeVis=(last0-from+0.5)*cw<=pw;
+  mg.forEach(l=>{if(!edgeVis||l.y<mT-4||l.y>mB+4)return;const t=`${l.n} (${fmt(l.p)})`,w=ctx.measureText(t).width;const y=Math.max(l.y,prevL+12);prevL=y;
     let x=LE+5;if(x+w>pw-3){x=pw-3-w;ctx.fillStyle=lightTh?"rgba(255,255,255,.82)":"rgba(14,19,27,.78)";ctx.fillRect(x-3,y-6,w+6,12)}
     ctx.fillStyle=l.col;ctx.fillText(t,x,y);lbR.push({x:x-3,y:y-7,w:w+6,h:14})});
   ctx.restore();

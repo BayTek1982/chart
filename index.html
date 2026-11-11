@@ -220,7 +220,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=17"></script>
+<script src="chart-core.js?v=18"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -331,6 +331,8 @@ async function load(keepView){const id=++loadId;$("loading").hidden=!!keepView;n
   catch(e){if(id===loadId){notice(e.message);S.k=[];S.I={};paint()}}
   finally{if(id===loadId)$("loading").hidden=true}}
 function resetView(){const n=S.k.length,w=Math.min(n,innerWidth<700?90:160);S.view={from:n-w,to:n+Math.max(6,w*0.2),man:false}}
+// Rechter Rand: Beschriftungen nur festhalten, solange die letzte Kerze sichtbar ist (sonst wandern sie mit dem Chart weg wie in TradingView)
+const liveEdge=()=>!!L&&L.X(S.k.length-1)<=L.pw;
 function recompute(){S.I=S.k.length?CC.compute(S.k,S.cfg,S.tf,S.ext):{};paint();analysis();legend()}
 function notice(t){$("notice").hidden=!t;$("notice").textContent=t||""}
 
@@ -1180,7 +1182,7 @@ function bwiPaint(th){const c=S.cfg.bwi,R=BW.R,rt=$("bwRt"),tb=$("bwTb"),mt=$("b
     texts.push({x:d.b2,y:d.p2,t:(d.hid?"vDiv ":"Div ")+(d.bull?"▲":"▼"),pos:d.bull?"b":"a",col:cc,tip:(d.hid?"Versteckte ":"")+(d.bull?"bullische":"bärische")+" Divergenz\nKurs: "+CC.fmt(d.p1)+" → "+CC.fmt(d.p2)+"\nRSI: "+d.r1.toFixed(1).replace(".",",")+" → "+d.r2.toFixed(1).replace(".",",")})}
   ctx.setLineDash([]);ctx.textBaseline="middle";
   for(const t of texts){ctx.font=(t.big?"700 12.5px":"600 10.5px")+' "JetBrains Mono",ui-monospace,monospace';const w=ctx.measureText(t.t).width,h=t.big?14:12,px=X(t.x),py=Y(t.y);let x,y;
-    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){x=Math.min(px+5,L.pw-w-4);y=py}else{x=Math.max(4,px-5-w);y=py}
+    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=Math.min(px+5,L.pw-w-4);y=py}else{x=Math.max(4,px-5-w);y=py}
     ctx.textAlign="left";ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t.t,x,y);ctx.fillStyle=col(t.col);ctx.fillText(t.t,x,y);if(t.tip)BW.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
   ctx.restore();
   // Tabellen
@@ -1294,7 +1296,7 @@ function bftPaint(th){const c=S.cfg.bft,R=BF.R;BF.hit=[];if(!c.on||!R||!L)return
   for(const g in G){const a=G[g].map(t=>({...t,py:Y(t.y)})).sort((p,q)=>p.py-q.py),out=[];for(const t of a){const lst=out[out.length-1];
       if(c.lblAvoid!==false&&lst&&t.py-lst.py<12){lst.t+=" · "+t.t;lst.tip+="\n\n"+t.tip;lst.y=(lst.y+t.y)/2;lst.py=Y(lst.y)}else out.push(t)}TT=TT.concat(out)}
   for(const t of TT){const fs={winzig:9.5,klein:10.5,normal:12,gross:14}[t.sz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const w=ctx.measureText(t.t).width,h=fs+2,px=X(t.x),py=Y(t.y);let x,y;
-    if(t.pos==="a"){x=px-w/2;y=py-4-h/2}else if(t.pos==="b"){x=px-w/2;y=py+4+h/2}else if(t.pos==="r"){x=Math.min(px+5,L.pw-w-4);y=py}else{x=Math.max(4,px-5-w);y=py}
+    if(t.pos==="a"){x=px-w/2;y=py-4-h/2}else if(t.pos==="b"){x=px-w/2;y=py+4+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=Math.min(px+5,L.pw-w-4);y=py}else{x=Math.max(4,px-5-w);y=py}
     if(t.grp||t.pos==="r"&&(t.x>S.k.length+2)){ctx.globalAlpha=.88;ctx.fillStyle=th.bg;ctx.fillRect(x-3,y-h/2-1,w+6,h+2);ctx.globalAlpha=1}
     ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t.t,x,y);ctx.fillStyle=t.col;ctx.fillText(t.t,x,y);if(t.tip)BF.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
   ctx.restore()}
@@ -1559,7 +1561,7 @@ function bsiPaint(th){const c=S.cfg.bsi,R=BS.R,bt=$("bsBias"),lt=$("bsLs");BS.hi
   for(const l of R.Ls){ctx.strokeStyle=l.col;ctx.lineWidth=l.w||1;ctx.setLineDash(l.dash||[]);ctx.beginPath();ctx.moveTo(X(l.x1),Y(l.y1));ctx.lineTo(X(l.x2),Y(l.y2));ctx.stroke()}ctx.setLineDash([]);
   ctx.textBaseline="middle";ctx.textAlign="left";
   for(const t of R.Ts){const fs={winzig:9.5,klein:10.5,normal:12,gross:14}[t.sz||c.lblSz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const lines=String(t.t).split("\n"),w=Math.max(...lines.map(s=>ctx.measureText(s).width)),h=(fs+2)*lines.length,px=X(t.x),py=Y(t.y)+(t.pos==="b"?(t.dy||0):t.pos==="a"?-(t.dy||0):(t.dy||0));let x,y;
-    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){x=Math.min(px+5,L.pw-w-6);y=py}else{x=Math.max(4,px-6-w);y=py}
+    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=Math.min(px+5,L.pw-w-6);y=py}else{x=Math.max(4,px-6-w);y=py}
     if(t.bg||t.box){ctx.fillStyle=t.box||c.lblBg;ctx.globalAlpha=t.box?.9:.75;ctx.fillRect(x-3,y-h/2-1,w+6,h+2);ctx.globalAlpha=1}
     lines.forEach((s,q)=>{const yy=y-h/2+(fs+2)*(q+.5);if(!t.bg&&!t.box){ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(s,x,yy)}ctx.fillStyle=t.col;ctx.fillText(s,x,yy)});
     if(t.tip)BS.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
@@ -1648,7 +1650,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
     for(const[y,t,col]of items){const xx=Math.max(4,Math.min(L.pw-4,lx));ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t,xx,Y(y)+dy);ctx.fillStyle=c.vplOwn?c.vplTxtC:col;ctx.fillText(t,xx,Y(y)+dy)}}
   ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
-<script src="bps.js?v=3"></script>
+<script src="bps.js?v=4"></script>
 <script src="wl.js?v=1"></script>
 </body>
 </html>

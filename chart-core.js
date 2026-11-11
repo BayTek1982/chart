@@ -32,7 +32,7 @@ const DEF={
   rsic:{on:false,len:14,hi:80,lo:20,cHi:"#ffeb3b",cLo:"#e040fb"},
   rsi:{on:true,len:14,hi:80,lo:20,div:true,col:"#b388ff",cDivUp:"#00e5ff",cDivDn:"#ff4081"},
   macd:{on:false,f:12,s:26,sig:9,cM:"#5b9bff",cS:"#ff9800"},
-  risk:{on:false,table:true},
+  risk:{on:false,table:true,step:0.1,price:true,share:true,pos:"or",gr:"klein",warm:365},
   heat:{on:false,len:20,table:true,tabOrt:"or",tabGr:"klein",cBg:"#000000",cTxt:"#ffffff",kerzen:false},
   bwi:{on:false,pivLen:10,zz:true,autoPv:true,skOn:true,bMin:0.5,bTrack:true,structSel:"gross",showKorr:true,korrStr:"0.5; 0.559; 0.618; 0.667; 0.786; 0.882",korrBars:5,ext1:1.618,ext2:2,showA:true,showInv:false,strict200:false,provOn:true,provR:2,show100:true,tolPct:2,
     bcOn:true,bcStr:"0.5; 0.559; 0.618; 0.667; 0.786; 0.882",gkOn:true,gkStr:"0.5; 0.559; 0.618; 0.667; 0.786; 0.882",keepBC:false,zoneLo:0.5,zoneHi:0.667,showFibPx:true,ewOn:false,ewABC:false,
@@ -227,7 +227,7 @@ function tlab(t,tf,full){const d=new Date(t),p=n=>String(n).padStart(2,"0");
 // ---------- Zeichnen ----------
 const THEME={dark:{bg:"#0e131b",grid:"rgba(255,255,255,.06)",txt:"#8d99ab",fg:"#e7ecf3",up:"#3ccf8a",dn:"#e7ecf3",axis:"#151c27",gold:"#f0a33a",goldbg:"rgba(240,163,58,.16)",blue:"#5b9bff",red:"#ff6b5e",green:"#3ccf8a",grey:"#6f7b8d",cross:"rgba(231,236,243,.45)"},
   light:{bg:"#ffffff",grid:"rgba(0,0,0,.06)",txt:"#5d6878",fg:"#141a24",up:"#0f8a4f",dn:"#3b4250",axis:"#f3f5f8",gold:"#c77a12",goldbg:"rgba(217,149,28,.16)",blue:"#2f6fd6",red:"#c8372d",green:"#0f8a4f",grey:"#8d99ab",cross:"rgba(20,26,36,.4)"}};
-const rkCol=r=>`hsl(${Math.round((1-Math.max(0,Math.min(1,r)))*120)},75%,${r>.4&&r<.65?42:48}%)`;
+const rkCol=r=>{const v=Math.max(0,Math.min(1,r)),m=(a,b,t)=>Math.round(a+(b-a)*t);return v<.5?`rgb(${m(0,240,v/.5)},200,${m(83,0,v/.5)})`:`rgb(${m(240,230,(v-.5)/.5)},${m(200,30,(v-.5)/.5)},${m(0,30,(v-.5)/.5)})`};
 const BUB=[[.5,"#1d2bd6"],[.75,"#2f6bff"],[1,"#18c7e6"],[1.25,"#22c55e"],[1.5,"#e6d200"],[1.75,"#f59e0b"],[2,"#f2591a"],[Infinity,"#e11d2e"]];
 const heatIdx=(v,th)=>{if(th){const k=th.findIndex(t=>v<t);return k<0?7:k}return BUB.findIndex(b=>v<b[0])};
 // Farben wie im Pine-Indikator „Bayazit Hitze“ (für den Live-Chart umschaltbar)
@@ -391,7 +391,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
       ctx.lineWidth=1.8;ctx.setLineDash([]);let pv=null;
       for(let i=i0;i<=i1;i++){const v=r[i];if(v==null){pv=null;continue}if(pv!=null){ctx.beginPath();ctx.strokeStyle=rkCol(v);ctx.moveTo(X(i-1),Yk(pv));ctx.lineTo(X(i),Yk(v));ctx.stroke()}pv=v}
       const rn=I.riskNow!=null?I.riskNow:r[last];
-      let tx=6;if(cfg.risk.table!==false&&I.riskTab&&I.riskTab.length){const rows=I.riskTab,rh=Math.max(9,Math.min(13,(pB-pT-2)/(rows.length+1))),cw2=[56,78,48],tw=cw2.reduce((a,b)=>a+b,0);
+      let tx=6;if(false){const rows=I.riskTab,rh=Math.max(9,Math.min(13,(pB-pT-2)/(rows.length+1))),cw2=[56,78,48],tw=cw2.reduce((a,b)=>a+b,0);
         ctx.fillStyle=th.bg===THEME.light.bg?"rgba(255,255,255,.92)":"rgba(14,19,27,.88)";ctx.fillRect(4,pT,tw+4,rh*(rows.length+1)+2);font(Math.min(10,rh-2),1);
         const head=["Risiko","Preis","Zeit %"];let x=6;ctx.fillStyle=th.txt;ctx.textAlign="left";head.forEach((h,q)=>{ctx.fillText(h,x,pT+rh/2+1);x+=cw2[q]});
         rows.forEach((w,q)=>{const y=pT+rh*(q+1)+rh/2+1;if(w.cur){ctx.fillStyle="rgba(240,163,58,.35)";ctx.fillRect(4,y-rh/2,tw+4,rh)}

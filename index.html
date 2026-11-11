@@ -127,6 +127,8 @@ html,body{height:100%;overflow:hidden}
 .bwt>span{padding:1px 8px}.bwt>.hd{grid-column:1/-1}
 #bwTip{position:absolute;max-width:260px;background:var(--fg);color:var(--bg);font-size:.76rem;line-height:1.4;padding:7px 10px;border-radius:8px;white-space:pre-line;z-index:6;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 #heatTab{pointer-events:auto!important;cursor:default}
+#rkTab{position:absolute;display:grid;gap:1px;font-family:var(--f-num);font-weight:600;line-height:1.35;z-index:3;white-space:nowrap;overflow-y:auto;background:rgba(0,0,0,.85);border:1px solid rgba(128,128,128,.4)}
+#rkTab span{padding:1px 7px;color:#fff;background:rgba(0,0,0,.85)}
 .tbg{opacity:.22}.tmin>*:not(:first-child){display:none!important}.tmin{opacity:.8}
 #bodTip{position:absolute;left:8px;bottom:6px;max-width:min(420px,calc(100% - var(--ax,74px) - 16px));background:var(--fg);color:var(--bg);font-size:.78rem;line-height:1.4;padding:7px 10px;border-radius:8px;white-space:pre-line;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 
@@ -205,7 +207,7 @@ html,body{height:100%;overflow:hidden}
     <div class="ov"><div class="t" id="ovT">–</div><div class="o" id="ovO"></div><div class="lg" id="ovL"></div></div>
     <button class="autob" id="autoB" hidden title="Preisachse wieder automatisch">Auto</button>
     <div class="tools" id="tools"></div><button id="toolTg" type="button" title="Zeichenwerkzeuge ein-/ausblenden">✎</button>
-    <div id="heatTab" hidden></div>
+    <div id="heatTab" hidden></div><div id="rkTab" class="bwt" hidden></div>
     <div class="bwt" id="bpMt" hidden></div><div class="bwt" id="bpVt" hidden></div><div class="bwt" id="bsBias" hidden></div><div class="bwt" id="bsLs" hidden></div><div class="bwt" id="bfVp" hidden></div><div class="bwt" id="bfRk" hidden></div><div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
     <div class="ebar" id="ebar" hidden></div>
     <div class="loading" id="loading">Lädt …</div>
@@ -223,7 +225,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=19"></script>
+<script src="chart-core.js?v=20"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -306,10 +308,11 @@ function buildExt(L){const k=S.k,n=k.length;if(!n||!L.e.length)return null;const
   if(L.R){ext.riskNow=rkAt(L.R,p);risk[n-1]=ext.riskNow}
   if(L.wc){const wk=wkDay(dayOf(Date.now()));const done=L.wc.filter(w=>w[0]<wk).slice(-19);if(done.length===19){const s=done.reduce((a,w)=>a+w[1],0);ext.heatAvg=(s+p)/20*F;ext.heatNow=p*F/ext.heatAvg;heat[n-1]=ext.heatNow}}
   if(risk.some(v=>v!=null))ext.risk=risk;if(heat.some(v=>v!=null))ext.heat=heat;heatCalc(ext);
-  if(L.R&&ext.riskNow!=null){const rs=e.map(x=>x.r).filter(v=>v!=null),tot=rs.length||1,rows=[];
-    for(let q=0;q<=10;q++){const r=q/10,z=rs.filter(v=>q===10?v>=0.995:v>=r&&v<r+0.1).length/tot*100;rows.push({r,p:rkPrice(L.R,r)*F,z})}
-    const cur=ext.riskNow,below=rows.filter(w=>w.r<=cur).slice(-3),above=rows.filter(w=>w.r>cur).slice(0,2);
-    ext.riskTab=[...below,{r:cur,p:p*F,cur:true},...above]}
+  // Tabelle wie im Pine-Code: alle Stufen 0 … 1, aktuelle Zeile eingeschoben, Zeit-Anteil je Stufe (Tageskerzen der ganzen Historie)
+  if(L.R&&ext.riskNow!=null){const st=+S.cfg.risk.step===0.05?0.05:0.1,nb=Math.round(1/st),rs=e.map(x=>x.r).filter(v=>v!=null),cnt=new Array(nb).fill(0);
+    rs.forEach(v=>cnt[Math.min(nb-1,Math.floor(v/st+1e-9))]++);const tot=rs.length,cur=ext.riskNow,rows=[];let done=false;
+    for(let q=0;q<=nb;q++){const r=+(q*st).toFixed(2);if(!done&&r>cur){rows.push({r:cur,p:p*F,cur:true});done=true}rows.push({r,p:rkPrice(L.R,r)*F,z:q<nb&&tot?cnt[q]/tot*100:null,band:q===Math.min(nb-1,Math.floor(cur/st+1e-9))})}
+    if(!done)rows.push({r:cur,p:p*F,cur:true});ext.riskTab=rows;ext.riskStep=st}
   return ext}
 async function refreshExt(){if(!(S.cfg.risk.on||S.cfg.heat.on)||!S.k.length){S.ext=null;return}
   try{S.ext=buildExt(await longData())}catch(e){S.ext=null}}
@@ -353,7 +356,7 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
   const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP});
-  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
+  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();rkPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
 function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t,col})};
@@ -572,7 +575,8 @@ const SCHEMA=[
    i:"Relative Stärke 0–100. Über 80 überkauft, unter 20 überverkauft. Divergenz: Kurs macht ein tieferes Tief, der RSI ein höheres (bullisch) – oder umgekehrt (bärisch). Wird im Chart und im RSI als Linie gezeigt."},
   {k:"macd",t:"MACD",d:"",p:[{k:"f",t:"Schnell",type:"num",min:2,max:50},{k:"s",t:"Langsam",type:"num",min:5,max:100},{k:"sig",t:"Signal",type:"num",min:2,max:50},COL("cM","MACD"),COL("cS","Signal")],
    i:"Abstand zweier EMAs (12/26) mit Signallinie (9). Kreuzt der MACD die Signallinie nach oben = Momentum dreht nach oben. Das Histogramm zeigt den Abstand."},
-  {k:"risk",t:"Risiko",d:"0 = historisch günstig, 1 = teuer",p:[{k:"table",t:"Tabelle Risiko/Preis/Zeit %",type:"chk"}],
+  {k:"risk",t:"Risiko",d:"0 = historisch günstig, 1 = teuer",p:[{k:"table",t:"Tabelle anzeigen",type:"chk"},{k:"step",t:"Schrittweite",type:"sel",o:[["0.1","0,1"],["0.05","0,05"]]},{k:"price",t:"Spalte Preis",type:"chk"},{k:"share",t:"Spalte Zeit-Anteil %",type:"chk"},
+    {k:"pos",t:"Position",type:"sel",o:[["or","Oben rechts"],["om","Oben Mitte"],["ol","Oben links"],["mr","Mitte rechts"],["ml","Mitte links"],["ur","Unten rechts"],["um","Unten Mitte"],["ul","Unten links"]]},{k:"gr",t:"Schriftgröße",type:"sel",o:[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"],["riesig","Riesig"]]}],
    i:"Langfrist-Risiko wie im Coin-Scanner: Abstand des Kurses zum langen Durchschnitt, auf 0–1 skaliert. Niedrig = historisch günstig, hoch = historisch teuer. Die Tabelle zeigt, bei welchem Preis welches Risiko erreicht wäre und wie viel Zeit der Kurs dort verbracht hat."},
   {k:"heat",t:"Hitze",d:"Kurs ÷ 20-Wochen-Schnitt",
    i:"Kurs geteilt durch den 20-Wochen-Durchschnitt. 1,0 = genau auf dem Schnitt. Deutlich darüber = überhitzt (Rückschlaggefahr), darunter = kalt. Farben wie im Coin-Scanner."}]}];
@@ -1017,6 +1021,19 @@ function heatCalc(ext){const Ld=LONG[S.mkt+":"+S.sym];if(!ext||!Ld||!Ld.wc||!Ld.
   for(let i=0;i<n;i++){const w=wkDay(dayOf(k[i].t));while(j<wc.length&&wc[j][0]<w)j++;
     if(j>=len-1){const c=k[i].c,avg=(pre[j]-pre[j-(len-1)]+c)/len;heat[i]=c/avg;any=true;if(i===n-1){ext.heatAvg=avg*S.F;ext.heatNow=c/avg}}}
   if(any)ext.heat=heat;else delete ext.heat}
+function rkPaint(){const c=S.cfg.risk,el=$("rkTab"),I=S.I||{},p=L&&L.panes&&L.panes.find(q=>q.s==="risk");
+  if(!c.on||!p||p.mini||!I.riskTab||I.riskNow==null||c.table===false){el.hidden=true;return}
+  const v=I.riskNow,col=CC.rkCol(v),txt=v<.2?"Sehr niedrig":v<.4?"Niedrig":v<.6?"Mittel":v<.8?"Hoch":"Sehr hoch",cols=1+(c.price!==false)+(c.share!==false),dg=S.cfg.risk.step==0.05?2:1;
+  let h=`<span>Risiko</span>${c.price!==false?"<span>Preis</span>":""}${c.share!==false?"<span>Zeit %</span>":""}`;
+  for(const w of I.riskTab){if(w.cur){const st=`style="background:${col};color:#000"`;h+=`<span ${st}>► ${w.r.toFixed(3)}</span>${c.price!==false?`<span ${st}>${CC.fmt(w.p)}</span>`:""}${c.share!==false?`<span ${st}>aktuell</span>`:""}`}
+    else h+=`<span style="color:${CC.rkCol(w.r)}">${w.r.toFixed(dg)}</span>${c.price!==false?`<span>${CC.fmt(w.p)}</span>`:""}${c.share!==false?`<span${w.band?` style="color:${col}"`:""}>${w.z==null?"":w.z.toFixed(1)+" %"}</span>`:""}`}
+  h+=`<span style="color:${col};grid-column:1/-1">${txt}</span>`;
+  el.style.gridTemplateColumns=`repeat(${cols},auto)`;el.innerHTML=h;el.hidden=false;const s=el.style,o=c.pos||"or";
+  s.fontSize={winzig:"10px",klein:"11.5px",normal:"13px",gross:"15px",riesig:"18px"}[c.gr]||"11.5px";s.maxHeight=(p.h-8)+"px";
+  const ty=o[0]==="o"?[p.top+4,"0"]:o[0]==="u"?[p.top+p.h-4,"-100%"]:[p.top+p.h/2,"-50%"],tx=o[1]==="l"?[6,"0"]:o[1]==="r"?[L.pw-6,"-100%"]:[L.pw/2,"-50%"];
+  s.top=ty[0]+"px";s.left=tx[0]+"px";s.transform=`translate(${tx[1]},${ty[1]})`;
+  // aktuelle Zeile sichtbar halten, wenn die Tabelle höher als das Fenster ist
+  const cur=[...el.children].find(x=>x.textContent.startsWith("►"));if(cur&&el.scrollHeight>el.clientHeight+2)el.scrollTop=Math.max(0,cur.offsetTop-el.clientHeight/2)}
 function heatPaint(){const c=S.cfg.heat,el=$("heatTab"),I=S.I||{},p=L&&L.panes&&L.panes.find(q=>q.s==="heat"),n=S.k.length;
   const v=I.heat?(I.heatNow!=null?I.heatNow:I.heat[n-1]):null;
   if(!c.on||!p||p.mini||v==null||c.table===false)el.hidden=true;
@@ -1240,7 +1257,7 @@ function bwiPaint(th){const c=S.cfg.bwi,R=BW.R,rt=$("bwRt"),tb=$("bwTb"),mt=$("b
 // Tabellen per Doppelklick: normal → Hintergrund (durchscheinend) → minimiert → normal
 {const KEY="blcTab";let st={};try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
   const ap=el=>{const v=st[el.id]||0;el.classList.toggle("tbg",v===1);el.classList.toggle("tmin",v===2);el.title=v===2?"Doppelklick: wieder einblenden":"Doppelklick: in den Hintergrund / minimieren"};
-  ["bwRt","bwTb","bwMt","bodTab","heatTab","bfVp","bfRk","bsBias","bsLs","bpMt","bpVt"].forEach(id=>{const el=$(id);if(!el)return;ap(el);el.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();st[id]=((st[id]||0)+1)%3;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}ap(el)})})}
+  ["bwRt","bwTb","bwMt","bodTab","heatTab","bfVp","bfRk","bsBias","bsLs","bpMt","bpVt","rkTab"].forEach(id=>{const el=$(id);if(!el)return;ap(el);el.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();st[id]=((st[id]||0)+1)%3;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}ap(el)})})}
 
 // alte Einzel-Schalter aus dem Chart-Bot sind im Wellen Indikator aufgegangen
 S.cfg.sk.on=false;S.cfg.rsic.on=false;S.cfg.liq.on=false;

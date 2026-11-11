@@ -165,7 +165,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=10"></script>
+<script src="chart-core.js?v=11"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -277,7 +277,7 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
   const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th});
-  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bwiPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
+  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bftPaint(th);bwiPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
 function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t,col})};
@@ -483,7 +483,23 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
  ALL.heat.d="Kurs ÷ Wochen-Schnitt, Farben wie in TradingView";ALL.heat.p=[{k:"len",t:"Länge Durchschnitt (Wochen)",type:"num",min:1,max:100},{k:"table",t:"Info-Tabelle anzeigen",type:"chk"},
    {k:"tabOrt",t:"Position",type:"sel",o:[["or","Oben rechts"],["om","Oben Mitte"],["ol","Oben links"],["mr","Mitte rechts"],["ml","Mitte links"],["ur","Unten rechts"],["um","Unten Mitte"],["ul","Unten links"]]},
    {k:"tabGr",t:"Schriftgröße",type:"sel",o:[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"],["riesig","Riesig"]]},COL("cBg","Hintergrund"),COL("cTxt","Schrift"),{k:"kerzen",t:"Kerzen im Chart einfärben",type:"chk"}];
-{const POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],TFS=[["","–"],["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"],["1M","1M"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
+{const TFS=[["","–"],["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"],["1M","1M"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],LS=[["s","Durchgezogen"],["d","Gestrichelt"],["p","Gepunktet"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
+ ALL.bft={k:"bft",t:"Fibonacci Trend",d:"Struktur, Fibonacci in Trendrichtung, Golden Zone, Kerzen nach Trend",p:[
+  C("qFib","⓪ Fibonacci"),C("qCnt","⓪ Gegenrichtung (dezent)"),C("qGZ","⓪ Golden Zone"),C("qSwing","⓪ Swing-Kürzel (HH / HL / LH / LL)"),C("qBos","⓪ BOS / CHoCH"),C("qCandle","⓪ Kerzen nach Trend einfärben"),
+  {k:"pivMode",t:"① Pivot-Länge",type:"sel",o:[["auto","Automatisch je Timeframe"],["fest","Fest"]]},N("pivFix","① Fester Wert",2,50),{k:"pt0",t:"① TF 1",type:"sel",o:TFS},C("po0","① TF 1 aktiv"),N("pp0","① TF 1 Pivot",2,50),{k:"pt1",t:"① TF 2",type:"sel",o:TFS},C("po1","① TF 2 aktiv"),N("pp1","① TF 2 Pivot",2,50),{k:"pt2",t:"① TF 3",type:"sel",o:TFS},C("po2","① TF 3 aktiv"),N("pp2","① TF 3 Pivot",2,50),{k:"pt3",t:"① TF 4",type:"sel",o:TFS},C("po3","① TF 4 aktiv"),N("pp3","① TF 4 Pivot",2,50),{k:"pt4",t:"① TF 5",type:"sel",o:TFS},C("po4","① TF 5 aktiv"),N("pp4","① TF 5 Pivot",2,50),{k:"pt5",t:"① TF 6",type:"sel",o:TFS},C("po5","① TF 6 aktiv"),N("pp5","① TF 6 Pivot",2,50),{k:"pt6",t:"① Eigener 1",type:"sel",o:TFS},C("po6","① Eigener 1 aktiv"),N("pp6","① Eigener 1 Pivot",2,50),{k:"pt7",t:"① Eigener 2",type:"sel",o:TFS},C("po7","① Eigener 2 aktiv"),N("pp7","① Eigener 2 Pivot",2,50),{k:"pt8",t:"① Eigener 3",type:"sel",o:TFS},C("po8","① Eigener 3 aktiv"),N("pp8","① Eigener 3 Pivot",2,50),
+  {k:"srcMode",t:"① Hochs/Tiefs über",type:"sel",o:[["docht","Docht"],["koerper","Körper"]]},N("nBos","① Anzahl BOS/CHoCH",1,20),{k:"trConf",t:"① Trendwechsel bestätigen",type:"sel",o:[["choch","Nur CHoCH"],["dow","CHoCH + neues HL/LH (Dow)"]]},C("warnOn","① Warnstufe grau bei Docht-Bruch"),
+  {k:"dirMode",t:"② Richtung",type:"sel",o:[["trend","Trendrichtung"],["long","Immer Long"],["short","Immer Short"]]},{k:"extMode",t:"② Extensions-Richtung",type:"sel",o:[["ziel","Kursziele in Trendrichtung"],["tv","Hinter dem Startpunkt (TradingView)"]]},C("fibRev","② Umkehren (0 ↔ 100 %)"),
+  {k:"lnStart",t:"② Linien beginnen",type:"sel",o:[["ende","Ab Endpunkt (tiefste/höchste Kerze)"],["start","Ab Startpunkt"]]},N("extR","② Nach rechts verlängern (Kerzen)",0,300),C("showAnc","② Verbindungslinie Start → Ende"),N("lnW","② Linienstärke",1,4),{k:"stRet",t:"② Retracements",type:"sel",o:LS},{k:"stExt",t:"② Extensions",type:"sel",o:LS},COL("colAnc","② Farbe Verbindungslinie"),
+  C("lo0","③ Level 0 %"),COL("lc0","③ Farbe 0 %"),C("lo1","③ Level 23,6 %"),COL("lc1","③ Farbe 23,6 %"),C("lo2","③ Level 38,2 %"),COL("lc2","③ Farbe 38,2 %"),C("lo3","③ Level 50 %"),COL("lc3","③ Farbe 50 %"),C("lo4","③ Level 55,9 %"),COL("lc4","③ Farbe 55,9 %"),C("lo5","③ Level 61,8 %"),COL("lc5","③ Farbe 61,8 %"),C("lo6","③ Level 66,7 %"),COL("lc6","③ Farbe 66,7 %"),C("lo7","③ Level 78,6 %"),COL("lc7","③ Farbe 78,6 %"),C("lo8","③ Level 88,2 %"),COL("lc8","③ Farbe 88,2 %"),C("lo9","③ Level 100 %"),COL("lc9","③ Farbe 100 %"),C("lo10","④ Level 112,8 %"),COL("lc10","④ Farbe 112,8 %"),C("lo11","④ Level 123,6 %"),COL("lc11","④ Farbe 123,6 %"),C("lo12","④ Level 127,2 %"),COL("lc12","④ Farbe 127,2 %"),C("lo13","④ Level 141,4 %"),COL("lc13","④ Farbe 141,4 %"),C("lo14","④ Level 161,8 %"),COL("lc14","④ Farbe 161,8 %"),C("lo15","④ Level 200 %"),COL("lc15","④ Farbe 200 %"),C("lo16","④ Level 223,6 %"),COL("lc16","④ Farbe 223,6 %"),C("lo17","④ Level 261,8 %"),COL("lc17","④ Farbe 261,8 %"),C("lo18","④ Level 361,8 %"),COL("lc18","④ Farbe 361,8 %"),C("lo19","④ Level 423,6 %"),COL("lc19","④ Farbe 423,6 %"),C("lo20","⑤ Eigenes Level 1"),N("lv20","⑤ Wert 1",-5,10,0.001),COL("lc20","⑤ Farbe 1"),C("lo21","⑤ Eigenes Level 2"),N("lv21","⑤ Wert 2",-5,10,0.001),COL("lc21","⑤ Farbe 2"),C("lo22","⑤ Eigenes Level 3"),N("lv22","⑤ Wert 3",-5,10,0.001),COL("lc22","⑤ Farbe 3"),
+  {k:"dispMode",t:"⑥ Darstellung",type:"sel",o:[["l","Nur Linien"],["lf","Linien + Farbflächen"],["f","Nur Farbflächen"],["r","Nur Rahmen-Boxen"]]},N("boxTr","⑥ Transparenz Flächen",0,100),N("gzA","⑥ Golden Zone von",0,2,0.001),N("gzB","⑥ Golden Zone bis",0,2,0.001),COL("gzCol","⑥ Farbe Golden Zone"),N("gzTr","⑥ Transparenz Golden Zone",0,100),
+  {k:"lblMode",t:"⑦ Level-Beschriftung",type:"sel",o:[["aus","Aus"],["p","Prozent"],["pr","Preis"],["pp","Prozent + Preis"]]},{k:"lblPos",t:"⑦ Position",type:"sel",o:[["r","Rechts"],["l","Links"]]},N("lblOff","⑦ Versatz (Kerzen)",-100,200),{k:"lblSize",t:"⑦ Größe",type:"sel",o:GRS},
+  {k:"cntStr",t:"⑧ Gegenrichtung: Level",type:"text"},COL("cntCol","⑧ Farbe"),N("cntTr","⑧ Transparenz",0,100),C("cntLbl","⑧ Prozent anzeigen"),
+  COL("colBull","⑨ Farbe bullisch"),COL("colBear","⑨ Farbe bärisch"),{k:"swSize",t:"⑨ Größe Kürzel",type:"sel",o:GRS.slice(0,3)},
+  {k:"cMode",t:"⑩ Methode",type:"sel",o:[["struktur","Struktur"],["ha","Heikin Ashi"],["komb","Kombiniert (Struktur + Heikin Ashi)"],["st","Supertrend"],["ema","EMA"]]},N("haConf","⑩ Heikin Ashi: Bestätigung (Kerzen)",1,5),N("stFac","⑩ Supertrend: Faktor",0.5,20,0.1),N("stLen","⑩ Supertrend: ATR-Länge",1,100),N("emaLen","⑩ EMA: Länge",2,500),
+  {k:"cDraw",t:"⑩ Darstellung",type:"sel",o:[["eigen","Eigene Kerzen (Körper, Umrandung, Docht)"],["farbe","Nur einfärben"]]},{k:"hollow",t:"⑩ Hohle Kerzen",type:"sel",o:[["aus","Aus"],["steig","Steigende hohl"],["fall","Fallende hohl"],["alle","Alle hohl"]]},
+  COL("colUp","⑩ Aufwärts: Körper"),COL("colUpB","⑩ Aufwärts: Umrandung"),COL("colUpW","⑩ Aufwärts: Docht"),COL("colDn","⑩ Abwärts: Körper"),COL("colDnB","⑩ Abwärts: Umrandung"),COL("colDnW","⑩ Abwärts: Docht"),COL("colNeu","⑩ Neutral: Körper"),COL("colNeuB","⑩ Neutral: Umrandung"),COL("colNeuW","⑩ Neutral: Docht")],
+  i:"Kern des Fibonacci Trend: Der Trend kommt aus der Struktur (BOS = Fortsetzung, CHoCH = Trendwechsel), die Fibonacci liegt in Trendrichtung und ihr Endpunkt wandert mit der höchsten bzw. tiefsten Kerze mit. Graue Kerzen = Warnstufe (Swing nur per Docht gebrochen). Die übernommenen Teile ⑫–⑳ (Volumenprofil-Level, Haupt-Trendlinien, FVG, Orderblöcke, MA/VWAP, S/R-Zonen, Risiko) laufen hier noch über die Schalter aus dem Chart-Bot. Ohne Alarme und ohne manuelle Fibonacci."}}
+ {const POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],TFS=[["","–"],["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"],["1M","1M"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
  ALL.bwi={k:"bwi",t:"Wellen Indikator",d:"SK-System 0-A-B-C, Ziel, Korrekturlevel, Setup, MTF, Divergenz, Liquidität",p:[
   N("pivLen","① Pivot-Länge",2,50),C("zz","① ZigZag anzeigen"),C("autoPv","① Pivot-Länge je Timeframe (aus ⑦)"),
   C("skOn","② SK-System aktiv"),N("bMin","② B mindestens (Retracement 0→A)",0.1,0.99,0.001),C("bTrack","② B nachführen"),{k:"structSel",t:"② Struktur-Wahl",type:"sel",o:[["gross","Größte gültige"],["jung","Jüngste"]]},
@@ -508,12 +524,12 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   ["Bayazit Strategie Indikator v2.26","Dynamische Fibonacci, drei Durchschnitts-Linien, VWAP, Volumenprofil, LSOB.",["dfib","ma1","ma2","ma3","vwap","vp","lsob"]],
   ["Bayazit Wellen Indikator V2.30","Nachbau aus deinem Pine-Code: SK-System, Setup-Tabelle mit Positions-Box, MTF-Tabelle, Elliott, RSI-Divergenz, Liquidität. Ohne Alarme.",["bwi"]],
   ["Bayazit Pattern Scanner V2.5","Automatische Trendlinien und S/R-Zonen.",["tl","sr"]],
-  ["Bayazit Fibonacci Trend V2.3","Fibonacci in Trendrichtung, Marktstruktur (HH/HL, BOS/CHoCH), FVG, Orderblöcke, Golden Zone.",["fib","ms","fvg","ob","gz"]],
+  ["Bayazit Fibonacci Trend V2.4","Kern nach deinem Pine-Code: Struktur, Fibonacci in Trendrichtung, Golden Zone, Kerzen nach Trend. FVG und Orderblöcke noch aus dem Chart-Bot. Ohne Alarme.",["bft","fvg","ob"]],
   ["Bayazit Risiko-Indikator (0 bis 1)","",["risk"]],
   ["Bayazit Hitze (Kurs / 20-Wochen-Schnitt)","Früher „Blasen-Risiko“. Säulen ab 1,0, Farbzonen, Tabelle, Kerzen einfärben. Ohne Alarme.",["heat"]],
   ["Bayazit OI & Delta Monitor V1.8","Open Interest, ΔOI, Volumen-Delta, CVD und die Tabelle mit Fazit. Ohne Alarme.",["bod"]]];
  const neu=G.map(([g,note,ks])=>({g,note,own:1,items:ks.map(k=>ALL[k])}));
- neu.push({g:"Standard",items:["vol","rsi","bb","macd","boxes"].map(k=>ALL[k])});
+ neu.push({g:"Standard",items:["vol","rsi","bb","macd","fib","ms","gz","boxes"].map(k=>ALL[k])});
  SCHEMA.splice(0,SCHEMA.length,...neu)}
 
 function pInput(key,p){const v=S.cfg[key][p.k],id=`${key}.${p.k}`;
@@ -758,7 +774,7 @@ function bodMain(th){const c=S.cfg.bod,R=BOD.R;if(!c.on||!R||!L||(!c.kerzen&&!c.
 $("bodSeg").addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b)return;S.cfg.bod.modus=b.dataset.m;save();paint();if(!$("side").hidden&&sideM==="ind"){const sc=$("side").scrollTop;renderDlg();$("side").scrollTop=sc}});
 $("bodBox").addEventListener("click",e=>{const t=e.target.closest("[data-tip]"),tip=$("bodTip");if(!t){tip.hidden=true;return}
   tip.textContent=t.dataset.tip;tip.hidden=false});
-{const rc0=recompute;recompute=function(){bodCalc();bwiCalc();if(S.cfg.heat.on&&S.ext)heatCalc(S.ext);rc0()}}
+{const rc0=recompute;recompute=function(){bodCalc();bftCalc();bwiCalc();if(S.cfg.heat.on&&S.ext)heatCalc(S.ext);rc0()}}
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("bodBox"));
 bodCalc();
 
@@ -990,9 +1006,9 @@ function bwiPaint(th){const c=S.cfg.bwi,R=BW.R,rt=$("bwRt"),tb=$("bwTb"),mt=$("b
     mt.style.gridTemplateColumns="auto auto auto";mt.innerHTML=h;bwPlace(mt,c.mPos,c.mOffX,c.mOffY,c.mSz)}else mt.hidden=true}
 
 // Erklärtext beim Drüberfahren (Maus) bzw. Antippen
-{const tip=$("bwTip"),find=e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;for(let i=BW.hit.length-1;i>=0;i--){const h=BW.hit[i];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return{h,x,y}}return null};
+{const tip=$("bwTip"),find=e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const HT=BW.hit.concat(BF.hit);for(let i=HT.length-1;i>=0;i--){const h=HT[i];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return{h,x,y}}return null};
   const show=f=>{if(!f){tip.hidden=true;return}tip.textContent=f.h.tip;tip.hidden=false;const bx=$("box").getBoundingClientRect();tip.style.left=Math.min(f.x+14,bx.width-270)+"px";tip.style.top=Math.max(4,Math.min(f.y+16,bx.height-150))+"px"};
-  cv.addEventListener("pointermove",e=>{if(e.pointerType==="mouse")show(BW.hit.length?find(e):null)});cv.addEventListener("pointerleave",()=>{tip.hidden=true});cv.addEventListener("click",e=>{const f=find(e);if(f){show(f);clearTimeout(tip._t);tip._t=setTimeout(()=>{tip.hidden=true},6000)}})}
+  cv.addEventListener("pointermove",e=>{if(e.pointerType==="mouse")show(BW.hit.length||BF.hit.length?find(e):null)});cv.addEventListener("pointerleave",()=>{tip.hidden=true});cv.addEventListener("click",e=>{const f=find(e);if(f){show(f);clearTimeout(tip._t);tip._t=setTimeout(()=>{tip.hidden=true},6000)}})}
 
 // Tabellen per Doppelklick: normal → Hintergrund (durchscheinend) → minimiert → normal
 {const KEY="blcTab";let st={};try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
@@ -1001,6 +1017,90 @@ function bwiPaint(th){const c=S.cfg.bwi,R=BW.R,rt=$("bwRt"),tb=$("bwTb"),mt=$("b
 
 // alte Einzel-Schalter aus dem Chart-Bot sind im Wellen Indikator aufgegangen
 S.cfg.sk.on=false;S.cfg.rsic.on=false;S.cfg.liq.on=false;
+
+// ════════════════════════════════════════════════════════════════
+//  Bayazit Fibonacci Trend (BFT) V2.4 – Kern nach dem Pine-Code
+//  ① Struktur (Swings, BOS/CHoCH, Trend, Warnstufe), ②–⑧ Fibonacci
+//  in Trendrichtung mit Leveln, Flächen, Golden Zone, Gegenrichtung,
+//  ⑨ Swing-Kürzel, ⑩ Kerzen nach Trend. Ohne Alarme, ohne manuelle Fib.
+// ════════════════════════════════════════════════════════════════
+const BF={R:null,hit:[]};
+const BFLV=[0,0.236,0.382,0.5,0.559,0.618,0.667,0.786,0.882,1,1.128,1.236,1.272,1.414,1.618,2,2.236,2.618,3.618,4.236];
+const bfPc=x=>String(Math.round(x*10000)/100).replace(".",",")+" %";
+function bftPiv(){const c=S.cfg.bft;if(c.pivMode==="fest")return+c.pivFix||10;const ts=BWSEC[S.tf];let res=null,best=-1,bv=+c.pivFix||10,minS=Infinity,mv=bv;
+  for(const i of[6,7,8,0,1,2,3,4,5]){if(!c["po"+i])continue;const sec=BWSEC[c["pt"+i]];if(!sec)continue;const v=+c["pp"+i]||10;if(sec===ts&&res==null)res=v;if(sec<ts&&sec>best){best=sec;bv=v}if(sec<minS){minS=sec;mv=v}}
+  return res!=null?res:best>=0?bv:mv}
+function bftCalc(){const c=S.cfg.bft;BF.R=null;if(!c.on||S.k.length<30)return;
+  const k=S.k,n=k.length,last=n-1,pvl=bftPiv(),body=c.srcMode==="koerper",H=new Array(n),Lw=new Array(n),F=v=>CC.fmt(v);
+  for(let i=0;i<n;i++){H[i]=body?Math.max(k[i].o,k[i].c):k[i].h;Lw[i]=body?Math.min(k[i].o,k[i].c):k[i].l}
+  const isP=(cc,hi)=>{if(cc-pvl<0||cc+pvl>=n)return false;const v=hi?H[cc]:Lw[cc];for(let j=cc-pvl;j<cc;j++)if(hi?H[j]>v:Lw[j]<v)return false;for(let j=cc+1;j<=cc+pvl;j++)if(hi?H[j]>=v:Lw[j]<=v)return false;return true};
+  const zP=[],zB=[],zT=[],add=(p,b,t)=>{const m=zT.length;if(m&&zT[m-1]===t){if((t===1&&p>zP[m-1])||(t===-1&&p<zP[m-1])){zP[m-1]=p;zB[m-1]=b}}else{zP.push(p);zB.push(b);zT.push(t);if(zT.length>80){zP.shift();zB.shift();zT.shift()}}};
+  let trend=0,lastHi=null,lastHiB=0,hiDone=true,lastLo=null,lastLoB=0,loDone=true,trendD=0,pend=0,warn=false;const ev=[],cDir=new Int8Array(n);
+  // Hilfsreihen für die Kerzen-Methoden
+  const m=c.cMode;let haO=null,haCp=0,haRawP=0,haRun=1,haDir=0,ema=null,atr=null,fU=null,fL=null,stD=-1,trS=0;const al=2/((+c.emaLen||50)+1),sl=Math.max(1,+c.stLen||10),fac=+c.stFac||3,hc=Math.max(1,+c.haConf||2);
+  let tsLast=0,greyLast=false;
+  for(let i=0;i<n;i++){const q=k[i],pb=i-pvl,ph=isP(pb,true)?H[pb]:null,pw=isP(pb,false)?Lw[pb]:null;
+    if(ph!=null&&pw!=null){if(zT.length&&zT[zT.length-1]===1){add(pw,pb,-1);add(ph,pb,1)}else{add(ph,pb,1);add(pw,pb,-1)}}else if(ph!=null)add(ph,pb,1);else if(pw!=null)add(pw,pb,-1);
+    const newLH=ph!=null&&lastHi!=null&&ph<lastHi,newHH=ph!=null&&lastHi!=null&&ph>lastHi,newHL=pw!=null&&lastLo!=null&&pw>lastLo,newLL=pw!=null&&lastLo!=null&&pw<lastLo;
+    if(ph!=null){lastHi=ph;lastHiB=pb;hiDone=false}if(pw!=null){lastLo=pw;lastLoB=pb;loDone=false}
+    let evNow=0,evName="";
+    if(!hiDone&&lastHi!=null&&q.c>lastHi){evName=trend===1?"BOS":"CHoCH";evNow=1;trend=1;hiDone=true;ev.push({b:i,p:lastHiB,pr:lastHi,d:1,ty:evName})}
+    else if(!loDone&&lastLo!=null&&q.c<lastLo){evName=trend===-1?"BOS":"CHoCH";evNow=-1;trend=-1;loDone=true;ev.push({b:i,p:lastLoB,pr:lastLo,d:-1,ty:evName})}
+    if(evNow!==0){if(trendD===0||evNow===trendD||evName==="BOS"){trendD=evNow;pend=0}else pend=evNow}
+    if(pend===-1&&newLH){trendD=-1;pend=0}if(pend===1&&newHL){trendD=1;pend=0}
+    const ts=c.trConf==="choch"?trend:trendD;
+    if(ts===1&&!loDone&&lastLo!=null&&q.l<lastLo&&q.c>=lastLo&&!warn)warn=true;
+    if(ts===-1&&!hiDone&&lastHi!=null&&q.h>lastHi&&q.c<=lastHi&&!warn)warn=true;
+    if(evNow!==0||(ts===1&&newHH)||(ts===-1&&newLL))warn=false;
+    const g=c.warnOn&&(warn||(c.trConf!=="choch"&&pend!==0));tsLast=ts;greyLast=g;
+    // Heikin Ashi
+    const haC=(q.o+q.h+q.l+q.c)/4;haO=haO==null?(q.o+q.c)/2:(haO+haCp)/2;const raw=haC>haO?1:haC<haO?-1:0;haRun=raw!==0&&raw===haRawP?haRun+1:1;if(raw!==0&&haRun>=hc)haDir=raw;haCp=haC;haRawP=raw;
+    // EMA, Supertrend
+    ema=ema==null?q.c:al*q.c+(1-al)*ema;
+    if(m==="st"){const pc=i?k[i-1].c:q.c,tr=Math.max(q.h-q.l,Math.abs(q.h-pc),Math.abs(q.l-pc));if(i<sl){trS+=tr;if(i===sl-1)atr=trS/sl}else atr=(atr*(sl-1)+tr)/sl;
+      if(atr!=null){const hl=(q.h+q.l)/2,up=hl+fac*atr,lo=hl-fac*atr,pU=fU,pL=fL;fL=pL==null||lo>pL||pc<pL?lo:pL;fU=pU==null||up<pU||pc>pU?up:pU;
+        if(pU==null)stD=-1;else if(stD===-1)stD=q.c>fU?1:-1;else stD=q.c<fL?-1:1}}
+    cDir[i]=m==="struktur"?(g?0:ts):m==="ha"?haDir:m==="st"?stD:m==="ema"?(q.c>ema?1:-1):(g?0:ts===haDir?ts:0)}
+  const Ls=[],Ts=[],Xs=[],R={Ls,Ts,Xs,cDir,trend:tsLast,grey:greyLast,piv:pvl},nz=zT.length,xe=last+(+c.extR||0);
+  // laufendes Hoch/Tief seit dem letzten bestätigten Swing
+  let liveMax=null,liveMaxB=null,liveMin=null,liveMinB=null;
+  if(nz>=1){for(let i=Math.max(zB[nz-1]+1,last-400);i<=last;i++){if(liveMax==null||H[i]>liveMax){liveMax=H[i];liveMaxB=i}if(liveMin==null||Lw[i]<liveMin){liveMin=Lw[i];liveMinB=i}}}
+  const fDir=c.dirMode==="long"?1:c.dirMode==="short"?-1:(tsLast===0?1:tsLast);let fS=null,fE=null,fSB=null,fEB=null,cS=null,cE=null,cSB=null,cEB=null;
+  if(nz>=2&&liveMax!=null){const tl=zT[nz-1],p1=zP[nz-1],b1=zB[nz-1],p2=zP[nz-2],b2=zB[nz-2];
+    if(fDir===1){if(tl===1){fS=p2;fSB=b2;fE=liveMax>p1?liveMax:p1;fEB=liveMax>p1?liveMaxB:b1;if(liveMin<p1){cS=p1;cSB=b1;cE=liveMin;cEB=liveMinB}}
+      else{if(liveMax>p2){fS=p1;fSB=b1;fE=liveMax;fEB=liveMaxB}else if(nz>=3){fS=zP[nz-3];fSB=zB[nz-3];fE=p2;fEB=b2}cS=p2;cSB=b2;cE=liveMin<p1?liveMin:p1;cEB=liveMin<p1?liveMinB:b1}}
+    else{if(tl===-1){fS=p2;fSB=b2;fE=liveMin<p1?liveMin:p1;fEB=liveMin<p1?liveMinB:b1;if(liveMax>p1){cS=p1;cSB=b1;cE=liveMax;cEB=liveMaxB}}
+      else{if(liveMin<p2){fS=p1;fSB=b1;fE=liveMin;fEB=liveMinB}else if(nz>=3){fS=zP[nz-3];fSB=zB[nz-3];fE=p2;fEB=b2}cS=p2;cSB=b2;cE=liveMax>p1?liveMax:p1;cEB=liveMax>p1?liveMaxB:b1}}}
+  if(c.fibRev&&fS!=null){[fS,fE]=[fE,fS];[fSB,fEB]=[fEB,fSB]}
+  const ziel=c.extMode==="ziel",lvl=(s,e,x)=>ziel&&x>1?s+(e-s)*x:e-(e-s)*x,seg=x=>ziel?(x>1?1:x<0?2:0):0,dash=s=>s==="d"?[6,4]:s==="p"?[2,3]:null;
+  const txt=(x,y)=>c.lblMode==="p"?bfPc(x):c.lblMode==="pr"?F(y):bfPc(x)+" ("+F(y)+")",sz=c.lblSize;
+  if(c.qFib&&fS!=null&&fE!=null){const xs=c.lnStart==="start"?fSB:fEB,dirTxt=fE>fS?"Long (Tief → Hoch)":"Short (Hoch → Tief)",dl=c.dispMode==="l"||c.dispMode==="lf",db=c.dispMode!=="l",eV=[];
+    for(let q=0;q<23;q++){if(!c["lo"+q])continue;const x=q<20?BFLV[q]:+c["lv"+q],col=c["lc"+q],y=lvl(fS,fE,x),isExt=x>1||x<0;if(!isFinite(x))continue;eV.push([x,col]);
+      if(dl)Ls.push({x1:xs,y1:y,x2:xe,y2:y,col,w:+c.lnW||1,dash:dash(isExt?c.stExt:c.stRet)});
+      if(c.lblMode!=="aus")Ts.push({x:(c.lblPos==="r"?xe:xs)+(+c.lblOff||0),y,t:txt(x,y),pos:c.lblPos==="r"?"r":"l",col,sz,tip:"Fibonacci "+dirTxt+"\n"+(isExt?"Extension ":"Retracement ")+bfPc(x)+" = "+F(y)+"\nStart "+F(fS)+" · Ende "+F(fE)})}
+    if(db&&eV.length>=2){eV.sort((a,b)=>a[0]-b[0]);for(let j=0;j<eV.length-1;j++){const x1=eV[j][0],x2=eV[j+1][0];if(seg(x1)!==seg(x2))continue;const y1=lvl(fS,fE,x1),y2=lvl(fS,fE,x2),c2=eV[j+1][1],fr=c.dispMode==="r";
+        Xs.push({x1:xs,y1:Math.max(y1,y2),x2:xe,y2:Math.min(y1,y2),bc:fr?c2:null,bw:1,bg:fr?null:bwA(c2,(100-(+c.boxTr||90))/100)})}}
+    if(c.qGZ){const g1=lvl(fS,fE,+c.gzA),g2=lvl(fS,fE,+c.gzB);Xs.push({x1:xs,y1:Math.max(g1,g2),x2:xe,y2:Math.min(g1,g2),bc:bwA(c.gzCol,.6),bw:1,bg:bwA(c.gzCol,(100-(+c.gzTr||80))/100)})}
+    if(c.showAnc)Ls.push({x1:fSB,y1:fS,x2:fEB,y2:fE,col:bwA(c.colAnc,.7),w:1,dash:[2,3]})}
+  if(c.qCnt&&cS!=null&&cE!=null){const cc=bwA(c.cntCol,(100-(+c.cntTr||40))/100);for(const x of String(c.cntStr||"").split(",").map(s=>parseFloat(s.trim().replace(",","."))).filter(isFinite)){const y=lvl(cS,cE,x);
+      Ls.push({x1:cSB,y1:y,x2:xe,y2:y,col:cc,w:1,dash:[2,3]});if(c.cntLbl)Ts.push({x:xe+(+c.lblOff||0),y,t:bfPc(x),pos:"r",col:cc,sz:"winzig",tip:"Gegenrichtung "+(cE>cS?"Long":"Short")+"\n"+bfPc(x)+" = "+F(y)})}}
+  if(c.qSwing)for(let i=Math.max(0,nz-40);i<nz;i++){const p=zP[i],t=zT[i],tx=t===1?(i>=2?(p>zP[i-2]?"HH":"LH"):"H"):(i>=2?(p<zP[i-2]?"LL":"HL"):"L");
+    Ts.push({x:zB[i],y:p,t:tx,pos:t===1?"a":"b",col:tx==="HH"||tx==="HL"?c.colBull:tx==="LH"||tx==="LL"?c.colBear:c.colNeu,sz:c.swSize,tip:(t===1?"Hoch ":"Tief ")+F(p)})}
+  if(c.qBos)for(const e of ev.slice(-Math.max(1,+c.nBos||3))){const ec=e.d===1?c.colBull:c.colBear;Ls.push({x1:e.p,y1:e.pr,x2:e.b,y2:e.pr,col:ec,w:1,dash:[6,4]});
+    Ts.push({x:Math.round((e.p+e.b)/2),y:e.pr,t:e.ty,pos:e.d===1?"a":"b",col:ec,sz:"winzig",tip:(e.ty==="BOS"?"BOS – Fortsetzung ":"CHoCH – Trendwechsel ")+(e.d===1?"nach oben":"nach unten")+"\nLevel "+F(e.pr)})}
+  BF.R=R}
+function bftPaint(th){const c=S.cfg.bft,R=BF.R;BF.hit=[];if(!c.on||!R||!L)return;const k=S.k,n=k.length,X=L.X,Y=L.Y,cw=L.cw,bw=Math.max(1,cw*0.7),i0=Math.max(0,L.i0),i1=Math.min(n-1,L.i1);
+  ctx.save();ctx.beginPath();ctx.rect(0,0,L.pw,L.mainH);ctx.clip();
+  if(c.qCandle){const own=c.cDraw==="eigen";for(let i=i0;i<=i1;i++){const d=R.cDir[i],q=k[i],x=X(i),bo=d===1?c.colUp:d===-1?c.colDn:c.colNeu,br=own?(d===1?c.colUpB:d===-1?c.colDnB:c.colNeuB):bo,wk=own?(d===1?c.colUpW:d===-1?c.colDnW:c.colNeuW):bo;
+      const hol=own&&(c.hollow==="alle"||(c.hollow==="steig"&&q.c>=q.o)||(c.hollow==="fall"&&q.c<q.o)),a=Y(Math.max(q.o,q.c)),b=Y(Math.min(q.o,q.c)),hh=Math.max(1,b-a);
+      ctx.strokeStyle=wk;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(Math.round(x)+.5,Y(q.h));ctx.lineTo(Math.round(x)+.5,Y(q.l));ctx.stroke();
+      ctx.fillStyle=hol?th.bg:bo;ctx.fillRect(x-bw/2,a,bw,hh);if(bw>=3){ctx.strokeStyle=br;ctx.strokeRect(x-bw/2+.5,a+.5,bw-1,Math.max(0,hh-1))}}}
+  for(const b of R.Xs){const x1=X(b.x1)-cw/2,x2=X(b.x2)+cw/2,y1=Y(b.y1),y2=Y(b.y2);if(b.bg){ctx.fillStyle=b.bg;ctx.fillRect(x1,y1,x2-x1,y2-y1)}if(b.bc){ctx.strokeStyle=b.bc;ctx.lineWidth=b.bw||1;ctx.strokeRect(x1,y1,x2-x1,y2-y1)}}
+  for(const l of R.Ls){ctx.strokeStyle=l.col;ctx.lineWidth=l.w||1;ctx.setLineDash(l.dash||[]);ctx.beginPath();ctx.moveTo(X(l.x1),Y(l.y1));ctx.lineTo(X(l.x2),Y(l.y2));ctx.stroke()}ctx.setLineDash([]);ctx.textBaseline="middle";ctx.textAlign="left";
+  for(const t of R.Ts){const fs={winzig:9.5,klein:10.5,normal:12,gross:14}[t.sz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const w=ctx.measureText(t.t).width,h=fs+2,px=X(t.x),py=Y(t.y);let x,y;
+    if(t.pos==="a"){x=px-w/2;y=py-4-h/2}else if(t.pos==="b"){x=px-w/2;y=py+4+h/2}else if(t.pos==="r"){x=Math.min(px+5,L.pw-w-4);y=py}else{x=Math.max(4,px-5-w);y=py}
+    ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t.t,x,y);ctx.fillStyle=t.col;ctx.fillText(t.t,x,y);if(t.tip)BF.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
+  ctx.restore()}
 </script>
 </body>
 </html>

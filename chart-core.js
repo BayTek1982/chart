@@ -43,6 +43,12 @@ const DEF={
     riskOn:true,rView:"aktn",tE1:true,tE2:true,tE3:true,tE4:true,rMode:"risiko",rAmt:50,rSplit:"pro",rLev:25,rHiOn:true,cHiL:"#ff9800",rBoxOn:true,rBoxLen:15,rBoxSel:"auto",cMan:"#7e57c2",rInfo:"hover",mB1:false,mB2:false,mB3:false,mB4:false,r200:"neu",rPos:"ol",rOffX:0,rOffY:10,rSz:"klein",
     divOn:true,rsiLen:14,divPv:5,divHid:false,divMax:3,cDivBu:"#00e5ff",cDivBe:"#ff4081",rsiCol:true,rsiHi:80,cRsiHi:"#ffeb3b",rsiLo:20,cRsiLo:"#e040fb",
     swOn:true,swPv:10,swFrm:true,swWck:true,swLn:true,swMax:5,cSwBu:"#2979ff",cSwBe:"#e91e63"},
+  bft:{on:false,qFib:true,qCnt:false,qGZ:true,qSwing:true,qBos:true,qCandle:true,pivMode:"auto",pivFix:10,pt0:"5m",po0:true,pp0:5,pt1:"15m",po1:true,pp1:10,pt2:"1h",po2:true,pp2:7,pt3:"4h",po3:true,pp3:14,pt4:"1d",po4:true,pp4:12,pt5:"1w",po5:true,pp5:15,pt6:"30m",po6:false,pp6:5,pt7:"2h",po7:false,pp7:10,pt8:"12h",po8:false,pp8:12,srcMode:"docht",nBos:3,trConf:"choch",warnOn:true,
+    dirMode:"trend",extMode:"ziel",fibRev:false,lnStart:"ende",extR:20,showAnc:true,lnW:1,stRet:"s",stExt:"d",colAnc:"#b2b5be",
+    lo0:false,lc0:"#787b86",lo1:false,lc1:"#f23645",lo2:false,lc2:"#ff9800",lo3:true,lc3:"#ffffff",lo4:true,lc4:"#ffffff",lo5:true,lc5:"#089981",lo6:true,lc6:"#26a69a",lo7:true,lc7:"#ffffff",lo8:true,lc8:"#ffffff",lo9:false,lc9:"#787b86",lo10:false,lc10:"#9c27b0",lo11:false,lc11:"#ab47bc",lo12:true,lc12:"#7e57c2",lo13:false,lc13:"#5c6bc0",lo14:true,lc14:"#2962ff",lo15:false,lc15:"#f06292",lo16:false,lc16:"#ec407a",lo17:false,lc17:"#f23645",lo18:false,lc18:"#e91e63",lo19:false,lc19:"#880e4f",lo20:false,lc20:"#ffeb3b",lo21:false,lc21:"#b2b5be",lo22:false,lc22:"#b2b5be",lv20:0.705,lv21:1.5,lv22:-0.272,
+    dispMode:"l",boxTr:90,gzA:0.618,gzB:0.667,gzCol:"#ffd700",gzTr:80,lblMode:"pp",lblPos:"r",lblOff:0,lblSize:"klein",cntStr:"0.5, 0.618, 0.786",cntCol:"#b2b5be",cntTr:40,cntLbl:true,
+    colBull:"#4caf50",colBear:"#f23645",swSize:"klein",cMode:"struktur",haConf:2,stFac:3,stLen:10,emaLen:50,cDraw:"eigen",hollow:"aus",
+    colUp:"#4caf50",colUpB:"#4caf50",colUpW:"#4caf50",colDn:"#f8bbd0",colDnB:"#f8bbd0",colDnW:"#f8bbd0",colNeu:"#787b86",colNeuB:"#787b86",colNeuW:"#787b86"},
   bod:{on:false,modus:"oi",cvdReset:"nie",kerzen:false,grau:true,marker:false,markerSig:true,sigLen:20,sigMult:1.5,bezug:"k",n:20,stunden:24,extrem:3,lageLen:100,tab:true,erw:true,tabOrt:"ur",tabGr:"klein",tabAbst:0,tabSchritt:1.5,
     fL:"#4caf50",fSQ:"#ff9800",fS:"#ffeb3b",fLQ:"#e91e63",fKauf:"#4caf50",fVerk:"#f23645"}
 };

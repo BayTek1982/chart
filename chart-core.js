@@ -463,10 +463,12 @@ function summary(k,I,cfg,tf){const out=[],last=k.length-1,p=k[last].c;if(!I.pv)r
 
 // ---------- Zeichnungen (Werkzeuge) ----------
 const DFIB=[0,0.5,0.559,0.618,0.667,0.786,0.886,1];
+const FIBX=[0,0.618,1,1.272,1.618,2,2.618];
 function dwXY(L,k,tf){const X=t=>(tIdx(k,t,tf)-L.from+0.5)*L.cw;return{X,Y:L.Y,T:x=>idxT(k,L.from+x/L.cw-0.5,tf),P:L.P}}
 function dwHandles(d,L,k,tf){const {X,Y}=dwXY(L,k,tf),p=d.pts;
   if(d.type==="pos")return[{h:"e",x:X(p[0].t),y:Y(p[0].p)},{h:"tp",x:X(p[0].t),y:Y(d.tp)},{h:"sl",x:X(p[0].t),y:Y(d.sl)},{h:"t2",x:X(d.t2),y:Y(p[0].p)}];
   if(d.type==="hl")return[{h:0,x:Math.min(L.pw-30,Math.max(30,X(p[0].t))),y:Y(p[0].p)}];
+  if(d.type==="brush")return[];
   const hs=p.map((q,i)=>({h:i,x:X(q.t),y:Y(q.p)}));
   if(d.type==="chan"&&p.length>1)hs.push({h:"off",x:(X(p[0].t)+X(p[1].t))/2,y:Y((p[0].p+p[1].p)/2+d.off)});
   return hs}
@@ -479,19 +481,40 @@ function dwHit(d,L,k,tf,x,y){const {X,Y}=dwXY(L,k,tf),p=d.pts,tol=7;
     case"text":{return Math.abs(x-X(p[0].t)-30)<40&&Math.abs(y-Y(p[0].p))<10}
     case"tl":{const x1=X(p[0].t),y1=Y(p[0].p);let x2=X(p[1].t),y2=Y(p[1].p);if(d.ext&&x2!==x1){const s=(y2-y1)/(x2-x1);x2=L.pw;y2=y1+s*(x2-x1)}return segDist(x,y,x1,y1,x2,y2)<tol}
     case"chan":{const o=Y(p[0].p+d.off)-Y(p[0].p);return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol||segDist(x,y,X(p[0].t),Y(p[0].p)+o,X(p[1].t),Y(p[1].p)+o)<tol}
+    case"arrow":return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol;
+    case"brush":case"abc":case"w5":{for(let i=1;i<p.length;i++)if(segDist(x,y,X(p[i-1].t),Y(p[i-1].p),X(p[i].t),Y(p[i].p))<tol)return true;return false}
+    case"fibx":{if(p.length<3)return false;const xs=p.map(q=>X(q.t)),ys=p.map(q=>Y(q.p)),dd=p[1].p-p[0].p,lv=FIBX.map(v=>Y(p[2].p+dd*v));
+      return x>=Math.min(...xs)-tol&&x<=Math.max(...xs)+90&&y>=Math.min(...ys,...lv)-tol&&y<=Math.max(...ys,...lv)+tol}
     case"pos":{const x1=X(p[0].t),x2=X(d.t2),ys=[Y(d.tp),Y(d.sl)];return x>=Math.min(x1,x2)&&x<=Math.max(x1,x2)&&y>=Math.min(...ys)&&y<=Math.max(...ys)}
     default:{const xs=[X(p[0].t),X(p[1].t)],ys=[Y(p[0].p),Y(p[1].p)];return x>=Math.min(...xs)-tol&&x<=Math.max(...xs)+tol&&y>=Math.min(...ys)-tol&&y<=Math.max(...ys)+tol}}}
 function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;const {X,Y}=dwXY(L,k,tf),pw=L.pw;
   ctx.save();ctx.beginPath();ctx.rect(0,0,pw,L.mainH);ctx.clip();
   const ln=(x1,y1,x2,y2,c,w,dash)=>{ctx.beginPath();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([])};
   const tx=(t,x,y,c,al,bold)=>{ctx.font=`${bold?"700 ":"600 "}11px "JetBrains Mono",ui-monospace,monospace`;ctx.textAlign=al||"left";ctx.textBaseline="middle";ctx.fillStyle=c;ctx.fillText(t,x,y)};
-  list.forEach(d=>{const p=d.pts,c=d.col||"#f0a33a",w=+d.w||2;if(!p||!p.length)return;
+  list.forEach(d=>{const p=d.pts,c=d.col||"#f0a33a",w=+d.w||2,ds={d:[7,5],p:[2,4]}[d.ds]||[];if(!p||!p.length)return;
     switch(d.type){
-      case"tl":{const x1=X(p[0].t),y1=Y(p[0].p);let x2=X(p[1].t),y2=Y(p[1].p);if(d.ext&&x2!==x1){const s=(y2-y1)/(x2-x1);const xe=x2>x1?pw:0;y2=y1+s*(xe-x1);x2=xe}ln(x1,y1,x2,y2,c,w);break}
-      case"hl":{const y=Y(p[0].p);ln(0,y,pw,y,c,w);const t=fmt(p[0].p);ctx.font='600 10px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width;ctx.fillStyle=c;ctx.fillRect(pw-tw-10,y-7,tw+8,14);tx(t,pw-6,y,"#0e131b","right");break}
-      case"ray":{const x1=X(p[0].t),y=Y(p[0].p);ln(x1,y,pw,y,c,w);tx(fmt(p[0].p),x1+4,y-8,c);break}
+      case"tl":{const x1=X(p[0].t),y1=Y(p[0].p);let x2=X(p[1].t),y2=Y(p[1].p);if(d.ext&&x2!==x1){const s=(y2-y1)/(x2-x1);const xe=x2>x1?pw:0;y2=y1+s*(xe-x1);x2=xe}ln(x1,y1,x2,y2,c,w,ds);break}
+      case"arrow":{const x1=X(p[0].t),y1=Y(p[0].p),x2=X(p[1].t),y2=Y(p[1].p),a=Math.atan2(y2-y1,x2-x1),hl=8+w*2;ln(x1,y1,x2,y2,c,w,ds);
+        ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a-.45),y2-hl*Math.sin(a-.45));ctx.lineTo(x2-hl*Math.cos(a+.45),y2-hl*Math.sin(a+.45));ctx.closePath();ctx.fill();break}
+      case"ell":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.beginPath();ctx.ellipse((x1+x2)/2,(y1+y2)/2,Math.abs(x2-x1)/2||1,Math.abs(y2-y1)/2||1,0,0,7);ctx.fillStyle=ra(c,.13);ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.stroke();ctx.setLineDash([]);break}
+      case"brush":{if(p.length<2)break;ctx.beginPath();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineJoin="round";ctx.lineCap="round";ctx.setLineDash(ds);p.forEach((q,i)=>i?ctx.lineTo(X(q.t),Y(q.p)):ctx.moveTo(X(q.t),Y(q.p)));ctx.stroke();ctx.setLineDash([]);break}
+      case"prange":case"drange":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p),pr=d.type==="prange",up=pr?p[1].p>=p[0].p:x2>=x1,col=up?"#5b9bff":"#ff6b5e",xa=Math.min(x1,x2),xb=Math.max(x1,x2),ya=Math.min(y1,y2),yb=Math.max(y1,y2);
+        ctx.fillStyle=ra(col,.14);ctx.fillRect(xa,ya,xb-xa,yb-ya);ln(xa,y1,xb,y1,col,1);ln(xa,y2,xb,y2,col,1);ln(x1,ya,x1,yb,col,1);ln(x2,ya,x2,yb,col,1);
+        const mx=(x1+x2)/2,my=(y1+y2)/2;if(pr)ln(mx,y1,mx,y2,col,1.5);else ln(x1,my,x2,my,col,1.5);
+        const ex=pr?mx:x2,ey=pr?y2:my,a=Math.atan2(ey-(pr?y1:my),ex-(pr?mx:x1));ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex-8*Math.cos(a-.5),ey-8*Math.sin(a-.5));ctx.lineTo(ex-8*Math.cos(a+.5),ey-8*Math.sin(a+.5));ctx.closePath();ctx.fill();
+        let t;if(pr){const pc=(p[1].p/p[0].p-1)*100;t=`${fmt(p[1].p-p[0].p)} (${pc>=0?"+":""}${nf(pc,2)} %)`}else{const bars=Math.round(tIdx(k,p[1].t,tf)-tIdx(k,p[0].t,tf)),ms=Math.abs(p[1].t-p[0].t),dd=Math.floor(ms/864e5),hh=Math.floor(ms%864e5/36e5),mm=Math.round(ms%36e5/6e4);t=`${bars} Kerzen · ${dd?dd+" T ":""}${hh?hh+" Std ":""}${!dd&&mm?mm+" Min":""}`.trim()}
+        ctx.font='700 11px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width,lx=mx-tw/2-6,ly=pr?(up?ya-19:yb+4):yb+4;ctx.fillStyle=col;ctx.fillRect(lx,ly,tw+12,15);tx(t,lx+6,ly+7.5,"#fff");break}
+      case"fibx":{if(p.length<2)break;ln(X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p),ra(c,.6),1,[4,4]);if(p.length<3)break;ln(X(p[1].t),Y(p[1].p),X(p[2].t),Y(p[2].p),ra(c,.6),1,[4,4]);
+        const dd=p[1].p-p[0].p,xa=X(p[2].t),xb=Math.max(xa+60,X(p[2].t)+Math.abs(X(p[1].t)-X(p[0].t)));
+        FIBX.forEach(v=>{const pv=p[2].p+dd*v,y=Y(pv),main=v===1||v===1.618;ln(xa,y,xb,y,main?c:ra(c,.75),main?1.5:1,v===0?[3,3]:ds);tx(`${nf(v*100,1).replace(",0","")} % (${fmt(pv)})`,xb+4,y,c)});
+        ctx.fillStyle=ra(c,.1);const za=Y(p[2].p+dd*1.272),zb=Y(p[2].p+dd*1.618);ctx.fillRect(xa,Math.min(za,zb),xb-xa,Math.abs(zb-za));break}
+      case"abc":case"w5":{const lab=d.type==="abc"?["0","A","B","C"]:["0","1","2","3","4","5"];ctx.beginPath();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);p.forEach((q,i)=>i?ctx.lineTo(X(q.t),Y(q.p)):ctx.moveTo(X(q.t),Y(q.p)));ctx.stroke();ctx.setLineDash([]);
+        p.forEach((q,i)=>{const pv=p[i-1]||p[i+1],hi=pv?q.p>=pv.p:true,x=X(q.t),y=Y(q.p)+(hi?-13:13);ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fillStyle=th.bg;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.stroke();
+          ctx.font='700 10.5px "JetBrains Mono",monospace';ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle=c;ctx.fillText(lab[i]||"",x,y+.5)});break}
+      case"hl":{const y=Y(p[0].p);ln(0,y,pw,y,c,w,ds);const t=fmt(p[0].p);ctx.font='600 10px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width;ctx.fillStyle=c;ctx.fillRect(pw-tw-10,y-7,tw+8,14);tx(t,pw-6,y,"#0e131b","right");break}
+      case"ray":{const x1=X(p[0].t),y=Y(p[0].p);ln(x1,y,pw,y,c,w,ds);tx(fmt(p[0].p),x1+4,y-8,c);break}
       case"vl":{const x=X(p[0].t);ln(x,0,x,L.mainH,c,w,[6,4]);break}
-      case"rect":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.fillStyle=ra(c,.15);ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash([]);ctx.strokeRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));break}
+      case"rect":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.fillStyle=ra(c,.15);ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.strokeRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));break}
       case"text":{ctx.font='700 13px Archivo,system-ui,sans-serif';ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillStyle=c;ctx.fillText(d.text||"Text",X(p[0].t),Y(p[0].p));break}
       case"fib":{if(p.length<2)break;const xa=Math.min(X(p[0].t),X(p[1].t)),xb=Math.max(X(p[0].t),X(p[1].t))+40,lv=x=>p[1].p+(p[0].p-p[1].p)*x;
         ctx.fillStyle=ra(c,.13);const za=Y(lv(0.618)),zb=Y(lv(0.667));ctx.fillRect(xa,Math.min(za,zb),xb-xa,Math.abs(zb-za));
@@ -509,8 +532,9 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
         const lx=(x1+x2)/2-tw/2-6,ly=up?Math.min(y1,y2)-18:Math.max(y1,y2)+4;ctx.fillStyle=col;ctx.fillRect(lx,ly,tw+12,15);tx(t,lx+6,ly+7.5,"#fff");break}
       case"chan":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p),o=Y(p[0].p+(d.off||0))-y1;
         ctx.fillStyle=ra(c,.08);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x2,y2+o);ctx.lineTo(x1,y1+o);ctx.closePath();ctx.fill();
-        ln(x1,y1,x2,y2,c,w);ln(x1,y1+o,x2,y2+o,c,w);ln(x1,y1+o/2,x2,y2+o/2,ra(c,.5),1,[4,4]);break}}
-    if(sel===d.id){dwHandles(d,L,k,tf).forEach(h=>{ctx.fillStyle=th.bg;ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,5,0,7);ctx.fill();ctx.stroke()})}});
+        ln(x1,y1,x2,y2,c,w,ds);ln(x1,y1+o,x2,y2+o,c,w,ds);ln(x1,y1+o/2,x2,y2+o/2,ra(c,.5),1,[4,4]);break}}
+    if(d.lock&&sel===d.id){ctx.font="12px system-ui";ctx.textAlign="left";ctx.fillStyle=c;ctx.fillText("🔒",X(p[0].t)+6,Y(p[0].p)-12)}
+    if(sel===d.id&&!d.lock){dwHandles(d,L,k,tf).forEach(h=>{ctx.fillStyle=th.bg;ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,5,0,7);ctx.fill();ctx.stroke()})}});
   ctx.restore()}
 
 return{heatPal:t=>{PALTV=!!t},dfLevels,DEF,PIV,THEME,withDefaults,compute,draw,summary,fmt,tlab,vprofile,rkCol,heatCol,heatTxt,tIdx,idxT,drawDrawings,dwHandles,dwHit,DFIB};

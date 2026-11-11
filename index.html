@@ -220,7 +220,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=18"></script>
+<script src="chart-core.js?v=19"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -407,11 +407,18 @@ if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("box"));
 
 // ---------- Zeichenwerkzeuge ----------
 const TOOLS=[["sel","✥","Auswählen / verschieben"],["tl","╱","Trendlinie"],["hl","─","Horizontale Linie"],["ray","⟶","Horizontaler Strahl"],["vl","│","Vertikale Linie"],["rect","▭","Rechteck / Zone"],["text","T","Text"],
-  ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
-const TWO=["tl","rect","fib","measure","chan"];
-function renderTools(){$("tools").innerHTML=TOOLS.map(t=>t[0]==="-"?"<hr>":`<button data-tool="${t[0]}" title="${t[2]}" class="${(t[0]==="sel"&&!S.tool)||S.tool===t[0]||(t[0]==="mag"&&S.mag)?"on":""}">${t[1]}</button>`).join("")}
+  ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
+  ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
+  ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],["-"],
+  ["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["hide","👁","Alle Zeichnungen aus-/einblenden"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
+// Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
+const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6};const TWO=Object.keys(NEED);
+const DCOL={tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff"};
+S.dwHide=LS("blcDwHide")===true;
+function renderTools(){$("tools").innerHTML=TOOLS.map(t=>t[0]==="-"?"<hr>":`<button data-tool="${t[0]}" title="${t[2]}" class="${(t[0]==="sel"&&!S.tool)||S.tool===t[0]||(t[0]==="mag"&&S.mag)||(t[0]==="hide"&&S.dwHide)?"on":""}">${t[1]}</button>`).join("")}
 $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");if(!b)return;const t=b.dataset.tool;
   if(t==="mag"){S.mag=!S.mag;save();toast(S.mag?"Magnet an":"Magnet aus")}
+  else if(t==="hide"){S.dwHide=!S.dwHide;S.sel=null;LS("blcDwHide",S.dwHide);toast(S.dwHide?"Zeichnungen ausgeblendet":"Zeichnungen eingeblendet")}
   else if(t==="clear"){if(S.dw.length&&confirm(`Alle ${S.dw.length} Zeichnungen für ${S.sym} löschen?`)){S.dw=[];S.sel=null;saveDw()}}
   else{S.tool=t==="sel"?null:t;S.pend=null;S.sel=null}
   renderTools();paint()});
@@ -420,7 +427,7 @@ function loadDw(){if(S.hashDw){S.dw=S.hashDw;S.hashDw=null;S.dwShared=true}else{
 function saveDw(){S.dwShared=false;LS(dwKey(),S.dw)}
 const nid=()=>Math.random().toString(36).slice(2,9);
 // gespeichert wird in Originalwährung, angezeigt in der aktuellen
-function dispDw(){const F=S.F;if(F===1)return S.dw;return S.dw.map(d=>({...d,pts:d.pts.map(q=>({t:q.t,p:q.p*F})),tp:d.tp!=null?d.tp*F:d.tp,sl:d.sl!=null?d.sl*F:d.sl,off:d.off!=null?d.off*F:d.off}))}
+function dispDw(){const F=S.F;if(S.dwHide)return[];if(F===1)return S.dw;return S.dw.map(d=>({...d,pts:d.pts.map(q=>({t:q.t,p:q.p*F})),tp:d.tp!=null?d.tp*F:d.tp,sl:d.sl!=null?d.sl*F:d.sl,off:d.off!=null?d.off*F:d.off}))}
 function toPt(x,y){const k=S.k,i=Math.round(S.view.from+x/L.cw-0.5);let t=CC.idxT(k,S.view.from+x/L.cw-0.5,S.tf),p=L.P(y);
   if(S.mag&&i>=0&&i<k.length){let best=null;[k[i].o,k[i].h,k[i].l,k[i].c].forEach(v=>{const d=Math.abs(L.Y(v)-y);if(d<16&&(!best||d<best.d))best={d,v}});if(best){p=best.v;t=k[i].t}}
   return{t,p:p/S.F}}
@@ -428,20 +435,22 @@ function hitDw(x,y){const list=dispDw();for(let j=list.length-1;j>=0;j--){const 
     if(S.sel===d.id){const h=CC.dwHandles(d,L,S.k,S.tf).find(h=>Math.hypot(h.x-x,h.y-y)<11);if(h)return{d:S.dw[j],h:h.h}}}
   for(let j=list.length-1;j>=0;j--)if(CC.dwHit(list[j],L,S.k,S.tf,x,y))return{d:S.dw[j],h:null};return null}
 function dwDown(x,y,ptype){if(!L||!S.k.length||x>L.pw||y>L.mainH)return false;const pt=toPt(x,y);
-  if(S.pend){const d=S.pend;d.pts[1]=pt;S.pend=null;S.tool=null;S.sel=d.id;saveDw();renderTools();paint();return true}
-  if(S.tool){const t=S.tool,d={id:nid(),type:t,col:t==="tl"||t==="chan"?"#ffeb3b":t==="fib"?"#26c6da":t==="rect"?"#5b9bff":t==="text"?"#e7ecf3":"#f0a33a",w:2,pts:[pt]};
+  if(S.pend){const d=S.pend;d.pts[d.pts.length-1]=pt;if(d.pts.length<NEED[d.type]){d.pts.push({...pt});paint();return true}S.pend=null;S.tool=null;S.sel=d.id;saveDw();renderTools();paint();return true}
+  if(S.tool){const t=S.tool,d={id:nid(),type:t,col:DCOL[t]||"#f0a33a",w:2,pts:[pt]};if(S.dwHide){S.dwHide=false;LS("blcDwHide",false)}
+    if(t==="brush"){d.w=2;S.dw.push(d);S.dwd={mode:"brush",d,x,y};paint();return true}
     if(t==="text"){const tx=prompt("Text:","");if(!tx){return true}d.text=tx.slice(0,80)}
     if(t==="long"||t==="short"){const lg=t==="long";d.type="pos";d.tp=pt.p*(lg?1.04:0.96);d.sl=pt.p*(lg?0.98:1.02);d.t2=CC.idxT(S.k,CC.tIdx(S.k,pt.t,S.tf)+20,S.tf)}
     if(t==="chan")d.off=-(L.hi-L.lo)*0.08/S.F;
     S.dw.push(d);
     if(TWO.includes(t)){d.pts[1]={...pt};S.pend=d;S.dwd={mode:"new",x,y,moved:false}}else{S.tool=null;S.sel=d.id;saveDw();renderTools()}
     paint();return true}
-  const hit=hitDw(x,y);if(hit){S.sel=hit.d.id;S.dwd={id:hit.d.id,h:hit.h,start:pt,orig:JSON.parse(JSON.stringify(hit.d)),x,y,moved:false};paint();return true}
+  const hit=hitDw(x,y);if(hit&&hit.d.lock){S.sel=hit.d.id;paint();return true}if(hit){S.sel=hit.d.id;S.dwd={id:hit.d.id,h:hit.h,start:pt,orig:JSON.parse(JSON.stringify(hit.d)),x,y,moved:false};paint();return true}
   if(S.sel){S.sel=null;paint()}return false}
 function lineP(d,t){const a=d.pts[0],b=d.pts[1];if(!b||b.t===a.t)return a.p;return a.p+(b.p-a.p)*(t-a.t)/(b.t-a.t)}
 function dwMove(x,y,pressed){if(!L)return false;
-  if(S.pend&&S.dwd&&S.dwd.mode==="new"){if(Math.hypot(x-S.dwd.x,y-S.dwd.y)>6)S.dwd.moved=true;S.pend.pts[1]=toPt(x,y);paint();return true}
-  if(S.pend){S.pend.pts[1]=toPt(x,y);paint();return true}
+  if(S.dwd&&S.dwd.mode==="brush"){if(pressed&&Math.hypot(x-S.dwd.x,y-S.dwd.y)>3){S.dwd.x=x;S.dwd.y=y;const d=S.dwd.d;if(d.pts.length<600)d.pts.push(toPt(x,y));paint()}return true}
+  if(S.pend&&S.dwd&&S.dwd.mode==="new"){if(Math.hypot(x-S.dwd.x,y-S.dwd.y)>6)S.dwd.moved=true;S.pend.pts[S.pend.pts.length-1]=toPt(x,y);paint();return true}
+  if(S.pend){S.pend.pts[S.pend.pts.length-1]=toPt(x,y);paint();return true}
   if(S.dwd&&pressed){const g=S.dwd,d=S.dw.find(z=>z.id===g.id);if(!d)return false;const pt=toPt(x,y);if(Math.hypot(x-g.x,y-g.y)>3)g.moved=true;const o=g.orig;
     if(g.h==null){const dt=pt.t-g.start.t,dp=pt.p-g.start.p;d.pts=o.pts.map(q=>({t:q.t+dt,p:q.p+dp}));if(o.type==="pos"){d.tp=o.tp+dp;d.sl=o.sl+dp;d.t2=o.t2+dt}}
     else if(o.type==="pos"){if(g.h==="e"){const dp=pt.p-o.pts[0].p,dt=pt.t-o.pts[0].t;d.pts=[{t:o.pts[0].t+dt,p:pt.p}];d.tp=o.tp+dp;d.sl=o.sl+dp;d.t2=o.t2+dt}else if(g.h==="tp")d.tp=pt.p;else if(g.h==="sl")d.sl=pt.p;else if(g.h==="t2")d.t2=pt.t}
@@ -451,16 +460,20 @@ function dwMove(x,y,pressed){if(!L)return false;
     paint();return true}
   if(!pressed&&L){cv.style.cursor=S.tool?"crosshair":hitDw(x,y)?"move":cv.style.cursor}
   return false}
-function dwUp(x,y){if(S.pend&&S.dwd&&S.dwd.mode==="new"){const moved=S.dwd.moved;S.dwd=null;if(moved){const d=S.pend;S.pend=null;S.tool=null;S.sel=d.id;saveDw();renderTools();paint()}return true}
+function dwUp(x,y){if(S.dwd&&S.dwd.mode==="brush"){const d=S.dwd.d;S.dwd=null;if(d.pts.length<2)S.dw=S.dw.filter(z=>z!==d);else{S.sel=d.id;saveDw()}S.tool=null;renderTools();paint();return true}
+  if(S.pend&&S.dwd&&S.dwd.mode==="new"){const moved=S.dwd.moved;S.dwd=null;if(moved){const d=S.pend;if(d.pts.length<NEED[d.type]){d.pts.push({...d.pts[d.pts.length-1]});paint();return true}S.pend=null;S.tool=null;S.sel=d.id;saveDw();renderTools();paint()}return true}
   if(S.dwd){const g=S.dwd;S.dwd=null;if(g.moved)saveDw();return true}return false}
 function renderEbar(){const b=$("ebar"),d=S.dw.find(z=>z.id===S.sel);if(!d){b.hidden=true;return}b.hidden=false;
   if(b.dataset.id===d.id&&b.dataset.t===d.type)return;b.dataset.id=d.id;b.dataset.t=d.type;
-  const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal"};
-  b.innerHTML=`<b>${names[d.type]||""}</b>${d.type!=="pos"&&d.type!=="measure"?`<input type="color" data-e="col" value="${d.col}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}<button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
-$("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col")d.col=e.target.value;if(k==="w")d.w=+e.target.value;if(k==="ext")d.ext=e.target.checked;saveDw();paint()});
+  const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5"};
+  const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","fib","vl"].includes(d.type);
+  b.innerHTML=`<b>${names[d.type]||""}</b>${!noCol?`<input type="color" data-e="col" value="${d.col}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
+$("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col")d.col=e.target.value;if(k==="w")d.w=+e.target.value;if(k==="ext")d.ext=e.target.checked;if(k==="ds")d.ds=e.target.value;if(k==="lock")d.lock=e.target.checked;saveDw();paint()});
 $("ebar").addEventListener("click",e=>{const k=e.target.dataset&&e.target.dataset.e,d=S.dw.find(z=>z.id===S.sel);if(!d)return;
-  if(k==="del"){S.dw=S.dw.filter(z=>z.id!==d.id);S.sel=null;saveDw();paint()}if(k==="txt"){const t=prompt("Text:",d.text||"");if(t!=null){d.text=t.slice(0,80);saveDw();paint()}}});
+  if(k==="del"){S.dw=S.dw.filter(z=>z.id!==d.id);S.sel=null;saveDw();paint()}
+  if(k==="copy"){const n=JSON.parse(JSON.stringify(d)),dt=5*(CC.tIdx?((S.k[1]&&S.k[0])?S.k[1].t-S.k[0].t:0):0),dp=(L?(L.hi-L.lo)*.04:0)/S.F;n.id=nid();n.lock=false;n.pts=n.pts.map(q=>({t:q.t+dt,p:q.p-dp}));if(n.t2)n.t2+=dt;if(n.tp!=null)n.tp-=dp;if(n.sl!=null)n.sl-=dp;S.dw.push(n);S.sel=n.id;saveDw();renderEbar();paint();toast("Kopie angelegt – zum Verschieben antippen und ziehen")}if(k==="txt"){const t=prompt("Text:",d.text||"");if(t!=null){d.text=t.slice(0,80);saveDw();paint()}}});
 addEventListener("keydown",e=>{if(e.target.matches("input,select,textarea"))return;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"&&S.sel){e.preventDefault();const b=$("ebar").querySelector('[data-e="copy"]');if(b)b.click();return}
   if((e.key==="Delete"||e.key==="Backspace")&&S.sel){S.dw=S.dw.filter(z=>z.id!==S.sel);S.sel=null;saveDw();paint()}
   if(e.key==="Escape"){if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;S.sel=null;renderTools();paint()}});
 

@@ -67,7 +67,12 @@ const DEF={
     fvgBrdW:1,fvgBrdSt:"s",fvgMid:true,fvgMidCol:"#808080",fvgMidSt:"d",fvgTxt:true,fvgTxtSz:"klein",fvgSize:true,fvgSizeU:"pa",
     lsOn:true,lsBu:true,lsBuF:"#4caf50",lsBuB:"#4caf50",lsBe:true,lsBeF:"#ff6d00",lsBeB:"#ef5350",lsFillTr:85,lsApCol:"#ffeb3b",lsPiv:3,lsColor:true,lsBack:false,lsWick:0,lsTrend:false,lsExt:"akt",lsLen:30,lsObMode:"extrem",lsExtLook:5,lsMax:10,lsMaxAge:300,
     lsBody:30,lsWickP:100,lsRej:40,lsMulti:false,lsWon:"del",lsDone:"del",lsTxt:true,rkMode:"klein",rkArrows:true,rkLines:true,rkTbl:true,rkTblPos:"um",rkCash:20,rkSl:"rej",rkMaxSl:3,rkTol:0.2,rkFee:0.1,rkLinesLen:15,rkKeep:5,
-    ta1m:false,ta3m:false,ta5m:true,ta15m:true,ta30m:true,ta1h:true,ta2h:true,ta4h:true,ta1d:true,ta1w:true,lsScope:"sig"},
+    ta1m:false,ta3m:false,ta5m:true,ta15m:true,ta30m:true,ta1h:true,ta2h:true,ta4h:true,ta1d:true,ta1w:true,lsScope:"sig",
+    vpOn:true,vpMode:"sicht",vpPer:"1w",vpWhich:"akt",vpFrom:"2026-08-20",vpTo:"2030-12-31",vpRows:1000,vpVA:70,vpMaxB:3000,vpPos:"preis",vpWidth:55,vpOff:30,vpSplit:false,vpColUp:"#26a69a",vpColDn:"#ef5350",vpColN:"#78909c",vpOutTr:85,
+    vpPoc:true,vpPocC:"#9c27b0",vpVa:true,vpVahC:"#90caf9",vpValC:"#ce93d8",vpExtR:true,vpZone:true,vpZoneC:"#90caf9",vpLbl:true,vplSz:"normal",vplPos:"profil",vplOffX:0,vplVert:"ueber",vplCont:"np",vplPer:true,vplOwn:false,vplTxtC:"#ffffff",vpaTxt:true,
+    msOn:true,msLen:5,msLbl:true,msKeep:6,msBos:true,msBosTxt:false,msCh:true,msLnKeep:6,msEq:true,msEqTol:0.15,msSw:true,msInt:false,msIntLen:2,msBullC:"#26a69a",msBearC:"#ef5350",msNeuC:"#b0bec5",msSz:"winzig",msTbl:true,
+    maOn:true,maBars:1500,maLbl:true,maSz:"winzig",m1On:true,m1T:"EMA",m1Len:21,m1Tf:"",m1Col:"#ffeb3b",m1W:1,m2On:true,m2T:"EMA",m2Len:50,m2Tf:"",m2Col:"#ff9800",m2W:1,m3On:true,m3T:"SMA",m3Len:200,m3Tf:"",m3Col:"#e91e63",m3W:2,
+    gcOn:true,bmOn:false,bmCol:"#00bcd4",vwDOn:true,vwDCol:"#ab47bc",vwDN:3,vwWOn:true,vwWCol:"#5c6bc0",vwWN:2,ckOn:true,ckGood:5,ckMid:3},
   bod:{on:false,modus:"oi",cvdReset:"nie",kerzen:false,grau:true,marker:false,markerSig:true,sigLen:20,sigMult:1.5,bezug:"k",n:20,stunden:24,extrem:3,lageLen:100,tab:true,erw:true,tabOrt:"ur",tabGr:"klein",tabAbst:0,tabSchritt:1.5,
     fL:"#4caf50",fSQ:"#ff9800",fS:"#ffeb3b",fLQ:"#e91e63",fKauf:"#4caf50",fVerk:"#f23645"}
 };

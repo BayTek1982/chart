@@ -198,7 +198,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=14"></script>
+<script src="chart-core.js?v=15"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -552,10 +552,10 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   {k:"cDraw",t:"⑩ Darstellung",type:"sel",o:[["eigen","Eigene Kerzen (Körper, Umrandung, Docht)"],["farbe","Nur einfärben"]]},{k:"hollow",t:"⑩ Hohle Kerzen",type:"sel",o:[["aus","Aus"],["steig","Steigende hohl"],["fall","Fallende hohl"],["alle","Alle hohl"]]},
   COL("colUp","⑩ Aufwärts: Körper"),COL("colUpB","⑩ Aufwärts: Umrandung"),COL("colUpW","⑩ Aufwärts: Docht"),COL("colDn","⑩ Abwärts: Körper"),COL("colDnB","⑩ Abwärts: Umrandung"),COL("colDnW","⑩ Abwärts: Docht"),COL("colNeu","⑩ Neutral: Körper"),COL("colNeuB","⑩ Neutral: Umrandung"),COL("colNeuW","⑩ Neutral: Docht")],
   i:"Kern des Fibonacci Trend: Der Trend kommt aus der Struktur (BOS = Fortsetzung, CHoCH = Trendwechsel), die Fibonacci liegt in Trendrichtung und ihr Endpunkt wandert mit der höchsten bzw. tiefsten Kerze mit. Graue Kerzen = Warnstufe (Swing nur per Docht gebrochen). Dazu ⑫ Volumenprofil-Level, ⑬ Haupt-Trendlinien (auch 1h/4h/1D/1W), ⑯ Linien/VWAP, ⑰ S/R-Zonen, ⑱ FVG, ⑲ Orderblöcke und ⑳ Risiko-Tabelle – jeweils mit „anzeigen ab/bis“ wie deine Timeframe-Haken. RSI-Divergenz und Liquidität ⑭ ⑮ zeigt der Wellen Indikator. Ohne Alarme und ohne manuelle Fibonacci."}}
-{const POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],TFB=[["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],LS=[["s","Durchgezogen"],["d","Gestrichelt"],["p","Gepunktet"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
+{const TFL=[["","Chart"],["5m","5m"],["15m","15m"],["1h","1h"],["4h","4h"],["1d","1D"],["1w","1W"]],POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],TFB=[["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],LS=[["s","Durchgezogen"],["d","Gestrichelt"],["p","Gepunktet"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
  ALL.bsi={k:"bsi",t:"Strategie Indikator",d:"Dynamische Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB",p:[
   {k:"view",t:"0) Ansicht",type:"sel",o:[["eigen","Eigene (Schnellschalter)"],["min","Minimal"],["intra","Intraday"],["swing","Swing"],["alles","Alles"]]},
-  C("mRetr","0) Fib-Retracements"),C("mExt","0) Fib-Ziele (TP)"),C("mZone","0) Golden Zone"),C("mLbl","0) Fib-Labels"),C("mBias","0) Bias-Tabelle"),C("mFvg","0) FVG"),C("mLs","0) LSOB"),C("mLsTbl","0) LSOB-Signaltabelle"),C("mLsSig","0) LSOB-Entry-Markierungen (Pfeile, L/S, Linien)"),
+  C("mRetr","0) Fib-Retracements"),C("mExt","0) Fib-Ziele (TP)"),C("mZone","0) Golden Zone"),C("mLbl","0) Fib-Labels"),C("mBias","0) Bias-Tabelle"),C("mFvg","0) FVG"),C("mLs","0) LSOB"),C("mLsTbl","0) LSOB-Signaltabelle"),C("mLsSig","0) LSOB-Entry-Markierungen (Pfeile, L/S, Linien)"),C("mVp","0) Volume Profile"),C("mMs","0) Marktstruktur"),C("mMa","0) MA / VWAP"),
   N("lookback","1) Lookback (Kerzen)",10,5000),N("smooth","1) Glättung der Linien",1,100),{k:"dir",t:"1) Richtung",type:"sel",o:[["auto","Auto"],["long","Long"],["short","Short"]]},
   {k:"preset",t:"2) Aktives Level-Set",type:"sel",o:[["eigen","Eigene"],["sk","SK System"],["kl","Klassisch"],["ict","ICT OTE"],["alle","Alle Level"]]},
   N("bsR1v","3) Level 1 Wert",-5,10,0.001),COL("bsR1c","3) Level 1 Farbe"),{k:"bsR1s",t:"3) Level 1 in Sets (E SK KL ICT)",type:"text"},N("bsR2v","3) Level 2 Wert",-5,10,0.001),COL("bsR2c","3) Level 2 Farbe"),{k:"bsR2s",t:"3) Level 2 in Sets (E SK KL ICT)",type:"text"},N("bsR3v","3) Level 3 Wert",-5,10,0.001),COL("bsR3c","3) Level 3 Farbe"),{k:"bsR3s",t:"3) Level 3 in Sets (E SK KL ICT)",type:"text"},N("bsR4v","3) Level 4 Wert",-5,10,0.001),COL("bsR4c","3) Level 4 Farbe"),{k:"bsR4s",t:"3) Level 4 in Sets (E SK KL ICT)",type:"text"},N("bsR5v","3) Level 5 Wert",-5,10,0.001),COL("bsR5c","3) Level 5 Farbe"),{k:"bsR5s",t:"3) Level 5 in Sets (E SK KL ICT)",type:"text"},N("bsR6v","3) Level 6 Wert",-5,10,0.001),COL("bsR6c","3) Level 6 Farbe"),{k:"bsR6s",t:"3) Level 6 in Sets (E SK KL ICT)",type:"text"},N("bsR7v","3) Level 7 Wert",-5,10,0.001),COL("bsR7c","3) Level 7 Farbe"),{k:"bsR7s",t:"3) Level 7 in Sets (E SK KL ICT)",type:"text"},N("bsR8v","3) Level 8 Wert",-5,10,0.001),COL("bsR8c","3) Level 8 Farbe"),{k:"bsR8s",t:"3) Level 8 in Sets (E SK KL ICT)",type:"text"},N("bsR9v","3) Level 9 Wert",-5,10,0.001),COL("bsR9c","3) Level 9 Farbe"),{k:"bsR9s",t:"3) Level 9 in Sets (E SK KL ICT)",type:"text"},N("bsR10v","3) Level 10 Wert",-5,10,0.001),COL("bsR10c","3) Level 10 Farbe"),{k:"bsR10s",t:"3) Level 10 in Sets (E SK KL ICT)",type:"text"},C("dirCol10","3) Letztes Level (1,0) nach Richtung färben"),COL("cL10","3) Farbe Long"),COL("cS10","3) Farbe Short"),
@@ -576,8 +576,19 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   {k:"rkMode",t:"13) Risiko-Info im Chart",type:"sel",o:[["klein","Kleines Symbol + Tooltip"],["gross","Großes Label"],["aus","Aus"]]},C("rkArrows","13) Entry-Pfeile anzeigen"),C("rkLines","13) Entry / SL / Breakeven-Linien anzeigen"),C("rkTbl","13) Tabelle „Letztes LSOB-Signal“"),{k:"rkTblPos",t:"13) Position Tabelle",type:"sel",o:POS},
   N("rkCash","13) Risiko pro Trade (Quote-Währung)",0.1,1000000,1),{k:"rkSl",t:"13) Stop-Loss",type:"sel",o:[["rej","Unter Ablehnungskerze"],["ob","Unter Orderblock"]]},N("rkMaxSl","13) Max. Stop-Loss (%) – 0 = aus",0,50,0.25),N("rkTol","13) Toleranz zum Stop (%)",0,10,0.05),N("rkFee","13) Gebühren + Reserve für Breakeven (%)",0,5,0.01),N("rkLinesLen","13) Länge der Linien (Kerzen)",3,200),N("rkKeep","13) Anzahl angezeigter Signale",1,20),
   C("ta1m","13a) Aktiv auf 1m"),C("ta3m","13a) Aktiv auf 3m"),C("ta5m","13a) Aktiv auf 5m"),C("ta15m","13a) Aktiv auf 15m"),C("ta30m","13a) Aktiv auf 30m"),C("ta1h","13a) Aktiv auf 1H"),C("ta2h","13a) Aktiv auf 2H"),C("ta4h","13a) Aktiv auf 4H"),C("ta1d","13a) Aktiv auf 1D"),C("ta1w","13a) Aktiv auf 1W und größer"),
-  {k:"lsScope",t:"13a) Auf deaktivierten Timeframes ausblenden",type:"sel",o:[["sig","Nur Entry-Signale"],["alles","Signale + Boxen"]]}],
-  i:"Teil 1 deines Strategie Indikators: dynamische Fibonacci aus Hoch/Tief der letzten X Kerzen mit Level-Sets (E, SK, KL, ICT), Ziele, Golden Zone, Labels, MTF-Bias-Tabelle (EMA 21/50), FVG und LSOB mit Entry-Signalen. Volume Profile, Marktstruktur, Linien/VWAP, Intermarket und Checkliste folgen im nächsten Durchgang und laufen bis dahin über die Standard-Schalter. Ohne Alarme."}}
+  {k:"lsScope",t:"13a) Auf deaktivierten Timeframes ausblenden",type:"sel",o:[["sig","Nur Entry-Signale"],["alles","Signale + Boxen"]]},
+  C("vpOn","15) Volume Profile anzeigen"),{k:"vpMode",t:"15) Bereich",type:"sel",o:[["sicht","Sichtbarer Bereich"],["per","Periode"],["zeit","Eigener Zeitraum"]]},{k:"vpPer",t:"15) Periode",type:"sel",o:[["1d","Tag"],["1w","Woche"],["1M","Monat"]]},{k:"vpWhich",t:"15) Welche Periode",type:"sel",o:[["akt","Aktuelle"],["letzte","Letzte volle"]]},
+  {k:"vpFrom",t:"15) Eigener Zeitraum: von (JJJJ-MM-TT)",type:"text"},{k:"vpTo",t:"15) Eigener Zeitraum: bis (JJJJ-MM-TT)",type:"text"},N("vpRows","15) Zeilenanzahl",10,1000),N("vpVA","15) Value Area (%%)",50,95),N("vpMaxB","15) Max. Kerzen für Berechnung",100,5000),
+  {k:"vpPos",t:"15) Position",type:"sel",o:[["preis","Am Preisrand (rechts)"],["rechts","Rechts neben Chart"],["anfang","Am Anfang des Bereichs"]]},N("vpWidth","15) Breite (Kerzen)",5,200),N("vpOff","15) Abstand rechts",0,200),C("vpSplit","15) Kauf-/Verkaufsvolumen getrennt"),COL("vpColUp","15) Kauf"),COL("vpColDn","15) Verkauf"),COL("vpColN","15) Neutral"),N("vpOutTr","15) Transparenz außerhalb Value Area",0,100),
+  C("vpPoc","15) POC-Linie"),COL("vpPocC","15) POC Farbe"),C("vpVa","15) VAH / VAL-Linien"),COL("vpVahC","15) VAH"),COL("vpValC","15) VAL"),C("vpExtR","15) Linien bis Chart-Ende verlängern"),C("vpZone","15) Value Area im Zeitraum hinterlegen"),COL("vpZoneC","15) Farbe Value Area"),C("vpLbl","15) Preis-Labels (POC / VAH / VAL)"),
+  {k:"vplSz",t:"15b) Schriftgröße",type:"sel",o:GRS},{k:"vplPos",t:"15b) Position waagerecht",type:"sel",o:[["profil","Am Profil"],["rechts","Rechts vom Profil"],["anfang","Am Anfang der Linie"]]},N("vplOffX","15b) Verschieben (Kerzen)",-500,500),{k:"vplVert",t:"15b) Position senkrecht",type:"sel",o:[["auf","Auf der Linie"],["ueber","Über der Linie"],["unter","Unter der Linie"]]},
+  {k:"vplCont",t:"15b) Inhalt",type:"sel",o:[["np","Name + Preis"],["name","Nur Name"],["preis","Nur Preis"]]},C("vplPer","15b) Bereich im POC-Label"),C("vplOwn","15b) Eigene Textfarbe"),COL("vplTxtC","15b) Textfarbe"),C("vpaTxt","15b) Text in der Value-Area-Box"),
+  C("msOn","17) Marktstruktur anzeigen"),N("msLen","17) Swing-Stärke (Kerzen links/rechts)",2,30),C("msLbl","17) HH / HL / LH / LL-Kürzel"),N("msKeep","17) Anzahl Kürzel",1,30),C("msBos","17) BOS-Linien"),C("msBosTxt","17) mit Text BOS"),C("msCh","17) CHoCH-Linien (mit CH)"),N("msLnKeep","17) Anzahl BOS/CHoCH-Linien",1,30),
+  C("msEq","17) EQH / EQL (gleiche Hochs/Tiefs)"),N("msEqTol","17) Toleranz (x ATR)",0.01,5,0.05),C("msSw","17) Strong / Weak High & Low"),C("msInt","17) Interne Struktur (klein, für Einstiege)"),N("msIntLen","17) Stärke intern",1,10),COL("msBullC","17) Bullisch"),COL("msBearC","17) Bärisch"),COL("msNeuC","17) Kürzel/EQ"),{k:"msSz",t:"17) Schriftgröße Kürzel",type:"sel",o:GRS},C("msTbl","17) Zeile Struktur in der Bias-Tabelle"),
+  C("maOn","19) Gleitende Durchschnitte anzeigen"),N("maBars","19) Länge der Linien im Chart (Kerzen)",100,5000),C("maLbl","19) Namen am rechten Ende"),{k:"maSz",t:"19) Schriftgröße Namen",type:"sel",o:GRS},C("m1On","19) Linie 1"),{k:"m1T",t:"19) Linie 1 Typ",type:"sel",o:[["SMA","SMA"],["EMA","EMA"],["WMA","WMA"],["HMA","HMA"],["RMA","RMA"],["VWMA","VWMA"]]},N("m1Len","19) Linie 1 Länge",1,1000),{k:"m1Tf",t:"19) Linie 1 Zeitrahmen",type:"sel",o:TFL},COL("m1Col","19) Linie 1 Farbe"),N("m1W","19) Linie 1 Stärke",1,4),C("m2On","19) Linie 2"),{k:"m2T",t:"19) Linie 2 Typ",type:"sel",o:[["SMA","SMA"],["EMA","EMA"],["WMA","WMA"],["HMA","HMA"],["RMA","RMA"],["VWMA","VWMA"]]},N("m2Len","19) Linie 2 Länge",1,1000),{k:"m2Tf",t:"19) Linie 2 Zeitrahmen",type:"sel",o:TFL},COL("m2Col","19) Linie 2 Farbe"),N("m2W","19) Linie 2 Stärke",1,4),C("m3On","19) Linie 3"),{k:"m3T",t:"19) Linie 3 Typ",type:"sel",o:[["SMA","SMA"],["EMA","EMA"],["WMA","WMA"],["HMA","HMA"],["RMA","RMA"],["VWMA","VWMA"]]},N("m3Len","19) Linie 3 Länge",1,1000),{k:"m3Tf",t:"19) Linie 3 Zeitrahmen",type:"sel",o:TFL},COL("m3Col","19) Linie 3 Farbe"),N("m3W","19) Linie 3 Stärke",1,4),
+  C("gcOn","19) Golden / Death Cross markieren (Linie 2 × Linie 3)"),C("bmOn","19) Bull Market Support Band (20W SMA + 21W EMA)"),COL("bmCol","19) Farbe BMSB"),C("vwDOn","19) VWAP Tag"),COL("vwDCol","19) VWAP Tag Farbe"),N("vwDN","19) Anzahl Tage",1,20),C("vwWOn","19) VWAP Woche"),COL("vwWCol","19) VWAP Woche Farbe"),N("vwWN","19) Anzahl Wochen",1,10),
+  C("ckOn","21) Long-/Short-Check in der Bias-Tabelle"),N("ckGood","21) Grün ab (Punkte)",1,7),N("ckMid","21) Orange ab",1,7),],
+  i:"Teil 1 deines Strategie Indikators: dynamische Fibonacci aus Hoch/Tief der letzten X Kerzen mit Level-Sets (E, SK, KL, ICT), Ziele, Golden Zone, Labels, MTF-Bias-Tabelle (EMA 21/50), FVG und LSOB mit Entry-Signalen. Dazu Volume Profile (sichtbarer Bereich, Periode oder Zeitraum), Marktstruktur mit CHoCH/BOS, EQH/EQL und Strong/Weak, Linien 1–3 mit Golden/Death Cross, BMSB, VWAP Tag/Woche und die Long-/Short-Checkliste in der Bias-Tabelle (Maus über die Zeile für die Punkte). Die Intermarket-Tabelle fehlt noch. Ohne Alarme."}}
  {const POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],TFS=[["","–"],["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"],["1M","1M"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
  ALL.bwi={k:"bwi",t:"Wellen Indikator",d:"SK-System 0-A-B-C, Ziel, Korrekturlevel, Setup, MTF, Divergenz, Liquidität",p:[
   N("pivLen","① Pivot-Länge",2,50),C("zz","① ZigZag anzeigen"),C("autoPv","① Pivot-Länge je Timeframe (aus ⑦)"),
@@ -600,7 +611,7 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   C("swOn","⑩ Liquidität markieren"),N("swPv","⑩ Pivot für Hochs/Tiefs",2,50),C("swFrm","⑩ Rahmen"),C("swWck","⑩ Docht"),C("swLn","⑩ Linie zum Level"),N("swMax","⑩ Anzahl Linien",1,20),COL("cSwBu","⑩ Farbe unten (bullisch)"),COL("cSwBe","⑩ Farbe oben (bärisch)")],
   i:"SK-System nach deinen Regeln: 0-A-B-C, B mindestens 50 %, B-Nachführung, Ziel 161,8–200 %, Korrekturlevel B→C und Gesamtkorrektur 0→C. Fahre mit der Maus über ein Kürzel im Chart (am Handy: antippen) für die Erklärung. Tabellen: Doppelklick legt sie in den Hintergrund, noch einmal minimiert sie. Ohne Alarme und ohne manuelle Punkte."}}
  const G=[
-  ["Bayazit Strategie Indikator v2.26","Teil 1 nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB. Volume Profile, Linien und VWAP noch aus dem Chart-Bot.",["bsi","vp","ma1","ma2","ma3","vwap"]],
+  ["Bayazit Strategie Indikator v2.26","Nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB, Volume Profile, Marktstruktur, Linien/VWAP, Checkliste. Ohne Intermarket und Alarme.",["bsi"]],
   ["Bayazit Wellen Indikator V2.30","Nachbau aus deinem Pine-Code: SK-System, Setup-Tabelle mit Positions-Box, MTF-Tabelle, Elliott, RSI-Divergenz, Liquidität. Ohne Alarme.",["bwi"]],
   ["Bayazit Pattern Scanner V2.5","Automatische Trendlinien und S/R-Zonen.",["tl","sr"]],
   ["Bayazit Fibonacci Trend V2.4","Nach deinem Pine-Code: Struktur, Fibonacci, Kerzen nach Trend, Volumenprofil-Level, Haupt-Trendlinien, Linien/VWAP, S/R-Zonen, FVG, Orderblöcke, Risiko-Tabelle. Ohne Alarme.",["bft"]],
@@ -608,7 +619,7 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   ["Bayazit Hitze (Kurs / 20-Wochen-Schnitt)","Früher „Blasen-Risiko“. Säulen ab 1,0, Farbzonen, Tabelle, Kerzen einfärben. Ohne Alarme.",["heat"]],
   ["Bayazit OI & Delta Monitor V1.8","Open Interest, ΔOI, Volumen-Delta, CVD und die Tabelle mit Fazit. Ohne Alarme.",["bod"]]];
  const neu=G.map(([g,note,ks])=>({g,note,own:1,items:ks.map(k=>ALL[k])}));
- neu.push({g:"Standard",items:["vol","rsi","bb","macd","dfib","lsob","fib","ms","gz","fvg","ob","boxes"].map(k=>ALL[k])});
+ neu.push({g:"Standard",items:["vol","rsi","bb","macd","dfib","lsob","vp","ma1","ma2","ma3","vwap","fib","ms","gz","fvg","ob","boxes"].map(k=>ALL[k])});
  SCHEMA.splice(0,SCHEMA.length,...neu)}
 
 function pInput(key,p){const v=S.cfg[key][p.k],id=`${key}.${p.k}`;
@@ -1427,17 +1438,21 @@ function bsiCalc(){const c=S.cfg.bsi;BS.R=null;if(!c.on||S.k.length<30)return;co
       if(c.rkMode!=="aus")R.Ts.push({x:s.i,y:s.isL?k[s.i].l:k[s.i].h,t:c.rkMode==="gross"?tip:(s.isL?"L":"S"),pos:s.isL?"b":"a",col:"#ffffff",box:s.isL?"#2196f3":"#ff5252",sz:"winzig",dy:14,tip});
       if(c.rkLines){const x2=s.i+(+c.rkLinesLen||15);R.Ls.push({x1:s.i,y1:s.e,x2,y2:s.e,col:"#ffffff",w:1},{x1:s.i,y1:s.sl,x2,y2:s.sl,col:"#ff1744",w:1,dash:[5,4]},{x1:s.i,y1:s.be,x2,y2:s.be,col:"#00c48c",w:1,dash:[2,3]})}}
     R.ls={last:sig[sig.length-1]||null,allowed,filt}}
+  try{bsiCalc2(R)}catch(e){console.error(e)}
   BS.R=R}
 
 function bsiPaint(th){const c=S.cfg.bsi,R=BS.R,bt=$("bsBias"),lt=$("bsLs");BS.hit=[];if(!c.on||!R||!L){bt.hidden=lt.hidden=true;return}
   const k=S.k,last=k.length-1,X=L.X,Y=L.Y,cw=L.cw,F=v=>CC.fmt(v),i0=Math.max(0,L.i0-1),i1=Math.min(last,L.i1+1);
+  try{bsVP(th)}catch(e){console.error(e)}
   ctx.save();ctx.beginPath();ctx.rect(0,0,L.pw,L.mainH);ctx.clip();
+  if(R.band){const z=R.band;ctx.beginPath();let st=false;for(let i=Math.max(i0,z.from);i<=i1;i++){if(z.a[i]==null||z.b[i]==null)continue;const y=Y(Math.max(z.a[i],z.b[i]));st?ctx.lineTo(X(i),y):(ctx.moveTo(X(i),y),st=true)}
+    for(let i=i1;i>=Math.max(i0,z.from);i--)if(z.a[i]!=null&&z.b[i]!=null)ctx.lineTo(X(i),Y(Math.min(z.a[i],z.b[i])));if(st){ctx.closePath();ctx.fillStyle=bwA(z.col,.2);ctx.fill();ctx.strokeStyle=bwA(z.col,.7);ctx.lineWidth=1;ctx.stroke()}}
   if(R.zone){const z=R.zone;ctx.beginPath();let st=false;for(let i=i0;i<=i1;i++){if(z.a[i]==null)continue;st?ctx.lineTo(X(i),Y(z.a[i])):(ctx.moveTo(X(i),Y(z.a[i])),st=true)}
     for(let i=i1;i>=i0;i--)if(z.b[i]!=null)ctx.lineTo(X(i),Y(z.b[i]));if(st){ctx.closePath();ctx.fillStyle=bwA(z.col,(100-z.tr)/100);ctx.fill()}
     for(const s of[z.a,z.b]){ctx.strokeStyle=z.col;ctx.lineWidth=z.w;ctx.beginPath();let p=false;for(let i=i0;i<=i1;i++){if(s[i]==null){p=false;continue}p?ctx.lineTo(X(i),Y(s[i])):(ctx.moveTo(X(i),Y(s[i])),p=true)}ctx.stroke()}}
   for(const s of R.ser){ctx.strokeStyle=s.col;ctx.fillStyle=s.col;ctx.lineWidth=s.w;if(s.dots){for(let i=i0;i<=i1;i+=Math.max(1,Math.round(4/cw))){if(s.v[i]==null)continue;ctx.beginPath();ctx.arc(X(i),Y(s.v[i]),1.6,0,7);ctx.fill()}continue}
     if(s.cols){for(let i=Math.max(i0,1);i<=i1;i++){const v=s.v[i],p0=s.v[i-1];if(v==null||p0==null)continue;ctx.strokeStyle=s.cols[i];ctx.beginPath();ctx.moveTo(X(i-1),Y(p0));ctx.lineTo(X(i),Y(v));ctx.stroke()}continue}
-    ctx.beginPath();let p=false;for(let i=i0;i<=i1;i++){const v=s.v[i];if(v==null){p=false;continue}p?ctx.lineTo(X(i),Y(v)):(ctx.moveTo(X(i),Y(v)),p=true)}ctx.stroke()}
+    ctx.beginPath();let p=false;for(let i=Math.max(i0,s.from||0);i<=i1;i++){const v=s.v[i];if(v==null||(s.brk&&i&&s.brk[i]!==s.brk[i-1])){p=false;if(v==null)continue}p?ctx.lineTo(X(i),Y(v)):(ctx.moveTo(X(i),Y(v)),p=true)}ctx.stroke()}
   for(const b of R.Xs){const x1=X(b.x1)-cw/2,x2=X(b.x2)+cw/2,y1=Y(b.y1),y2=Y(b.y2);if(b.bg){ctx.fillStyle=b.bg;ctx.fillRect(x1,y1,x2-x1,y2-y1)}if(b.bc){ctx.strokeStyle=b.bc;ctx.lineWidth=b.bw||1;ctx.setLineDash(b.dash||[]);ctx.strokeRect(x1,y1,x2-x1,y2-y1);ctx.setLineDash([])}}
   for(const l of R.Ls){ctx.strokeStyle=l.col;ctx.lineWidth=l.w||1;ctx.setLineDash(l.dash||[]);ctx.beginPath();ctx.moveTo(X(l.x1),Y(l.y1));ctx.lineTo(X(l.x2),Y(l.y2));ctx.stroke()}ctx.setLineDash([]);
   ctx.textBaseline="middle";ctx.textAlign="left";
@@ -1450,6 +1465,8 @@ function bsiPaint(th){const c=S.cfg.bsi,R=BS.R,bt=$("bsBias"),lt=$("bsLs");BS.hi
   const cell=(t,col,bg,al)=>`<span style="color:${col};${bg?"background:"+bg+";":""}${al?"text-align:right;":""}">${esc(t)}</span>`,hd="rgba(19,23,34,.95)";
   if(R.bias){bt.hidden=false;let h=cell("TF","#fff",hd)+cell("Bias","#fff",hd);for(const[tf,b]of R.bias){const bg=b==null?"#555":b===1?"#00a86b":b===-1?"#d32f2f":"rgba(128,128,128,.7)";h+=cell(bwTF(tf).toUpperCase().replace("1H","1H"),"#fff",hd)+cell(b==null?"lädt":b===1?"BULLISH":b===-1?"BEARISH":"NEUTRAL","#fff",bg)}
     h+=cell("Richtung","#fff",hd)+cell(R.isLong?"LONG-Fib":"SHORT-Fib","#fff",c.dirCol10?(R.isLong?c.cL10:c.cS10):"#b8860b")+cell("Set","#fff",hd)+cell({eigen:"Eigene",sk:"SK System",kl:"Klassisch",ict:"ICT OTE",alle:"Alle Level"}[c.preset],"#fff",hd);
+    if(c.msTbl&&c.msOn&&R.M.ms&&R.ms){const m=R.ms,ev=m.evt.replace(/ [▲▼]/,"");h+=cell("Struktur","#fff",hd)+cell((m.tr===1?"BULLISH":m.tr===-1?"BEARISH":"–")+(ev?"  ("+ev+")":""),"#fff",m.tr===1?"#00a86b":m.tr===-1?"#d32f2f":"rgba(128,128,128,.7)")}
+    if(R.ck){const cc=x=>x>=+c.ckGood?"#00a86b":x>=+c.ckMid?"#ff9800":"rgba(128,128,128,.7)";h+=`<span style="color:#fff;background:${hd}" title="${esc(R.ck.tl)}">Long-Check</span><span style="color:#fff;background:${cc(R.ck.l)};text-align:right" title="${esc(R.ck.tl)}">${R.ck.l} / 7</span><span style="color:#fff;background:${hd}" title="${esc(R.ck.ts)}">Short-Check</span><span style="color:#fff;background:${cc(R.ck.s)};text-align:right" title="${esc(R.ck.ts)}">${R.ck.s} / 7</span>`}
     bt.style.gridTemplateColumns="auto auto";bt.innerHTML=h;bwPlace(bt,"ur",0,0,"klein")}else bt.hidden=true;
   if(R.ls&&c.rkTbl&&R.M.lsTbl){lt.hidden=false;const s=R.ls.last,dirBg=!s?"rgba(128,128,128,.6)":s.isL?"#2196f3":"#ff5252",nb="rgba(0,0,0,.7)",d=v=>v.toFixed(2).replace(".",",");
     const dt=s?new Date(s.t):null,tt=dt?`${String(dt.getDate()).padStart(2,"0")}.${String(dt.getMonth()+1).padStart(2,"0")}. ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`:"–";
@@ -1457,6 +1474,77 @@ function bsiPaint(th){const c=S.cfg.bsi,R=BS.R,bt=$("bsBias"),lt=$("bsLs");BS.hi
     for(const[a,b,bg]of[["Richtung",s?(s.isL?"LONG":"SHORT"):"–",dirBg],["Entry",s?F(s.e):"–",nb],["Stop-Loss",s?F(s.sl)+"  ("+d(s.rp)+" %)":"–","rgba(211,47,47,.6)"],["Position",s&&s.pos!=null?d(s.pos):"–",nb],["Breakeven",s?F(s.be):"–","rgba(0,168,107,.6)"],["Zeitpunkt",tt,nb],["Risiko/Trade",d(+c.rkCash),nb]])h+=cell(a,"#fff",hd)+cell(b,"#fff",bg,1);
     if(+c.rkMaxSl>0)h+=`<span class="hd" style="color:#9aa3b2;background:${hd}">Max.-Stop-Filter ${String(c.rkMaxSl).replace(".",",")} %: ${R.ls.filt} Signal(e) verworfen</span>`;
     lt.style.gridTemplateColumns="auto auto";lt.innerHTML=h;bwPlace(lt,c.rkTblPos,0,0,"klein")}else lt.hidden=true}
+
+// ════════ BSI v2.26 Teil 2: 15) Volume Profile, 17) Marktstruktur, 19) Linien/VWAP, 21) Checkliste ════════
+function bsiCalc2(R){const c=S.cfg.bsi,k=S.k,n=k.length,last=n-1,M=R.M,F=v=>CC.fmt(v),v=c.view;
+  M.vp=v==="eigen"?c.mVp:(v==="intra"||v==="swing"||v==="alles");M.ms=v==="eigen"?c.mMs:true;M.ma=v==="eigen"?c.mMa:true;
+  // 17) Marktstruktur (Haupt und intern)
+  const atr=bfATR(k,14),eng=(len,isInt)=>{let lH=null,lHx=0,lL=null,lLx=0,hD=true,lD=true,tr=0,evt="";const lb=[],ln=[],lnl=[],show=c.msOn&&M.ms&&(!isInt||c.msInt);
+    for(let i=0;i<n;i++){const cc=i-len;
+      if(bwIsPiv(k,cc,len,len,true)){const ph=k[cc].h;if(show&&!isInt){if(c.msLbl&&lH!=null)lb.push({x:cc,y:ph,t:ph>lH?"HH":"LH",pos:"a",col:c.msNeuC,sz:c.msSz});
+          if(c.msEq&&lH!=null&&atr[i]&&Math.abs(ph-lH)<=(+c.msEqTol)*atr[i]){ln.push({x1:lHx,y1:lH,x2:cc,y2:ph,col:c.msNeuC,w:1,dash:[2,3]});lnl.push({x:Math.round((lHx+cc)/2),y:Math.max(ph,lH),t:"EQH",pos:"a",col:c.msNeuC,sz:c.msSz,tip:"Gleiche Hochs (Liquidität darüber)"})}}lH=ph;lHx=cc;hD=false}
+      if(bwIsPiv(k,cc,len,len,false)){const pl=k[cc].l;if(show&&!isInt){if(c.msLbl&&lL!=null)lb.push({x:cc,y:pl,t:pl>lL?"HL":"LL",pos:"b",col:c.msNeuC,sz:c.msSz});
+          if(c.msEq&&lL!=null&&atr[i]&&Math.abs(pl-lL)<=(+c.msEqTol)*atr[i]){ln.push({x1:lLx,y1:lL,x2:cc,y2:pl,col:c.msNeuC,w:1,dash:[2,3]});lnl.push({x:Math.round((lLx+cc)/2),y:Math.min(pl,lL),t:"EQL",pos:"b",col:c.msNeuC,sz:c.msSz,tip:"Gleiche Tiefs (Liquidität darunter)"})}}lL=pl;lLx=cc;lD=false}
+      if(i===last)continue; // nur bestätigte Kerzen
+      for(const up of[true,false]){const lv=up?lH:lL;if(lv==null||(up?hD:lD)||!(up?k[i].c>lv:k[i].c<lv))continue;if(up)hD=true;else lD=true;const ch=tr===(up?-1:1);tr=up?1:-1;evt=(ch?"CHoCH ":"BOS ")+(up?"▲":"▼");
+        if(show&&((ch&&c.msCh)||(!ch&&c.msBos))){const col=up?c.msBullC:c.msBearC,x0=up?lHx:lLx;ln.push({x1:x0,y1:lv,x2:i,y2:lv,col,w:ch&&!isInt?2:1,dash:isInt?[2,3]:ch?null:[6,4]});
+          const tx=ch?(isInt?"ch":"CH"):(c.msBosTxt&&!isInt?"BOS":"");if(tx)lnl.push({x:Math.round((x0+i)/2),y:lv,t:tx,pos:up?"a":"b",col,sz:c.msSz,tip:(ch?"CHoCH – Trendwechsel ":"BOS – Fortsetzung ")+(up?"nach oben":"nach unten")+"\nLevel "+F(lv)})}}}
+    const kp=Math.max(1,+c.msLnKeep||6)*2;return{tr,evt,lH,lHx,lL,lLx,lb:lb.slice(-Math.max(1,+c.msKeep||6)),ln:ln.slice(-kp),lnl:lnl.slice(-kp)}};
+  const ms=eng(Math.max(2,+c.msLen||5),false);R.ms=ms;
+  if(c.msOn&&M.ms){R.Ls.push(...ms.ln);R.Ts.push(...ms.lb,...ms.lnl);
+    if(c.msInt){const mi=eng(Math.max(1,+c.msIntLen||2),true);R.Ls.push(...mi.ln);R.Ts.push(...mi.lnl)}
+    if(c.msSw&&ms.lH!=null&&ms.lL!=null){const hs=ms.tr===-1,ls=ms.tr===1;R.Ls.push({x1:ms.lHx,y1:ms.lH,x2:last+8,y2:ms.lH,col:bwA(c.msBearC,.7),w:1},{x1:ms.lLx,y1:ms.lL,x2:last+8,y2:ms.lL,col:bwA(c.msBullC,.7),w:1});
+      R.Ts.push({x:last+8,y:ms.lH,t:hs?"Strong H":"Weak H",pos:"r",col:c.msBearC,sz:c.msSz,tip:(hs?"Starkes Hoch – hat den Abwärtstrend ausgelöst":"Schwaches Hoch – wahrscheinliches Ziel")+"\n"+F(ms.lH)},{x:last+8,y:ms.lL,t:ls?"Strong L":"Weak L",pos:"r",col:c.msBullC,sz:c.msSz,tip:(ls?"Starkes Tief – hat den Aufwärtstrend ausgelöst":"Schwaches Tief – wahrscheinliches Ziel")+"\n"+F(ms.lL)})}}
+  // 19) Linien / VWAP (Werte immer für die Checkliste)
+  const need=[],mv={};let m1=c.m1On,m2=c.m2On,m3=c.m3On,bm=c.bmOn,vd=c.vwDOn,vw=c.vwWOn,gc=c.gcOn;
+  if(v==="min"){m1=m2=bm=vd=vw=gc=false}if(v==="intra")bm=false;if(v==="swing"){vd=vw=false;bm=true}if(v==="alles"){m1=m2=m3=bm=vd=true}
+  for(let q=1;q<=3;q++){const tf=c["m"+q+"Tf"]||"",typ=c["m"+q+"T"],len=+c["m"+q+"Len"]||20;if(!tf||BWSEC[tf]<=BWSEC[S.tf])mv[q]=bfMA(k.map(x=>x.c),typ,len,k.map(x=>x.v));else{need.push(tf);const hk=bfHK(tf);mv[q]=hk?bfMap(hk,bfMA(hk.map(x=>x.c),typ,len,hk.map(x=>x.v)),tf):null}}
+  const vwap=w=>{const key=t=>w?Math.floor((Math.floor(t/864e5)+3)/7):Math.floor(t/864e5),o=new Array(n).fill(null),id=new Array(n);let pk=null,sp=0,sv=0;
+    for(let i=0;i<n;i++){const kk=key(k[i].t);if(kk!==pk){pk=kk;sp=0;sv=0}const p=(k[i].h+k[i].l+k[i].c)/3;sp+=p*(k[i].v||0);sv+=k[i].v||0;o[i]=sv?sp/sv:p;id[i]=kk}return{o,id}};
+  const VD=vwap(false);R.vwD=VD.o[last];R.mv3=mv[3]?mv[3][last]:null;
+  if(c.maOn&&M.ma){const i0=Math.max(0,n-(+c.maBars||1500)),ser=[];
+    for(let q=1;q<=3;q++){if(![0,m1,m2,m3][q]||!mv[q])continue;const nm=c["m"+q+"T"]+" "+c["m"+q+"Len"]+(c["m"+q+"Tf"]?" "+bwTF(c["m"+q+"Tf"]):"");ser.push({v:mv[q],from:i0,col:c["m"+q+"Col"],w:+c["m"+q+"W"]||1});if(c.maLbl&&mv[q][last]!=null)R.Ts.push({x:last+2,y:mv[q][last],t:nm,pos:"r",col:c["m"+q+"Col"],sz:c.maSz})}
+    if(gc&&m2&&m3&&mv[2]&&mv[3]){const g=[];for(let i=Math.max(1,i0);i<last;i++){const a=mv[2][i],b=mv[3][i],pa=mv[2][i-1],pb=mv[3][i-1];if([a,b,pa,pb].some(x=>x==null))continue;if(pa<=pb&&a>b)g.push({i,up:true});if(pa>=pb&&a<b)g.push({i,up:false})}
+      const n2=c.m2T+" "+c.m2Len,n3=c.m3T+" "+c.m3Len;for(const x of g.slice(-10))R.Ts.push({x:x.i,y:x.up?k[x.i].l:k[x.i].h,t:x.up?"▲":"▼",pos:x.up?"b":"a",col:x.up?"#ffd700":"#9e9e9e",sz:"klein",tip:(x.up?"Golden Cross: ":"Death Cross: ")+n2+" kreuzt "+n3+(x.up?" nach oben":" nach unten")})}
+    if(bm){need.push("1w");const hk=bfHK("1w");if(hk){const cl=hk.map(x=>x.c),a=bfMap(hk,bfMA(cl,"SMA",20),"1w"),b=bfMap(hk,bfMA(cl,"EMA",21),"1w");R.band={a,b,from:i0,col:c.bmCol};if(c.maLbl&&a[last]!=null)R.Ts.push({x:last+2,y:a[last],t:"BMSB",pos:"r",col:c.bmCol,sz:c.maSz})}}
+    const sec=BWSEC[S.tf],piece=(o,id,num,col,nm)=>{const lastId=id[last];let first=true;const ids=[...new Set(id.slice(i0))].filter(x=>x>lastId-num);if(!ids.length)return;
+      ser.push({v:o.map((x,i)=>i>=i0&&id[i]>lastId-num?x:null),from:i0,col,w:1,brk:id});if(c.maLbl)R.Ts.push({x:last+2,y:o[last],t:nm,pos:"r",col,sz:c.maSz})};
+    if(vd&&sec<86400)piece(VD.o,VD.id,+c.vwDN||3,c.vwDCol,"VWAP T");if(vw&&sec<604800){const W=vwap(true);piece(W.o,W.id,+c.vwWN||2,c.vwWCol,"VWAP W")}
+    R.ser.push(...ser)}
+  if(need.length&&need.some(tf=>!BF.htf[S.sym+"|"+tf]))bfHtfLoad(need);
+  // 21) Checkliste
+  if(R.bias&&c.ckOn){const b4=R.bias[3]&&R.bias[3][1],b5=R.bias[4]&&R.bias[4][1],cl=k[last].c,z=R.zone,za=z?z.a[last]:null,zb=z?z.b[last]:null,inZ=za!=null&&zb!=null&&cl<=Math.max(za,zb)&&cl>=Math.min(za,zb),nm3=c.m3T+" "+c.m3Len;
+    const L1=[[b4===1,"Bias 4H bullisch"],[b5===1,"Bias 1D bullisch"],[ms.tr===1,"Marktstruktur bullisch"],[R.mv3!=null&&cl>R.mv3,"Kurs über "+nm3],[inZ&&R.isLong,"Kurs in Golden Zone (LONG-Fib)"],[false,"Intermarket RISK-ON (noch keine Daten)"],[R.vwD!=null&&cl>R.vwD,"Kurs über Tages-VWAP"]];
+    const S1=[[b4===-1,"Bias 4H bärisch"],[b5===-1,"Bias 1D bärisch"],[ms.tr===-1,"Marktstruktur bärisch"],[R.mv3!=null&&cl<R.mv3,"Kurs unter "+nm3],[inZ&&!R.isLong,"Kurs in Golden Zone (SHORT-Fib)"],[false,"Intermarket RISK-OFF (noch keine Daten)"],[R.vwD!=null&&cl<R.vwD,"Kurs unter Tages-VWAP"]];
+    const cnt=a=>a.filter(x=>x[0]).length,tip=(h,a)=>h+"\n"+a.map(x=>(x[0]?"✓ ":"✗ ")+x[1]).join("\n");R.ck={l:cnt(L1),s:cnt(S1),tl:tip("LONG-Check:",L1),ts:tip("SHORT-Check:",S1)}}}
+
+// 15) Volume Profile – wird beim Zeichnen für den sichtbaren Bereich gerechnet
+function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const k=S.k,n=k.length,last=n-1,F=v=>CC.fmt(v),X=L.X,Y=L.Y,cw=L.cw;
+  let a,b,name;if(c.vpMode==="sicht"){a=Math.max(0,Math.floor(L.from));b=Math.min(last,Math.ceil(L.to)-1);name="Sichtbar"}
+  else if(c.vpMode==="zeit"){const t0=Date.parse(c.vpFrom),t1=Date.parse(c.vpTo);a=k.findIndex(x=>x.t>=t0);let j=last;while(j>=0&&k[j].t>t1)j--;b=j;name="Zeitraum"}
+  else{const P=c.vpPer,key=t=>{const d=Math.floor(t/864e5);if(P==="1d")return d;if(P==="1w")return Math.floor((d+3)/7);const x=new Date(t);return x.getUTCFullYear()*12+x.getUTCMonth()};const want=key(k[last].t)-(c.vpWhich==="letzte"?1:0);
+    a=-1;b=-1;for(let i=last;i>=0;i--){const q=key(k[i].t);if(q===want){if(b<0)b=i;a=i}else if(q<want)break}name=(c.vpWhich==="letzte"?"letzte ":"akt. ")+({"1d":"Tag","1w":"Woche","1M":"Monat"}[P]||P)}
+  a=Math.max(a,last-(+c.vpMaxB||3000)+1);if(a<0||b<a)return;let hi=-Infinity,lo=Infinity;for(let i=a;i<=b;i++){if(k[i].h>hi)hi=k[i].h;if(k[i].l<lo)lo=k[i].l}if(!(hi>lo))return;
+  const rows=Math.max(1,Math.min(1000,+c.vpRows||1000)),st=(hi-lo)/rows,dU=new Float64Array(rows+1),dD=new Float64Array(rows+1);
+  for(let i=a;i<=b;i++){const r0=Math.max(0,Math.min(rows-1,Math.floor((k[i].l-lo)/st))),r1=Math.max(0,Math.min(rows-1,Math.floor((k[i].h-lo)/st))),per=(k[i].v||0)/(r1-r0+1),D=k[i].c>=k[i].o?dU:dD;D[r0]+=per;D[r1+1]-=per}
+  const vU=new Float64Array(rows),vD=new Float64Array(rows);let cu=0,cd=0,tot=0,mx=0,poc=0;for(let r=0;r<rows;r++){cu+=dU[r];cd+=dD[r];vU[r]=Math.max(cu,0);vD[r]=Math.max(cd,0);const s=vU[r]+vD[r];tot+=s;if(s>mx){mx=s;poc=r}}
+  if(!(tot>0))return;let up=poc,dn=poc,sum=mx;while(sum<tot*(+c.vpVA||70)/100&&(up<rows-1||dn>0)){const nu=up<rows-1?vU[up+1]+vD[up+1]:-1,nd=dn>0?vU[dn-1]+vD[dn-1]:-1;if(nu>=nd){up++;sum+=nu}else{dn--;sum+=nd}}
+  const pP=lo+(poc+.5)*st,vah=lo+(up+1)*st,val=lo+dn*st,left=c.vpPos==="preis",wd=Math.min((+c.vpWidth||55)*cw,L.pw*.35),xR=left?L.pw-2:(c.vpPos==="anfang"?X(a)-cw/2:X(last+(+c.vpOff||30)))+wd,xL=xR-wd;
+  ctx.save();ctx.beginPath();ctx.rect(0,0,L.pw,L.mainH);ctx.clip();
+  if(c.vpZone){const x1=X(a)-cw/2,x2=X(b)+cw/2;ctx.fillStyle=bwA(c.vpZoneC,.07);ctx.fillRect(x1,Y(vah),x2-x1,Y(val)-Y(vah));ctx.strokeStyle=bwA(c.vpVahC,.3);ctx.lineWidth=1;ctx.strokeRect(x1,Y(vah),x2-x1,Y(val)-Y(vah));
+    if(c.vpaTxt){ctx.font='600 10px "JetBrains Mono",ui-monospace,monospace';ctx.fillStyle=c.vpVahC;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText("VA "+name,x1+4,Y(vah)+3)}}
+  const W=xR-xL,trO=(100-(+c.vpOutTr||85))/100;
+  for(let r=0;r<rows;r++){const tv=vU[r]+vD[r];if(!tv)continue;const inVA=r>=dn&&r<=up,y1=Y(lo+(r+1)*st),y2=Y(lo+r*st),hh=Math.max(.6,y2-y1),parts=c.vpSplit?[[vU[r],c.vpColUp,0],[vD[r],c.vpColDn,vU[r]]]:[[tv,c.vpColN,0]];
+    for(const[val2,col,off]of parts){if(!val2)continue;const w=val2/mx*W,o=off/mx*W;ctx.fillStyle=bwA(col,inVA?.5:.5*trO);if(left)ctx.fillRect(xR-o-w,y1,w,hh);else ctx.fillRect(xL+o,y1,w,hh)}}
+  const lEnd=c.vpExtR?L.pw:Math.max(xR,X(last)),x0=X(a)-cw/2;ctx.lineWidth=1;
+  if(c.vpPoc){ctx.strokeStyle=c.vpPocC;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,Y(pP));ctx.lineTo(lEnd,Y(pP));ctx.stroke()}
+  if(c.vpVa){ctx.lineWidth=1;ctx.setLineDash([5,4]);for(const[y,col]of[[vah,c.vpVahC],[val,c.vpValC]]){ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(x0,Y(y));ctx.lineTo(lEnd,Y(y));ctx.stroke()}ctx.setLineDash([])}
+  if(c.vpLbl){const fs={winzig:9.5,klein:10.5,normal:12,gross:14}[c.vplSz]||12;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;ctx.textBaseline=c.vplVert==="ueber"?"bottom":c.vplVert==="unter"?"top":"middle";
+    const lx=(c.vplPos==="anfang"?x0:c.vplPos==="rechts"?xR+cw:(left?xL:xR))+(+c.vplOffX||0)*cw,txtL=c.vplPos==="profil"&&left;ctx.textAlign=txtL?"right":"left";
+    const tx=(nm,p,ex)=>c.vplCont==="name"?nm+ex:c.vplCont==="preis"?F(p):nm+ex+"  "+F(p),dy=c.vplVert==="ueber"?-2:c.vplVert==="unter"?2:0;
+    const items=[];if(c.vpPoc)items.push([pP,tx("POC",pP,c.vplPer?" "+name:""),c.vpPocC]);if(c.vpVa)items.push([vah,tx("VAH",vah,""),c.vpVahC],[val,tx("VAL",val,""),c.vpValC]);
+    for(const[y,t,col]of items){const xx=Math.max(4,Math.min(L.pw-4,lx));ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t,xx,Y(y)+dy);ctx.fillStyle=c.vplOwn?c.vplTxtC:col;ctx.fillText(t,xx,Y(y)+dy)}}
+  ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
 </body>
 </html>

@@ -34,6 +34,15 @@ const DEF={
   macd:{on:false,f:12,s:26,sig:9,cM:"#5b9bff",cS:"#ff9800"},
   risk:{on:false,table:true},
   heat:{on:false,len:20,table:true,tabOrt:"or",tabGr:"klein",cBg:"#000000",cTxt:"#ffffff",kerzen:false},
+  bwi:{on:false,pivLen:10,zz:true,autoPv:true,skOn:true,bMin:0.5,bTrack:true,structSel:"gross",showKorr:true,korrStr:"0.5; 0.559; 0.618; 0.667; 0.786; 0.882",korrBars:5,ext1:1.618,ext2:2,showA:true,showInv:false,strict200:false,provOn:true,provR:2,show100:true,tolPct:2,
+    bcOn:true,bcStr:"0.5; 0.559; 0.618; 0.667; 0.786; 0.882",gkOn:true,gkStr:"0.5; 0.559; 0.618; 0.667; 0.786; 0.882",keepBC:false,zoneLo:0.5,zoneHi:0.667,showFibPx:true,ewOn:false,ewABC:false,
+    cBull:"#4caf50",cBear:"#f23645",zoneTr:85,cDone:"#ffffff",cZoneDone:"#2962ff",cRe:"#ff9800",cEwBull:"#2196f3",cEwBear:"#ff9800",cZZ:"#808080",extBars:30,
+    tblOn:false,entStr:"0.5; 0.559; 0.618; 0.667",tPos:"ml",tOffX:0,tOffY:0,tSz:"klein",tBg:"#131722",tHdBg:"#2a2e39",tTxtC:"#ffffff",
+    mtfOn:true,mtf0:"5m",mOn0:true,pv0:5,mtf1:"15m",mOn1:true,pv1:5,mtf2:"1h",mOn2:true,pv2:7,mtf3:"4h",mOn3:true,pv3:14,mtf4:"1d",mOn4:true,pv4:12,mtf5:"1w",mOn5:true,pv5:15,mtf6:"2h",mOn6:false,pv6:7,mtf7:"",mOn7:false,pv7:10,
+    mTblOn:true,mPos:"or",mOffX:0,mOffY:3,mSz:"klein",
+    riskOn:true,rView:"aktn",tE1:true,tE2:true,tE3:true,tE4:true,rMode:"risiko",rAmt:50,rSplit:"pro",rLev:25,rHiOn:true,cHiL:"#ff9800",rBoxOn:true,rBoxLen:15,rBoxSel:"auto",cMan:"#7e57c2",rInfo:"hover",mB1:false,mB2:false,mB3:false,mB4:false,r200:"neu",rPos:"ol",rOffX:0,rOffY:10,rSz:"klein",
+    divOn:true,rsiLen:14,divPv:5,divHid:false,divMax:3,cDivBu:"#00e5ff",cDivBe:"#ff4081",rsiCol:true,rsiHi:80,cRsiHi:"#ffeb3b",rsiLo:20,cRsiLo:"#e040fb",
+    swOn:true,swPv:10,swFrm:true,swWck:true,swLn:true,swMax:5,cSwBu:"#2979ff",cSwBe:"#e91e63"},
   bod:{on:false,modus:"oi",cvdReset:"nie",kerzen:false,grau:true,marker:false,markerSig:true,sigLen:20,sigMult:1.5,bezug:"k",n:20,stunden:24,extrem:3,lageLen:100,tab:true,erw:true,tabOrt:"ur",tabGr:"klein",tabAbst:0,tabSchritt:1.5,
     fL:"#4caf50",fSQ:"#ff9800",fS:"#ffeb3b",fLQ:"#e91e63",fKauf:"#4caf50",fVerk:"#f23645"}
 };

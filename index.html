@@ -182,7 +182,7 @@ html,body{height:100%;overflow:hidden}
     <button class="autob" id="autoB" hidden title="Preisachse wieder automatisch">Auto</button>
     <div class="tools" id="tools"></div><button id="toolTg" type="button" title="Zeichenwerkzeuge ein-/ausblenden">✎</button>
     <div id="heatTab" hidden></div>
-    <div class="bwt" id="bfVp" hidden></div><div class="bwt" id="bfRk" hidden></div><div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
+    <div class="bwt" id="bsBias" hidden></div><div class="bwt" id="bsLs" hidden></div><div class="bwt" id="bfVp" hidden></div><div class="bwt" id="bfRk" hidden></div><div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
     <div class="ebar" id="ebar" hidden></div>
     <div class="loading" id="loading">Lädt …</div>
   </div>
@@ -198,7 +198,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=13"></script>
+<script src="chart-core.js?v=14"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -310,7 +310,7 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
   const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP});
-  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bftPaint(th);bft2Paint(th);bwiPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
+  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
 function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t,col})};
@@ -552,6 +552,32 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   {k:"cDraw",t:"⑩ Darstellung",type:"sel",o:[["eigen","Eigene Kerzen (Körper, Umrandung, Docht)"],["farbe","Nur einfärben"]]},{k:"hollow",t:"⑩ Hohle Kerzen",type:"sel",o:[["aus","Aus"],["steig","Steigende hohl"],["fall","Fallende hohl"],["alle","Alle hohl"]]},
   COL("colUp","⑩ Aufwärts: Körper"),COL("colUpB","⑩ Aufwärts: Umrandung"),COL("colUpW","⑩ Aufwärts: Docht"),COL("colDn","⑩ Abwärts: Körper"),COL("colDnB","⑩ Abwärts: Umrandung"),COL("colDnW","⑩ Abwärts: Docht"),COL("colNeu","⑩ Neutral: Körper"),COL("colNeuB","⑩ Neutral: Umrandung"),COL("colNeuW","⑩ Neutral: Docht")],
   i:"Kern des Fibonacci Trend: Der Trend kommt aus der Struktur (BOS = Fortsetzung, CHoCH = Trendwechsel), die Fibonacci liegt in Trendrichtung und ihr Endpunkt wandert mit der höchsten bzw. tiefsten Kerze mit. Graue Kerzen = Warnstufe (Swing nur per Docht gebrochen). Dazu ⑫ Volumenprofil-Level, ⑬ Haupt-Trendlinien (auch 1h/4h/1D/1W), ⑯ Linien/VWAP, ⑰ S/R-Zonen, ⑱ FVG, ⑲ Orderblöcke und ⑳ Risiko-Tabelle – jeweils mit „anzeigen ab/bis“ wie deine Timeframe-Haken. RSI-Divergenz und Liquidität ⑭ ⑮ zeigt der Wellen Indikator. Ohne Alarme und ohne manuelle Fibonacci."}}
+{const POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],TFB=[["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],LS=[["s","Durchgezogen"],["d","Gestrichelt"],["p","Gepunktet"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
+ ALL.bsi={k:"bsi",t:"Strategie Indikator",d:"Dynamische Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB",p:[
+  {k:"view",t:"0) Ansicht",type:"sel",o:[["eigen","Eigene (Schnellschalter)"],["min","Minimal"],["intra","Intraday"],["swing","Swing"],["alles","Alles"]]},
+  C("mRetr","0) Fib-Retracements"),C("mExt","0) Fib-Ziele (TP)"),C("mZone","0) Golden Zone"),C("mLbl","0) Fib-Labels"),C("mBias","0) Bias-Tabelle"),C("mFvg","0) FVG"),C("mLs","0) LSOB"),C("mLsTbl","0) LSOB-Signaltabelle"),C("mLsSig","0) LSOB-Entry-Markierungen (Pfeile, L/S, Linien)"),
+  N("lookback","1) Lookback (Kerzen)",10,5000),N("smooth","1) Glättung der Linien",1,100),{k:"dir",t:"1) Richtung",type:"sel",o:[["auto","Auto"],["long","Long"],["short","Short"]]},
+  {k:"preset",t:"2) Aktives Level-Set",type:"sel",o:[["eigen","Eigene"],["sk","SK System"],["kl","Klassisch"],["ict","ICT OTE"],["alle","Alle Level"]]},
+  N("bsR1v","3) Level 1 Wert",-5,10,0.001),COL("bsR1c","3) Level 1 Farbe"),{k:"bsR1s",t:"3) Level 1 in Sets (E SK KL ICT)",type:"text"},N("bsR2v","3) Level 2 Wert",-5,10,0.001),COL("bsR2c","3) Level 2 Farbe"),{k:"bsR2s",t:"3) Level 2 in Sets (E SK KL ICT)",type:"text"},N("bsR3v","3) Level 3 Wert",-5,10,0.001),COL("bsR3c","3) Level 3 Farbe"),{k:"bsR3s",t:"3) Level 3 in Sets (E SK KL ICT)",type:"text"},N("bsR4v","3) Level 4 Wert",-5,10,0.001),COL("bsR4c","3) Level 4 Farbe"),{k:"bsR4s",t:"3) Level 4 in Sets (E SK KL ICT)",type:"text"},N("bsR5v","3) Level 5 Wert",-5,10,0.001),COL("bsR5c","3) Level 5 Farbe"),{k:"bsR5s",t:"3) Level 5 in Sets (E SK KL ICT)",type:"text"},N("bsR6v","3) Level 6 Wert",-5,10,0.001),COL("bsR6c","3) Level 6 Farbe"),{k:"bsR6s",t:"3) Level 6 in Sets (E SK KL ICT)",type:"text"},N("bsR7v","3) Level 7 Wert",-5,10,0.001),COL("bsR7c","3) Level 7 Farbe"),{k:"bsR7s",t:"3) Level 7 in Sets (E SK KL ICT)",type:"text"},N("bsR8v","3) Level 8 Wert",-5,10,0.001),COL("bsR8c","3) Level 8 Farbe"),{k:"bsR8s",t:"3) Level 8 in Sets (E SK KL ICT)",type:"text"},N("bsR9v","3) Level 9 Wert",-5,10,0.001),COL("bsR9c","3) Level 9 Farbe"),{k:"bsR9s",t:"3) Level 9 in Sets (E SK KL ICT)",type:"text"},N("bsR10v","3) Level 10 Wert",-5,10,0.001),COL("bsR10c","3) Level 10 Farbe"),{k:"bsR10s",t:"3) Level 10 in Sets (E SK KL ICT)",type:"text"},C("dirCol10","3) Letztes Level (1,0) nach Richtung färben"),COL("cL10","3) Farbe Long"),COL("cS10","3) Farbe Short"),
+  N("bsE1v","4) Ziel 1 Wert",-5,10,0.001),COL("bsE1c","4) Ziel 1 Farbe"),{k:"bsE1s",t:"4) Ziel 1 in Sets (E SK KL ICT)",type:"text"},N("bsE2v","4) Ziel 2 Wert",-5,10,0.001),COL("bsE2c","4) Ziel 2 Farbe"),{k:"bsE2s",t:"4) Ziel 2 in Sets (E SK KL ICT)",type:"text"},N("bsE3v","4) Ziel 3 Wert",-5,10,0.001),COL("bsE3c","4) Ziel 3 Farbe"),{k:"bsE3s",t:"4) Ziel 3 in Sets (E SK KL ICT)",type:"text"},N("bsE4v","4) Ziel 4 Wert",-5,10,0.001),COL("bsE4c","4) Ziel 4 Farbe"),{k:"bsE4s",t:"4) Ziel 4 in Sets (E SK KL ICT)",type:"text"},N("bsE5v","4) Ziel 5 Wert",-5,10,0.001),COL("bsE5c","4) Ziel 5 Farbe"),{k:"bsE5s",t:"4) Ziel 5 in Sets (E SK KL ICT)",type:"text"},{k:"tpStyle",t:"4) Darstellung der Ziele",type:"sel",o:[["linie","Linie"],["punkte","Punkte"]]},
+  C("showZone","5) Golden Zone anzeigen"),{k:"z_eigen",t:"5) Eigene: von-bis",type:"text"},{k:"z_sk",t:"5) SK: von-bis",type:"text"},{k:"z_kl",t:"5) Klassisch: von-bis",type:"text"},{k:"z_ict",t:"5) ICT: von-bis",type:"text"},COL("zoneCol","5) Farbe"),N("zoneTr","5) Transparenz",0,100),N("zoneW","5) Linienstärke Zonenrand",1,4),
+  C("showLabels","6) Labels rechts anzeigen"),N("lblOff","6) Label-Abstand (Kerzen)",0,50),{k:"lblSz",t:"6) Schriftgröße Fib-Labels",type:"sel",o:GRS},COL("lblBg","6) Hintergrund"),
+  C("showTbl","8) Bias-Tabelle anzeigen"),{k:"tf1",t:"8) Timeframe 1",type:"sel",o:TFB},{k:"tf2",t:"8) Timeframe 2",type:"sel",o:TFB},{k:"tf3",t:"8) Timeframe 3",type:"sel",o:TFB},{k:"tf4",t:"8) Timeframe 4",type:"sel",o:TFB},{k:"tf5",t:"8) Timeframe 5",type:"sel",o:TFB},N("emaF","8) EMA schnell",1,500),N("emaS","8) EMA langsam",2,500),
+  C("fvgOn","10) FVG anzeigen"),C("fvgBu","10) Bullische FVG ▲"),COL("fvgBuF","10) Bullisch Füllung"),COL("fvgBuB","10) Bullisch Rand/Text"),C("fvgBe","10) Bärische FVG ▼"),COL("fvgBeF","10) Bärisch Füllung"),COL("fvgBeB","10) Bärisch Rand/Text"),N("fvgFillTr","10) Transparenz Füllung",0,100),
+  {k:"fvgMin",t:"10) Mindestgröße-Filter",type:"sel",o:[["kein","Keiner"],["pct","% vom Kurs"],["atr","x ATR"]]},N("fvgMinV","10) Wert",0,20,0.05),C("fvgTrend","10) Nur FVGs in Fib-Richtung"),N("fvgMax","10) Max. Anzahl im Chart",1,150),
+  {k:"fvgExt",t:"10) Verlängerung nach rechts",type:"sel",o:[["akt","Bis aktuelle Kerze"],["fest","Feste Länge"],["ende","Immer bis Chart-Ende"]]},N("fvgLen","10) Länge (Kerzen)",1,500),{k:"fvgFill",t:"10) Gilt als gefüllt bei",type:"sel",o:[["touch","Berührung"],["half","50 % (Mitte)"],["voll","Komplett gefüllt"]]},C("fvgShrink","10) Box schrumpft bei Teil-Füllung"),
+  {k:"fvgDone",t:"10) Gefüllte FVG",type:"sel",o:[["del","Löschen"],["grau","Grau stehen lassen"],["farbig","Farbig stehen lassen"]]},COL("fvgDoneCol","10) Grau-Farbe"),N("fvgBrdW","10) Randstärke",0,4),{k:"fvgBrdSt",t:"10) Stil",type:"sel",o:LS},
+  C("fvgMid","10) Mittellinie 50 %"),COL("fvgMidCol","10) Farbe Mittellinie"),{k:"fvgMidSt",t:"10) Stil Mittellinie",type:"sel",o:LS},C("fvgTxt","10) Beschriftung in der Box"),{k:"fvgTxtSz",t:"10) Schriftgröße",type:"sel",o:GRS.slice(0,3)},C("fvgSize","10) Größe der FVG in der Box anzeigen"),{k:"fvgSizeU",t:"10) Einheit",type:"sel",o:[["pct","%"],["atr","x ATR"],["preis","Preis"],["pa","% + ATR"]]},
+  C("lsOn","12) LSOB anzeigen"),C("lsBu","12) Long-LSOB ▲"),COL("lsBuF","12) Long Füllung"),COL("lsBuB","12) Long Rand/Text"),C("lsBe","12) Short-LSOB ▼"),COL("lsBeF","12) Short Füllung"),COL("lsBeB","12) Short Rand/Text"),N("lsFillTr","12) Transparenz Füllung",0,100),COL("lsApCol","12) Rahmenfarbe A+ Setup"),
+  N("lsPiv","12) Swing-Stärke (Kerzen links/rechts)",1,20),C("lsColor","12) Sweep-Kerze muss Gegenfarbe haben"),C("lsBack","12) Sweep-Kerze muss hinter das alte Hoch/Tief zurückschließen"),N("lsWick","12) Mindest-Docht der Sweep-Kerze (%)",0,90),C("lsTrend","12) Nur in Fib-Richtung"),
+  {k:"lsExt",t:"12) Verlängerung nach rechts",type:"sel",o:[["akt","Bis aktuelle Kerze"],["fest","Feste Länge"],["ende","Bis Chart-Ende"]]},N("lsLen","12) Länge (Kerzen)",1,500),{k:"lsObMode",t:"12) Orderblock-Kerze",type:"sel",o:[["extrem","Kerze mit dem Extrem"],["sweep","Sweep-Kerze (wie PDF)"]]},N("lsExtLook","12) Suchbereich für Extrem-Kerze",3,20),
+  N("lsMax","12) Max. Anzahl Boxen",1,50),N("lsMaxAge","12) Max. Alter ohne Berührung (Kerzen)",10,5000),N("lsBody","12) Max. Eindringtiefe Kerzenkörper (%)",0,100),N("lsWickP","12) Max. Eindringtiefe Docht (%)",0,100),N("lsRej","12) Ablehnungskerze: Mindest-Docht (%)",10,90),C("lsMulti","12) Mehrere Signale pro Orderblock"),
+  {k:"lsWon",t:"12) LSOB nach Entry-Signal",type:"sel",o:[["del","Löschen"],["grau","Grau stehen lassen"],["farbig","Farbig stehen lassen"]]},{k:"lsDone",t:"12) Ungültige / veraltete LSOB",type:"sel",o:[["del","Löschen"],["grau","Grau stehen lassen"]]},C("lsTxt","12) Beschriftung in der Box"),
+  {k:"rkMode",t:"13) Risiko-Info im Chart",type:"sel",o:[["klein","Kleines Symbol + Tooltip"],["gross","Großes Label"],["aus","Aus"]]},C("rkArrows","13) Entry-Pfeile anzeigen"),C("rkLines","13) Entry / SL / Breakeven-Linien anzeigen"),C("rkTbl","13) Tabelle „Letztes LSOB-Signal“"),{k:"rkTblPos",t:"13) Position Tabelle",type:"sel",o:POS},
+  N("rkCash","13) Risiko pro Trade (Quote-Währung)",0.1,1000000,1),{k:"rkSl",t:"13) Stop-Loss",type:"sel",o:[["rej","Unter Ablehnungskerze"],["ob","Unter Orderblock"]]},N("rkMaxSl","13) Max. Stop-Loss (%) – 0 = aus",0,50,0.25),N("rkTol","13) Toleranz zum Stop (%)",0,10,0.05),N("rkFee","13) Gebühren + Reserve für Breakeven (%)",0,5,0.01),N("rkLinesLen","13) Länge der Linien (Kerzen)",3,200),N("rkKeep","13) Anzahl angezeigter Signale",1,20),
+  C("ta1m","13a) Aktiv auf 1m"),C("ta3m","13a) Aktiv auf 3m"),C("ta5m","13a) Aktiv auf 5m"),C("ta15m","13a) Aktiv auf 15m"),C("ta30m","13a) Aktiv auf 30m"),C("ta1h","13a) Aktiv auf 1H"),C("ta2h","13a) Aktiv auf 2H"),C("ta4h","13a) Aktiv auf 4H"),C("ta1d","13a) Aktiv auf 1D"),C("ta1w","13a) Aktiv auf 1W und größer"),
+  {k:"lsScope",t:"13a) Auf deaktivierten Timeframes ausblenden",type:"sel",o:[["sig","Nur Entry-Signale"],["alles","Signale + Boxen"]]}],
+  i:"Teil 1 deines Strategie Indikators: dynamische Fibonacci aus Hoch/Tief der letzten X Kerzen mit Level-Sets (E, SK, KL, ICT), Ziele, Golden Zone, Labels, MTF-Bias-Tabelle (EMA 21/50), FVG und LSOB mit Entry-Signalen. Volume Profile, Marktstruktur, Linien/VWAP, Intermarket und Checkliste folgen im nächsten Durchgang und laufen bis dahin über die Standard-Schalter. Ohne Alarme."}}
  {const POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],TFS=[["","–"],["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"],["1M","1M"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
  ALL.bwi={k:"bwi",t:"Wellen Indikator",d:"SK-System 0-A-B-C, Ziel, Korrekturlevel, Setup, MTF, Divergenz, Liquidität",p:[
   N("pivLen","① Pivot-Länge",2,50),C("zz","① ZigZag anzeigen"),C("autoPv","① Pivot-Länge je Timeframe (aus ⑦)"),
@@ -574,7 +600,7 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   C("swOn","⑩ Liquidität markieren"),N("swPv","⑩ Pivot für Hochs/Tiefs",2,50),C("swFrm","⑩ Rahmen"),C("swWck","⑩ Docht"),C("swLn","⑩ Linie zum Level"),N("swMax","⑩ Anzahl Linien",1,20),COL("cSwBu","⑩ Farbe unten (bullisch)"),COL("cSwBe","⑩ Farbe oben (bärisch)")],
   i:"SK-System nach deinen Regeln: 0-A-B-C, B mindestens 50 %, B-Nachführung, Ziel 161,8–200 %, Korrekturlevel B→C und Gesamtkorrektur 0→C. Fahre mit der Maus über ein Kürzel im Chart (am Handy: antippen) für die Erklärung. Tabellen: Doppelklick legt sie in den Hintergrund, noch einmal minimiert sie. Ohne Alarme und ohne manuelle Punkte."}}
  const G=[
-  ["Bayazit Strategie Indikator v2.26","Dynamische Fibonacci, drei Durchschnitts-Linien, VWAP, Volumenprofil, LSOB.",["dfib","ma1","ma2","ma3","vwap","vp","lsob"]],
+  ["Bayazit Strategie Indikator v2.26","Teil 1 nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB. Volume Profile, Linien und VWAP noch aus dem Chart-Bot.",["bsi","vp","ma1","ma2","ma3","vwap"]],
   ["Bayazit Wellen Indikator V2.30","Nachbau aus deinem Pine-Code: SK-System, Setup-Tabelle mit Positions-Box, MTF-Tabelle, Elliott, RSI-Divergenz, Liquidität. Ohne Alarme.",["bwi"]],
   ["Bayazit Pattern Scanner V2.5","Automatische Trendlinien und S/R-Zonen.",["tl","sr"]],
   ["Bayazit Fibonacci Trend V2.4","Nach deinem Pine-Code: Struktur, Fibonacci, Kerzen nach Trend, Volumenprofil-Level, Haupt-Trendlinien, Linien/VWAP, S/R-Zonen, FVG, Orderblöcke, Risiko-Tabelle. Ohne Alarme.",["bft"]],
@@ -582,7 +608,7 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   ["Bayazit Hitze (Kurs / 20-Wochen-Schnitt)","Früher „Blasen-Risiko“. Säulen ab 1,0, Farbzonen, Tabelle, Kerzen einfärben. Ohne Alarme.",["heat"]],
   ["Bayazit OI & Delta Monitor V1.8","Open Interest, ΔOI, Volumen-Delta, CVD und die Tabelle mit Fazit. Ohne Alarme.",["bod"]]];
  const neu=G.map(([g,note,ks])=>({g,note,own:1,items:ks.map(k=>ALL[k])}));
- neu.push({g:"Standard",items:["vol","rsi","bb","macd","fib","ms","gz","fvg","ob","boxes"].map(k=>ALL[k])});
+ neu.push({g:"Standard",items:["vol","rsi","bb","macd","dfib","lsob","fib","ms","gz","fvg","ob","boxes"].map(k=>ALL[k])});
  SCHEMA.splice(0,SCHEMA.length,...neu)}
 
 function pInput(key,p){const v=S.cfg[key][p.k],id=`${key}.${p.k}`;
@@ -827,7 +853,7 @@ function bodMain(th){const c=S.cfg.bod,R=BOD.R;if(!c.on||!R||!L||(!c.kerzen&&!c.
 $("bodSeg").addEventListener("click",e=>{const b=e.target.closest("[data-m]");if(!b)return;S.cfg.bod.modus=b.dataset.m;save();paint();if(!$("side").hidden&&sideM==="ind"){const sc=$("side").scrollTop;renderDlg();$("side").scrollTop=sc}});
 $("bodBox").addEventListener("click",e=>{const t=e.target.closest("[data-tip]"),tip=$("bodTip");if(!t){tip.hidden=true;return}
   tip.textContent=t.dataset.tip;tip.hidden=false});
-{const rc0=recompute;recompute=function(){bodCalc();bftCalc();bwiCalc();if(S.cfg.heat.on&&S.ext)heatCalc(S.ext);rc0()}}
+{const rc0=recompute;recompute=function(){bodCalc();bsiCalc();bftCalc();bwiCalc();if(S.cfg.heat.on&&S.ext)heatCalc(S.ext);rc0()}}
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("bodBox"));
 bodCalc();
 
@@ -1059,14 +1085,14 @@ function bwiPaint(th){const c=S.cfg.bwi,R=BW.R,rt=$("bwRt"),tb=$("bwTb"),mt=$("b
     mt.style.gridTemplateColumns="auto auto auto";mt.innerHTML=h;bwPlace(mt,c.mPos,c.mOffX,c.mOffY,c.mSz)}else mt.hidden=true}
 
 // Erklärtext beim Drüberfahren (Maus) bzw. Antippen
-{const tip=$("bwTip"),find=e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const HT=BW.hit.concat(BF.hit);for(let i=HT.length-1;i>=0;i--){const h=HT[i];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return{h,x,y}}return null};
+{const tip=$("bwTip"),find=e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const HT=BW.hit.concat(BF.hit,BS.hit);for(let i=HT.length-1;i>=0;i--){const h=HT[i];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h)return{h,x,y}}return null};
   const show=f=>{if(!f){tip.hidden=true;return}tip.textContent=f.h.tip;tip.hidden=false;const bx=$("box").getBoundingClientRect();tip.style.left=Math.min(f.x+14,bx.width-270)+"px";tip.style.top=Math.max(4,Math.min(f.y+16,bx.height-150))+"px"};
-  cv.addEventListener("pointermove",e=>{if(e.pointerType==="mouse")show(BW.hit.length||BF.hit.length?find(e):null)});cv.addEventListener("pointerleave",()=>{tip.hidden=true});cv.addEventListener("click",e=>{const f=find(e);if(f){show(f);clearTimeout(tip._t);tip._t=setTimeout(()=>{tip.hidden=true},6000)}})}
+  cv.addEventListener("pointermove",e=>{if(e.pointerType==="mouse")show(BW.hit.length||BF.hit.length||BS.hit.length?find(e):null)});cv.addEventListener("pointerleave",()=>{tip.hidden=true});cv.addEventListener("click",e=>{const f=find(e);if(f){show(f);clearTimeout(tip._t);tip._t=setTimeout(()=>{tip.hidden=true},6000)}})}
 
 // Tabellen per Doppelklick: normal → Hintergrund (durchscheinend) → minimiert → normal
 {const KEY="blcTab";let st={};try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
   const ap=el=>{const v=st[el.id]||0;el.classList.toggle("tbg",v===1);el.classList.toggle("tmin",v===2);el.title=v===2?"Doppelklick: wieder einblenden":"Doppelklick: in den Hintergrund / minimieren"};
-  ["bwRt","bwTb","bwMt","bodTab","heatTab","bfVp","bfRk"].forEach(id=>{const el=$(id);if(!el)return;ap(el);el.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();st[id]=((st[id]||0)+1)%3;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}ap(el)})})}
+  ["bwRt","bwTb","bwMt","bodTab","heatTab","bfVp","bfRk","bsBias","bsLs"].forEach(id=>{const el=$(id);if(!el)return;ap(el);el.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();st[id]=((st[id]||0)+1)%3;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}ap(el)})})}
 
 // alte Einzel-Schalter aus dem Chart-Bot sind im Wellen Indikator aufgegangen
 S.cfg.sk.on=false;S.cfg.rsic.on=false;S.cfg.liq.on=false;
@@ -1319,6 +1345,118 @@ function bft2Paint(th){const c=S.cfg.bft,R=BF.R,vt=$("bfVp"),rk=$("bfRk");if(!c.
       h+=cell(r.r.toFixed(2).replace(".",","),bfRkCol(r.r),bgR)+cell(F(r.p),"#fff",bgR,1)+(tm?cell(z,r.on?"#fff":bfRkCol(r.r),r.on?bwA("#888888",.45):bgR):"")}
     h+=cell(bfRkTxt(R.rk.cur),bfRkCol(R.rk.cur),bgR)+cell("","#fff",bgR)+(tm?cell("","#fff",bgR):"");
     rk.style.gridTemplateColumns=tm?"auto auto auto":"auto auto";rk.innerHTML=h;bwPlace(rk,c.rkPos,0,0,c.rkSz)}else rk.hidden=true}
+
+// ════════════════════════════════════════════════════════════════
+//  Bayazit Strategie Indikator (BSI) v2.26 – Teil 1 nach dem Pine-Code
+//  0) Schnellschalter/Ansicht, 1)–6) dynamische Fibonacci mit Level-Sets,
+//  Zielen und Golden Zone, 8) MTF-Bias-Tabelle, 10) FVG, 12)–13a) LSOB
+//  mit Entry-Signalen und Tabelle. Ohne Alarme.
+// ════════════════════════════════════════════════════════════════
+const BS={R:null,hit:[]};
+const BSR=[[0,"#787b86","E SK KL ICT"],[0.236,"#787b86","KL"],[0.382,"#b0bec5","KL"],[0.5,"#ffeb3b","E SK KL ICT"],[0.618,"#4caf50","E SK KL ICT"],[0.559,"#ffffff","SK"],[0.705,"#ffb300","ICT"],[0.786,"#ffc400","E KL ICT"],[0.882,"#4caf50","E"],[1,"#388e3c","E SK KL ICT"]];
+const BSE=[[1.272,"#4fa3ff","KL ICT"],[1.809,"#4fa3ff",""],[1.618,"#2962ff","E SK KL ICT"],[2,"#7c4dff",""],[2.618,"#aa00ff","KL"]];
+const bsFm=v=>String(+(+v).toFixed(3)).replace(".",",");
+function bsView(c){const v=c.view,m={retr:c.mRetr,ext:c.mExt,zone:c.mZone,lbl:c.mLbl,bias:c.mBias,fvg:c.mFvg,ls:c.mLs,lsTbl:c.mLsTbl,lsSig:c.mLsSig};
+  if(v!=="eigen"){const mn=v==="min",it=v==="intra",sw=v==="swing",al=v==="alles";Object.assign(m,{retr:true,ext:sw||al,zone:true,lbl:!mn||al,bias:true,fvg:it||al,ls:it||al,lsTbl:it||al,lsSig:it||al})}return m}
+function bsEma(a,len){const o=new Array(a.length).fill(null),al=2/(len+1);let e=null,s=0,c=0;for(let i=0;i<a.length;i++){const v=a[i];if(v==null)continue;if(e==null){s+=v;c++;if(c===len){e=s/len;o[i]=e}}else{e=al*v+(1-al)*e;o[i]=e}}return o}
+function bsiCalc(){const c=S.cfg.bsi;BS.R=null;if(!c.on||S.k.length<30)return;const k=S.k,n=k.length,last=n-1,M=bsView(c),R={M,Ls:[],Ts:[],Xs:[],ser:[]},F=v=>CC.fmt(v);
+  // 1) Fibonacci aus Hoch/Tief der letzten X Kerzen, geglättet
+  const lb=Math.max(10,Math.min(5000,+c.lookback||100)),sm=Math.max(1,+c.smooth||5),isL=new Array(n).fill(null),hh=new Array(n).fill(null),ll=new Array(n).fill(null);
+  for(let i=lb-1;i<n;i++){let h=-Infinity,l=Infinity,hb=0,lbI=0;for(let j=i-lb+1;j<=i;j++){if(k[j].h>=h){h=k[j].h;hb=j}if(k[j].l<=l){l=k[j].l;lbI=j}}hh[i]=h;ll[i]=l;isL[i]=c.dir==="long"?true:c.dir==="short"?false:hb>=lbI}
+  const set=c.preset,inSet=s=>set==="alle"?true:(" "+s+" ").includes(" "+{eigen:"E",sk:"SK",kl:"KL",ict:"ICT"}[set]+" ");
+  const retr=r=>bsEma(hh.map((h,i)=>h==null?null:isL[i]?h-(h-ll[i])*r:ll[i]+(h-ll[i])*r),sm),ext=e=>bsEma(hh.map((h,i)=>h==null?null:isL[i]?ll[i]+(h-ll[i])*e:h-(h-ll[i])*e),sm);
+  R.isLong=isL[last];const c10=c.dirCol10?(R.isLong?c.cL10:c.cS10):c.bsR10c,lbl=[];
+  for(let q=1;q<=10;q++){if(!M.retr||!inSet(c["bsR"+q+"s"]))continue;const v=+c["bsR"+q+"v"],s=retr(v),col=q===10?c10:c["bsR"+q+"c"];R.ser.push({v:s,col,w:q===10?2:1,cols:q===10&&c.dirCol10?isL.map(b=>b?c.cL10:c.cS10):null});if(s[last]!=null)lbl.push([s[last],bsFm(v),col])}
+  for(let q=1;q<=5;q++){if(!M.ext||!inSet(c["bsE"+q+"s"]))continue;const v=+c["bsE"+q+"v"],s=ext(v),col=c["bsE"+q+"c"];R.ser.push({v:s,col,w:1,dots:c.tpStyle==="punkte"});if(s[last]!=null)lbl.push([s[last],"TP "+bsFm(v),col])}
+  if(c.showZone&&M.zone){const z=c["z_"+set]||c.z_eigen,[za,zb]=String(z).split("-").map(Number);R.zone={a:retr(za),b:retr(zb),col:c.zoneCol,tr:+c.zoneTr,w:+c.zoneW||1}}
+  if(c.showLabels&&M.lbl)for(const[y,t,col]of lbl)R.Ts.push({x:last+(+c.lblOff||3),y,t:t+"  "+F(y),pos:"r",col,bg:1});
+  // 8) MTF-Bias
+  R.bias=null;if(c.showTbl&&M.bias){const rows=[],need=[];for(let q=1;q<=5;q++){const tf=c["tf"+q];let kk=null;if(tf===S.tf)kk=k;else{need.push(tf);kk=bfHK(tf)}
+      if(!kk){rows.push([tf,null]);continue}const cl=kk.map(x=>x.c),ef=bsEma(cl,+c.emaF||21),es=bsEma(cl,+c.emaS||50),j=kk.length-1;
+      rows.push([tf,ef[j]==null||es[j]==null?0:ef[j]>es[j]&&cl[j]>es[j]?1:ef[j]<es[j]&&cl[j]<es[j]?-1:0])}
+    R.bias=rows;if(need.some(tf=>!BF.htf[S.sym+"|"+tf]))bfHtfLoad(need)}
+  // 10) FVG
+  if(c.fvgOn&&M.fvg){const atr=bfATR(k,14),gaps=[];
+    for(let i=3;i<n;i++){const a=atr[i-1]||0,ok=g=>c.fvgMin==="kein"?true:c.fvgMin==="pct"?g/k[i].c*100>=+c.fvgMinV:g>=(+c.fvgMinV)*a;
+      // Lücke zwischen Kerze i-3 und i-1, erkannt beim Öffnen von Kerze i (wie im Pine-Code)
+      if(c.fvgBu&&k[i-1].l>k[i-3].h&&ok(k[i-1].l-k[i-3].h)&&(!c.fvgTrend||isL[i]))gaps.push({t:k[i-1].l,b:k[i-3].h,ct:k[i-1].l,cb:k[i-3].h,bull:true,s:i-3,born:i,act:true,end:null});
+      if(c.fvgBe&&k[i-1].h<k[i-3].l&&ok(k[i-3].l-k[i-1].h)&&(!c.fvgTrend||!isL[i]))gaps.push({t:k[i-3].l,b:k[i-1].h,ct:k[i-3].l,cb:k[i-1].h,bull:false,s:i-3,born:i,act:true,end:null});
+      while(gaps.length>(+c.fvgMax||15))gaps.shift();
+      for(let j=gaps.length-1;j>=0;j--){const g=gaps[j];if(!g.act||i<=g.born)continue;const inside=g.bull?k[i].l<=g.ct:k[i].h>=g.cb;
+        if(c.fvgShrink&&inside){if(g.bull&&k[i].l>g.b&&k[i].l<g.ct)g.ct=k[i].l;if(!g.bull&&k[i].h<g.t&&k[i].h>g.cb)g.cb=k[i].h}
+        const half=(g.t+g.b)/2,lv=c.fvgFill==="touch"?(g.bull?g.t:g.b):c.fvgFill==="half"?half:(g.bull?g.b:g.t);
+        if(g.bull?k[i].l<=lv:k[i].h>=lv){g.act=false;g.end=i;if(c.fvgDone==="del")gaps.splice(j,1)}}}
+    for(const g of gaps){const x2=g.act?(c.fvgExt==="fest"?g.s+3+(+c.fvgLen||10):c.fvgExt==="ende"?last+30:last):g.end,grey=!g.act&&c.fvgDone==="grau",fc=grey?c.fvgDoneCol:g.bull?c.fvgBuF:c.fvgBeF,bc=grey?"#78787899":g.bull?c.fvgBuB:c.fvgBeB;
+      R.Xs.push({x1:g.s,y1:g.bull?g.ct:g.t,x2,y2:g.bull?g.b:g.cb,bg:bwA(fc,grey?.15:(100-(+c.fvgFillTr||90))/100),bc:+c.fvgBrdW?bwA(bc,.7):null,bw:+c.fvgBrdW,dash:c.fvgBrdSt==="d"?[5,4]:c.fvgBrdSt==="p"?[2,3]:null});
+      if(c.fvgMid)R.Ls.push({x1:g.s,y1:(g.t+g.b)/2,x2,y2:(g.t+g.b)/2,col:bwA(grey?"#888888":c.fvgMidCol,.5),w:1,dash:c.fvgMidSt==="s"?null:c.fvgMidSt==="p"?[2,3]:[5,4]});
+      const sz=g.t-g.b,a=atr[g.born-1]||0,pct=(sz/k[g.born].c*100).toFixed(2).replace(".",",")+" %",at=a?(sz/a).toFixed(2).replace(".",",")+" ATR":"– ATR",st=c.fvgSizeU==="atr"?at:c.fvgSizeU==="preis"?F(sz):c.fvgSizeU==="pa"?pct+" | "+at:pct;
+      const tx=(c.fvgTxt?(g.bull?"FVG ▲":"FVG ▼"):"")+(c.fvgSize?(c.fvgTxt?"  ":"")+st:"");if(tx)R.Ts.push({x:x2,y:(g.t+g.b)/2,t:tx,pos:"l",col:bc,sz:c.fvgTxtSz,tip:(g.bull?"Bullische":"Bärische")+" FVG "+F(g.b)+" – "+F(g.t)+"\nGröße "+pct+" · "+at})}}
+  // 12) LSOB
+  R.ls=null;if(c.lsOn&&M.ls){const sec=BWSEC[S.tf],allowed=sec<=60?c.ta1m:sec<=180?c.ta3m:sec<=300?c.ta5m:sec<=900?c.ta15m:sec<=1800?c.ta30m:sec<=3600?c.ta1h:sec<=7200?c.ta2h:sec<=14400?c.ta4h:sec<=86400?c.ta1d:c.ta1w;
+    const boxOn=allowed||c.lsScope==="sig",pv=Math.max(1,+c.lsPiv||3),swH=new Array(n).fill(null),swL=new Array(n).fill(null);let h0=null,l0=null;
+    for(let i=0;i<n;i++){const cc=i-pv;if(bwIsPiv(k,cc,pv,pv,true))h0=k[cc].h;if(bwIsPiv(k,cc,pv,pv,false))l0=k[cc].l;swH[i]=h0;swL[i]=l0}
+    const obs=[],sig=[];let usedH=null,usedL=null,filt=0;const look=Math.max(3,+c.lsExtLook||5),useExt=c.lsObMode==="extrem",rk=c;
+    for(let i=4;i<n;i++){const j=i-1,q=k,refH=swH[j-3],refL=swL[j-3],r2=q[j-2].h-q[j-2].l,upW=q[j-2].h-Math.max(q[j-2].o,q[j-2].c),dnW=Math.min(q[j-2].o,q[j-2].c)-q[j-2].l;
+      const bearOk=refH!=null&&refH!==usedH&&q[j-2].h>refH&&(!c.lsColor||q[j-2].c>q[j-2].o)&&(!c.lsBack||q[j-2].c<refH)&&(!+c.lsWick||(r2>0&&upW/r2*100>=+c.lsWick))&&q[j-1].c<q[j-1].o&&q[j].c<q[j].o;
+      const bullOk=refL!=null&&refL!==usedL&&q[j-2].l<refL&&(!c.lsColor||q[j-2].c<q[j-2].o)&&(!c.lsBack||q[j-2].c>refL)&&(!+c.lsWick||(r2>0&&dnW/r2*100>=+c.lsWick))&&q[j-1].c>q[j-1].o&&q[j].c>q[j].o;
+      if(bearOk)usedH=refH;if(bullOk)usedL=refL;
+      const ext=hi=>{let b=j;for(let t=j;t>j-look&&t>=0;t--)if(hi?q[t].h>q[b].h:q[t].l<q[b].l)b=t;return b};
+      const add=(bull,b,bos)=>{obs.push({t:q[b].h,b:q[b].l,s:b,bull,born:i,st:0,trig:null,rej:null,tb:0,bos,okB:false,okF:false,ap:false,end:null,won:false,kill:false});while(obs.length>(+c.lsMax||10))obs.shift()};
+      if(boxOn&&c.lsBe&&bearOk&&(!c.lsTrend||!isL[i]))add(false,useExt?ext(true):j-2,swL[j-3]);
+      if(boxOn&&c.lsBu&&bullOk&&(!c.lsTrend||isL[i]))add(true,useExt?ext(false):j-2,swH[j-3]);
+      let lSig=false,sSig=false,slL=null,slS=null;const x=q[i];
+      for(let t=obs.length-1;t>=0;t--){const o=obs[t];if(o.st===3||i<=o.born)continue;const hg=o.t-o.b;let kill=false,fin=false,won=false;
+        if(!o.ap){if(o.bull){o.okB=o.okB||x.c>o.bos;o.okF=o.okF||x.l>q[i-2].h}else{o.okB=o.okB||x.c<o.bos;o.okF=o.okF||x.h<q[i-2].l}if(o.okB&&o.okF)o.ap=true}
+        if(o.bull){const tn=x.l<=o.t;if(x.l<o.b)kill=true;else if(tn&&(Math.min(x.o,x.c)<o.t-hg*(+c.lsBody)/100||x.l<o.t-hg*(+c.lsWickP)/100))kill=true;else{
+            if(o.st===2&&i>o.tb&&x.c>o.trig){if(!lSig){lSig=true;slL=c.rkSl==="ob"?o.b:o.rej}won=true;if(c.lsMulti)o.st=0;else fin=true}
+            if(!fin){if(tn&&o.st===0)o.st=1;const rn=x.h-x.l;if(o.st>=1&&x.l<=o.t+hg&&rn>0&&(Math.min(x.o,x.c)-x.l)/rn*100>=+c.lsRej){o.st=2;o.trig=x.h;o.rej=x.l;o.tb=i}}}}
+        else{const tn=x.h>=o.b;if(x.h>o.t)kill=true;else if(tn&&(Math.max(x.o,x.c)>o.b+hg*(+c.lsBody)/100||x.h>o.b+hg*(+c.lsWickP)/100))kill=true;else{
+            if(o.st===2&&i>o.tb&&x.c<o.trig){if(!sSig){sSig=true;slS=c.rkSl==="ob"?o.t:o.rej}won=true;if(c.lsMulti)o.st=0;else fin=true}
+            if(!fin){if(tn&&o.st===0)o.st=1;const rn=x.h-x.l;if(o.st>=1&&x.h>=o.b-hg&&rn>0&&(x.h-Math.max(x.o,x.c))/rn*100>=+c.lsRej){o.st=2;o.trig=x.l;o.rej=x.h;o.tb=i}}}}
+        if(!kill&&!fin&&o.st===0&&!won&&i-o.born>(+c.lsMaxAge||300))fin=true;
+        if(kill||fin){o.st=3;o.end=i;o.won=won&&!kill;o.kill=kill;const del=o.won?c.lsWon==="del":c.lsDone==="del";if(del)obs.splice(t,1)}}
+      lSig=lSig&&allowed;sSig=sSig&&allowed;const tol=(+c.rkTol||0)/100,mx=+c.rkMaxSl||0;
+      if(lSig&&mx>0&&slL!=null&&(x.c-slL*(1-tol))/x.c*100>mx){lSig=false;filt++}if(sSig&&mx>0&&slS!=null&&(slS*(1+tol)-x.c)/x.c*100>mx){sSig=false;filt++}
+      for(const[ok,isLg,sb]of[[lSig,true,slL],[sSig,false,slS]]){if(!ok)continue;const e=x.c,sl=isLg?sb*(1-tol):sb*(1+tol),rp=Math.abs(e-sl)/e*100,pos=rp>0?(+c.rkCash)/rp*100:null,be=isLg?e*(1+(+c.rkFee)/100):e*(1-(+c.rkFee)/100);sig.push({i,isL:isLg,e,sl,rp,pos,be,t:x.t})}}
+    for(const o of obs){const grey=o.st===3&&(o.won?c.lsWon==="grau":true),x2=o.st===3?o.end:(c.lsExt==="fest"?o.s+(+c.lsLen||30):c.lsExt==="ende"?last+30:last),bc=grey?"#78787899":o.ap?c.lsApCol:o.bull?c.lsBuB:c.lsBeB;
+      R.Xs.push({x1:o.s,y1:o.t,x2,y2:o.b,bg:grey?"rgba(128,128,128,.12)":bwA(o.bull?c.lsBuF:c.lsBeF,(100-(+c.lsFillTr||85))/100),bc,bw:o.ap&&!grey?2:1});
+      if(c.lsTxt)R.Ts.push({x:x2,y:o.t,t:(o.bull?"LSOB ▲":"LSOB ▼")+(o.ap?" A+":""),pos:"l",col:grey?"#888888":bc,sz:"klein",dy:7,tip:(o.bull?"Long":"Short")+"-LSOB "+F(o.b)+" – "+F(o.t)+(o.ap?"\nA+ Setup: Strukturbruch und FVG danach":"")+(o.st===1?"\nKurs hat den Block erreicht – auf Ablehnung achten":o.st===2?"\nAblehnungskerze da – Entry bei Schluss "+(o.bull?"über ":"unter ")+F(o.trig):"")})}
+    const shown=M.lsSig?sig.slice(-Math.max(1,+c.rkKeep||5)):[];
+    for(const s of shown){const tip=(s.isL?"LSOB LONG":"LSOB SHORT")+"\nEntry: "+F(s.e)+"\nSL: "+F(s.sl)+"  ("+s.rp.toFixed(2).replace(".",",")+" %)\nPosition: "+(s.pos==null?"–":s.pos.toFixed(2).replace(".",","))+"\nBreakeven: "+F(s.be);
+      if(c.rkArrows)R.Ts.push({x:s.i,y:s.isL?k[s.i].l:k[s.i].h,t:s.isL?"▲":"▼",pos:s.isL?"b":"a",col:s.isL?"#2196f3":"#ff5252",sz:"normal",tip});
+      if(c.rkMode!=="aus")R.Ts.push({x:s.i,y:s.isL?k[s.i].l:k[s.i].h,t:c.rkMode==="gross"?tip:(s.isL?"L":"S"),pos:s.isL?"b":"a",col:"#ffffff",box:s.isL?"#2196f3":"#ff5252",sz:"winzig",dy:14,tip});
+      if(c.rkLines){const x2=s.i+(+c.rkLinesLen||15);R.Ls.push({x1:s.i,y1:s.e,x2,y2:s.e,col:"#ffffff",w:1},{x1:s.i,y1:s.sl,x2,y2:s.sl,col:"#ff1744",w:1,dash:[5,4]},{x1:s.i,y1:s.be,x2,y2:s.be,col:"#00c48c",w:1,dash:[2,3]})}}
+    R.ls={last:sig[sig.length-1]||null,allowed,filt}}
+  BS.R=R}
+
+function bsiPaint(th){const c=S.cfg.bsi,R=BS.R,bt=$("bsBias"),lt=$("bsLs");BS.hit=[];if(!c.on||!R||!L){bt.hidden=lt.hidden=true;return}
+  const k=S.k,last=k.length-1,X=L.X,Y=L.Y,cw=L.cw,F=v=>CC.fmt(v),i0=Math.max(0,L.i0-1),i1=Math.min(last,L.i1+1);
+  ctx.save();ctx.beginPath();ctx.rect(0,0,L.pw,L.mainH);ctx.clip();
+  if(R.zone){const z=R.zone;ctx.beginPath();let st=false;for(let i=i0;i<=i1;i++){if(z.a[i]==null)continue;st?ctx.lineTo(X(i),Y(z.a[i])):(ctx.moveTo(X(i),Y(z.a[i])),st=true)}
+    for(let i=i1;i>=i0;i--)if(z.b[i]!=null)ctx.lineTo(X(i),Y(z.b[i]));if(st){ctx.closePath();ctx.fillStyle=bwA(z.col,(100-z.tr)/100);ctx.fill()}
+    for(const s of[z.a,z.b]){ctx.strokeStyle=z.col;ctx.lineWidth=z.w;ctx.beginPath();let p=false;for(let i=i0;i<=i1;i++){if(s[i]==null){p=false;continue}p?ctx.lineTo(X(i),Y(s[i])):(ctx.moveTo(X(i),Y(s[i])),p=true)}ctx.stroke()}}
+  for(const s of R.ser){ctx.strokeStyle=s.col;ctx.fillStyle=s.col;ctx.lineWidth=s.w;if(s.dots){for(let i=i0;i<=i1;i+=Math.max(1,Math.round(4/cw))){if(s.v[i]==null)continue;ctx.beginPath();ctx.arc(X(i),Y(s.v[i]),1.6,0,7);ctx.fill()}continue}
+    if(s.cols){for(let i=Math.max(i0,1);i<=i1;i++){const v=s.v[i],p0=s.v[i-1];if(v==null||p0==null)continue;ctx.strokeStyle=s.cols[i];ctx.beginPath();ctx.moveTo(X(i-1),Y(p0));ctx.lineTo(X(i),Y(v));ctx.stroke()}continue}
+    ctx.beginPath();let p=false;for(let i=i0;i<=i1;i++){const v=s.v[i];if(v==null){p=false;continue}p?ctx.lineTo(X(i),Y(v)):(ctx.moveTo(X(i),Y(v)),p=true)}ctx.stroke()}
+  for(const b of R.Xs){const x1=X(b.x1)-cw/2,x2=X(b.x2)+cw/2,y1=Y(b.y1),y2=Y(b.y2);if(b.bg){ctx.fillStyle=b.bg;ctx.fillRect(x1,y1,x2-x1,y2-y1)}if(b.bc){ctx.strokeStyle=b.bc;ctx.lineWidth=b.bw||1;ctx.setLineDash(b.dash||[]);ctx.strokeRect(x1,y1,x2-x1,y2-y1);ctx.setLineDash([])}}
+  for(const l of R.Ls){ctx.strokeStyle=l.col;ctx.lineWidth=l.w||1;ctx.setLineDash(l.dash||[]);ctx.beginPath();ctx.moveTo(X(l.x1),Y(l.y1));ctx.lineTo(X(l.x2),Y(l.y2));ctx.stroke()}ctx.setLineDash([]);
+  ctx.textBaseline="middle";ctx.textAlign="left";
+  for(const t of R.Ts){const fs={winzig:9.5,klein:10.5,normal:12,gross:14}[t.sz||c.lblSz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const lines=String(t.t).split("\n"),w=Math.max(...lines.map(s=>ctx.measureText(s).width)),h=(fs+2)*lines.length,px=X(t.x),py=Y(t.y)+(t.pos==="b"?(t.dy||0):t.pos==="a"?-(t.dy||0):(t.dy||0));let x,y;
+    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){x=Math.min(px+5,L.pw-w-6);y=py}else{x=Math.max(4,px-6-w);y=py}
+    if(t.bg||t.box){ctx.fillStyle=t.box||c.lblBg;ctx.globalAlpha=t.box?.9:.75;ctx.fillRect(x-3,y-h/2-1,w+6,h+2);ctx.globalAlpha=1}
+    lines.forEach((s,q)=>{const yy=y-h/2+(fs+2)*(q+.5);if(!t.bg&&!t.box){ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(s,x,yy)}ctx.fillStyle=t.col;ctx.fillText(s,x,yy)});
+    if(t.tip)BS.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
+  ctx.restore();
+  const cell=(t,col,bg,al)=>`<span style="color:${col};${bg?"background:"+bg+";":""}${al?"text-align:right;":""}">${esc(t)}</span>`,hd="rgba(19,23,34,.95)";
+  if(R.bias){bt.hidden=false;let h=cell("TF","#fff",hd)+cell("Bias","#fff",hd);for(const[tf,b]of R.bias){const bg=b==null?"#555":b===1?"#00a86b":b===-1?"#d32f2f":"rgba(128,128,128,.7)";h+=cell(bwTF(tf).toUpperCase().replace("1H","1H"),"#fff",hd)+cell(b==null?"lädt":b===1?"BULLISH":b===-1?"BEARISH":"NEUTRAL","#fff",bg)}
+    h+=cell("Richtung","#fff",hd)+cell(R.isLong?"LONG-Fib":"SHORT-Fib","#fff",c.dirCol10?(R.isLong?c.cL10:c.cS10):"#b8860b")+cell("Set","#fff",hd)+cell({eigen:"Eigene",sk:"SK System",kl:"Klassisch",ict:"ICT OTE",alle:"Alle Level"}[c.preset],"#fff",hd);
+    bt.style.gridTemplateColumns="auto auto";bt.innerHTML=h;bwPlace(bt,"ur",0,0,"klein")}else bt.hidden=true;
+  if(R.ls&&c.rkTbl&&R.M.lsTbl){lt.hidden=false;const s=R.ls.last,dirBg=!s?"rgba(128,128,128,.6)":s.isL?"#2196f3":"#ff5252",nb="rgba(0,0,0,.7)",d=v=>v.toFixed(2).replace(".",",");
+    const dt=s?new Date(s.t):null,tt=dt?`${String(dt.getDate()).padStart(2,"0")}.${String(dt.getMonth()+1).padStart(2,"0")}. ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`:"–";
+    let h=cell("Letztes LSOB-Signal","#fff",hd)+cell(R.ls.allowed?"TF aktiv":"TF aus","#fff",R.ls.allowed?"rgba(0,168,107,.8)":"rgba(128,128,128,.7)");
+    for(const[a,b,bg]of[["Richtung",s?(s.isL?"LONG":"SHORT"):"–",dirBg],["Entry",s?F(s.e):"–",nb],["Stop-Loss",s?F(s.sl)+"  ("+d(s.rp)+" %)":"–","rgba(211,47,47,.6)"],["Position",s&&s.pos!=null?d(s.pos):"–",nb],["Breakeven",s?F(s.be):"–","rgba(0,168,107,.6)"],["Zeitpunkt",tt,nb],["Risiko/Trade",d(+c.rkCash),nb]])h+=cell(a,"#fff",hd)+cell(b,"#fff",bg,1);
+    if(+c.rkMaxSl>0)h+=`<span class="hd" style="color:#9aa3b2;background:${hd}">Max.-Stop-Filter ${String(c.rkMaxSl).replace(".",",")} %: ${R.ls.filt} Signal(e) verworfen</span>`;
+    lt.style.gridTemplateColumns="auto auto";lt.innerHTML=h;bwPlace(lt,c.rkTblPos,0,0,"klein")}else lt.hidden=true}
 </script>
 </body>
 </html>

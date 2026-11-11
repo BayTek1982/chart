@@ -123,6 +123,39 @@ html,body{height:100%;overflow:hidden}
 #heatTab{pointer-events:auto!important;cursor:default}
 .tbg{opacity:.22}.tmin>*:not(:first-child){display:none!important}.tmin{opacity:.8}
 #bodTip{position:absolute;left:8px;bottom:6px;max-width:min(420px,calc(100% - var(--ax,74px) - 16px));background:var(--fg);color:var(--bg);font-size:.78rem;line-height:1.4;padding:7px 10px;border-radius:8px;white-space:pre-line;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+
+/* ----- Schritt 1: Handy, Zeitrahmen-Favoriten, Werkzeuge, Fenster zuklappen ----- */
+.tools{top:72px!important;bottom:auto!important;left:6px!important;transform:none!important;flex-direction:column!important;flex-wrap:nowrap!important;max-width:none!important;max-height:calc(100% - 140px);overflow-y:auto;scrollbar-width:none}
+.tools::-webkit-scrollbar{display:none}.tools hr{display:block!important}
+.tools.zu{display:none}
+#toolTg{position:absolute;left:6px;bottom:30px;z-index:7;width:40px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:700 1rem var(--f-body);cursor:pointer;opacity:.95}
+#toolTg.on{background:var(--gold);color:var(--accent-ink);border-color:transparent}
+
+.tfMore{font-weight:800!important}
+#tfMenu{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4);padding:8px;display:grid;grid-template-columns:repeat(3,auto);gap:4px;max-width:calc(100vw - 16px)}
+#tfMenu .h{grid-column:1/-1;font-size:.74rem;color:var(--muted);padding:2px 4px 4px}
+#tfMenu .it{display:flex;align-items:center;border-radius:8px;background:var(--chip)}
+#tfMenu .it button{border:0;background:none;color:var(--fg);font:700 .9rem var(--f-num);padding:9px 8px;cursor:pointer}
+#tfMenu .it button.st{color:var(--muted);font-size:1rem;padding:9px 8px 9px 2px}#tfMenu .it button.st.on{color:var(--gold)}
+#tfMenu .it.cur{outline:2px solid var(--gold)}
+.ic{display:none}
+.bodbox.zu{flex-basis:28px!important}.bodbox.zu canvas,.bodbox.zu #bodTab,.bodbox.zu #bodSeg,.bodbox.zu #bodInfo{display:none!important}
+#bodZu{pointer-events:auto;border:0;background:var(--chip);color:var(--fg);border-radius:6px;font:700 .72rem var(--f-body);padding:2px 7px;cursor:pointer;flex:none}
+@media (max-width:700px){
+  .wrap{gap:4px}
+  .top{gap:5px;row-gap:5px}
+  .top .logo{width:30px;height:30px}
+  .top .sym{flex:1 1 70px;min-width:62px}.top .sym input{padding:6px 8px;font-size:.9rem}
+  .live{font-size:.78rem;gap:5px;padding:0}
+  .top .curseg{padding:2px}.top .curseg button{padding:5px 7px}
+  .top #tfSeg{order:10;flex:1 1 100%;flex-wrap:nowrap;padding:2px}.top #tfSeg button{padding:5px 8px;font-size:.8rem;flex:1 0 auto}
+  .acts{gap:4px;margin-left:0}.acts .btn{padding:7px 9px;font-size:.84rem}
+  .lb{display:none}.ic{display:inline}
+  #shareBtn,#pngBtn{display:none}
+  .bodbox{flex-basis:clamp(110px,22%,190px)!important}
+  .tools button{width:34px;height:32px}
+  #bodTab{font-size:9.5px!important;max-height:calc(100% - 28px);overflow-y:auto}
+}
 </style>
 </head>
 <body>
@@ -134,8 +167,8 @@ html,body{height:100%;overflow:hidden}
     <div class="seg" id="tfSeg"></div>
     <div class="seg curseg" id="curSeg" title="Währung der Kurse"><button data-cur="orig">$</button><button data-cur="eur">€</button></div>
     <div class="acts">
-      <button class="btn" id="indBtn">ƒ Indikatoren</button>
-      <button class="btn ghost" id="anaBtn">Analyse</button>
+      <button class="btn" id="indBtn">ƒ<span class="lb"> Indikatoren</span></button>
+      <button class="btn ghost" id="anaBtn"><span class="lb">Analyse</span><span class="ic">≡</span></button>
       <button class="btn ghost" id="shareBtn" title="Link mit Coin, Zeitrahmen und Indikatoren kopieren">🔗</button>
       <button class="btn ghost" id="pngBtn" title="Chart als Bild speichern">🖼</button>
       <button class="btn ghost" id="refresh" title="Neu laden">⟳</button>
@@ -147,14 +180,14 @@ html,body{height:100%;overflow:hidden}
   <div class="ccol"><div class="chartbox" id="box"><canvas id="cv"></canvas>
     <div class="ov"><div class="t" id="ovT">–</div><div class="o" id="ovO"></div><div class="lg" id="ovL"></div></div>
     <button class="autob" id="autoB" hidden title="Preisachse wieder automatisch">Auto</button>
-    <div class="tools" id="tools"></div>
+    <div class="tools" id="tools"></div><button id="toolTg" type="button" title="Zeichenwerkzeuge ein-/ausblenden">✎</button>
     <div id="heatTab" hidden></div>
     <div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
     <div class="ebar" id="ebar" hidden></div>
     <div class="loading" id="loading">Lädt …</div>
   </div>
   <div class="bodbox" id="bodBox" hidden><canvas id="bodCv"></canvas>
-    <div class="bodH"><b class="n">BOD V1.8</b><div class="seg" id="bodSeg"><button data-m="doi">ΔOI</button><button data-m="oi">OI</button><button data-m="delta">Delta</button><button data-m="cvd">CVD</button></div><span id="bodInfo"></span></div>
+    <div class="bodH"><button id="bodZu" type="button" title="Fenster zuklappen / öffnen (auch Doppeltipp)">▾</button><b class="n">BOD V1.8</b><div class="seg" id="bodSeg"><button data-m="doi">ΔOI</button><button data-m="oi">OI</button><button data-m="delta">Delta</button><button data-m="cvd">CVD</button></div><span id="bodInfo"></span></div>
     <div id="bodTab" hidden></div><div id="bodTip" hidden></div>
   </div></div>
   <aside class="side" id="side" hidden><div class="dh"><h2 id="sideH">Indikatoren</h2><button class="x" id="sideX" aria-label="Schließen">✕</button></div>
@@ -165,7 +198,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=11"></script>
+<script src="chart-core.js?v=12"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -276,7 +309,7 @@ const dark=()=>matchMedia("(prefers-color-scheme: dark)").matches;
 function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
-  const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th});
+  const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP});
   if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bftPaint(th);bwiPaint(th);bodMain(th);bodPaint(th)}heatPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
@@ -295,7 +328,9 @@ function analysis(){const rows=S.k.length?CC.summary(S.k,S.I,S.cfg,S.tf):[];
   $("anaSub").textContent=S.k.length?`${S.sym} · ${TFLAB[S.tf]} · ${curText()} · Pivot ${S.I.L||"–"} · Stand ${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr`:""}
 
 // ---------- Bedienung Chart ----------
-const ptrs=new Map();let drag=null,pinch=null;
+const ptrs=new Map();let drag=null,pinch=null,lastTap=null,tapDbl=0;
+try{S.minP=JSON.parse(localStorage.getItem("blcMin"))||{}}catch(e){S.minP={}}
+function dblAt(x,y){const p=L&&L.panes&&L.panes.find(q=>y>=q.top&&y<q.top+q.h);if(!p)return false;S.minP[p.s]=!S.minP[p.s];try{localStorage.setItem("blcMin",JSON.stringify(S.minP))}catch(e){}paint();return true}
 function idxAt(x){return S.view.from+x/((L?L.pw:cv.clientWidth-74)/(S.view.to-S.view.from))-0.5}
 function clampView(){const n=S.k.length,v=S.view,w=v.to-v.from;const W=Math.max(15,Math.min(n+60,w));const mid=(v.from+v.to)/2;v.from=mid-W/2;v.to=mid+W/2;
   if(v.to>n+W*0.6){v.to=n+W*0.6;v.from=v.to-W}if(v.from<-W*0.5){v.from=-W*0.5;v.to=v.from+W}}
@@ -319,11 +354,13 @@ cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointe
       if(drag.vert&&L){const pp=(drag.hi-drag.lo)/(L.mB-L.mT),off=(drag.man?0:0);S.view.man=true;S.view.lo=drag.lo+dy*pp+off;S.view.hi=drag.hi+dy*pp+off}
       S.cross=drag.touch?null:{x:e.offsetX,y:e.offsetY};paint();return}}
   if(e.pointerType!=="touch"||drag){S.cross={x:e.offsetX,y:e.offsetY};paint()}});
-const up=e=>{ptrs.delete(e.pointerId);if(dwUp(e.offsetX,e.offsetY))return;if(ptrs.size<2)pinch=null;if(drag&&!drag.moved&&drag.touch&&!drag.axis){S.cross=S.cross?null:{x:e.offsetX,y:e.offsetY};paint()}if(!ptrs.size)drag=null};
+const up=e=>{ptrs.delete(e.pointerId);if(dwUp(e.offsetX,e.offsetY))return;if(ptrs.size<2)pinch=null;if(drag&&!drag.moved&&drag.touch&&!drag.axis){const now=Date.now();
+    if(lastTap&&now-lastTap.t<380&&Math.abs(lastTap.x-e.offsetX)<35&&Math.abs(lastTap.y-e.offsetY)<35){lastTap=null;tapDbl=now;S.cross=null;if(!dblAt(e.offsetX,e.offsetY))resetView();paint()}
+    else{lastTap={t:now,x:e.offsetX,y:e.offsetY};S.cross=S.cross?null:{x:e.offsetX,y:e.offsetY};paint()}}if(!ptrs.size)drag=null};
 cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
 cv.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"){S.cross=null;paint()}});
 cv.addEventListener("wheel",e=>{e.preventDefault();if(onAxis(e.offsetX,e.offsetY)){scaleY(e.deltaY>0?1.1:1/1.1);paint();return}zoom(e.deltaY>0?1.12:1/1.12,e.offsetX)},{passive:false});
-cv.addEventListener("dblclick",e=>{if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
+cv.addEventListener("dblclick",e=>{if(Date.now()-tapDbl<700)return;if(dblAt(e.offsetX,e.offsetY))return;if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
 $("autoB").onclick=()=>{if(S.view){S.view.man=false;paint()}};
 addEventListener("resize",paint);matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",paint);
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("box"));
@@ -387,11 +424,13 @@ addEventListener("keydown",e=>{if(e.target.matches("input,select,textarea"))retu
   if((e.key==="Delete"||e.key==="Backspace")&&S.sel){S.dw=S.dw.filter(z=>z.id!==S.sel);S.sel=null;saveDw();paint()}
   if(e.key==="Escape"){if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;S.sel=null;renderTools();paint()}});
 
+let FAV;try{FAV=JSON.parse(localStorage.getItem("blcFav"))}catch(e){}if(!Array.isArray(FAV)||!FAV.length)FAV=["5m","15m","1h","4h","1d","1w"];
 // ---------- Oben: Markt, Symbol, Zeitrahmen ----------
 function renderBar(){document.querySelectorAll("#mktSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===S.mkt));
-  $("tfSeg").innerHTML=TF[S.mkt].map(t=>`<button data-tf="${t}" aria-pressed="${t===S.tf}">${TFLAB[t]}</button>`).join("");$("sym").value=S.sym}
+  const fav=TF[S.mkt].filter(t=>FAV.includes(t)),list=fav.includes(S.tf)?fav:fav.concat(S.tf).sort((a,b)=>TF[S.mkt].indexOf(a)-TF[S.mkt].indexOf(b));
+  $("tfSeg").innerHTML=list.map(t=>`<button data-tf="${t}" aria-pressed="${t===S.tf}">${TFLAB[t]}</button>`).join("")+`<button class="tfMore" data-more="1" title="Alle Zeitrahmen und Favoriten">▾</button>`;$("sym").value=S.sym}
 $("mktSeg").onclick=e=>{const b=e.target.closest("[data-k]");if(!b||b.dataset.k===S.mkt)return;S.mkt=b.dataset.k;S.sym=S.mkt==="k"?"BTC":"^GDAXI";if(!TF[S.mkt].includes(S.tf))S.tf="1d";save();renderBar();load()};
-$("tfSeg").onclick=e=>{const b=e.target.closest("[data-tf]");if(!b)return;S.tf=b.dataset.tf;save();renderBar();load()};
+$("tfSeg").onclick=e=>{if(e.target.closest("[data-more]")){tfMenu(e.target.closest("[data-more]"));return}const b=e.target.closest("[data-tf]");if(!b)return;S.tf=b.dataset.tf;save();renderBar();load()};
 $("refresh").onclick=()=>load(true);
 $("curSeg").onclick=async e=>{const b=e.target.closest("[data-cur]");if(!b||b.dataset.cur===S.cur)return;S.cur=b.dataset.cur;save();
   const k0=S.k.length;await applyCur();if(S.view&&S.view.man){S.view.man=false}await refreshExt();recompute()};
@@ -792,7 +831,7 @@ function heatCalc(ext){const Ld=LONG[S.mkt+":"+S.sym];if(!ext||!Ld||!Ld.wc||!Ld.
   if(any)ext.heat=heat;else delete ext.heat}
 function heatPaint(){const c=S.cfg.heat,el=$("heatTab"),I=S.I||{},p=L&&L.panes&&L.panes.find(q=>q.s==="heat"),n=S.k.length;
   const v=I.heat?(I.heatNow!=null?I.heatNow:I.heat[n-1]):null;
-  if(!c.on||!p||v==null||c.table===false)el.hidden=true;
+  if(!c.on||!p||p.mini||v==null||c.table===false)el.hidden=true;
   else{el.hidden=false;const col=CC.heatCol(v,I.heatTh),s=el.style,o=c.tabOrt||"or";
     el.innerHTML=`<span>Hitze</span><b style="color:${col}">${v.toFixed(2).replace(".",",")}</b><span>${Math.round(+c.len||20)}-Wochen-Schnitt</span><b>${I.heatAvg?CC.fmt(I.heatAvg):"–"}</b><span>Bereich</span><b style="color:${col}">${esc(CC.heatTxt(v,I.heatTh))}</b>`;
     [...el.children].forEach(x=>{x.style.background=c.cBg+"cc";if(!x.style.color)x.style.color=c.cTxt});
@@ -1101,6 +1140,26 @@ function bftPaint(th){const c=S.cfg.bft,R=BF.R;BF.hit=[];if(!c.on||!R||!L)return
     if(t.pos==="a"){x=px-w/2;y=py-4-h/2}else if(t.pos==="b"){x=px-w/2;y=py+4+h/2}else if(t.pos==="r"){x=Math.min(px+5,L.pw-w-4);y=py}else{x=Math.max(4,px-5-w);y=py}
     ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t.t,x,y);ctx.fillStyle=t.col;ctx.fillText(t.t,x,y);if(t.tip)BF.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
   ctx.restore()}
+
+// ════════ Schritt 1: Zeitrahmen-Favoriten, Werkzeug-Schalter, Fenster zuklappen ════════
+function tfMenu(btn){let m=$("tfMenu");if(m){m.remove();return}m=document.createElement("div");m.id="tfMenu";document.body.appendChild(m);
+  const draw=()=>{m.innerHTML=`<div class="h">Zeitrahmen wählen · ★ = Favorit in der Leiste</div>`+TF[S.mkt].map(t=>`<div class="it${t===S.tf?" cur":""}"><button data-pick="${t}">${TFLAB[t]}</button><button class="st${FAV.includes(t)?" on":""}" data-star="${t}" title="Als Favorit in die Leiste">${FAV.includes(t)?"★":"☆"}</button></div>`).join("")};
+  draw();const r=btn.getBoundingClientRect(),w=m.offsetWidth;m.style.top=Math.min(r.bottom+6,innerHeight-m.offsetHeight-8)+"px";m.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+"px";
+  m.onclick=e=>{e.stopPropagation();const s=e.target.closest("[data-star]"),p=e.target.closest("[data-pick]");
+    if(s){const k=s.dataset.star;FAV=FAV.includes(k)?FAV.filter(x=>x!==k):FAV.concat(k);if(!FAV.length)FAV=[k];try{localStorage.setItem("blcFav",JSON.stringify(FAV))}catch(_){}draw();renderBar();return}
+    if(p){S.tf=p.dataset.pick;m.remove();save();renderBar();load()}};
+  setTimeout(()=>document.addEventListener("click",function cl(e){if(!m.contains(e.target)){m.remove();document.removeEventListener("click",cl)}}),0)}
+// Werkzeugleiste ein-/ausblenden (am Handy standardmäßig zu)
+{let open;try{open=JSON.parse(localStorage.getItem("blcTools"))}catch(e){}if(open==null)open=innerWidth>700;
+  const ap=()=>{$("tools").classList.toggle("zu",!open);$("toolTg").classList.toggle("on",open);$("toolTg").textContent=open?"✕":"✎"};ap();
+  $("toolTg").onclick=()=>{open=!open;if(!open&&S.tool){S.tool=null;renderTools()}try{localStorage.setItem("blcTools",JSON.stringify(open))}catch(e){}ap();paint()}}
+// OI & Delta Monitor zuklappen: Knopf ▾ oder Doppeltipp/Doppelklick auf das Fenster
+{let zu=false;try{zu=!!JSON.parse(localStorage.getItem("blcBodZu"))}catch(e){}const box=$("bodBox");
+  const ap=()=>{box.classList.toggle("zu",zu);$("bodZu").textContent=zu?"▸":"▾";paint()};
+  const tg=()=>{zu=!zu;try{localStorage.setItem("blcBodZu",JSON.stringify(zu))}catch(e){}ap()};ap();
+  $("bodZu").onclick=e=>{e.stopPropagation();tg()};let lt=0;
+  box.addEventListener("dblclick",e=>{if(e.target.closest("button,#bodTab"))return;e.preventDefault();if(Date.now()-lt>700)tg()});
+  let t0=0;box.addEventListener("pointerup",e=>{if(e.pointerType!=="touch"||e.target.closest("button,#bodTab"))return;const now=Date.now();if(now-t0<380){t0=0;lt=now;tg()}else t0=now})}
 </script>
 </body>
 </html>

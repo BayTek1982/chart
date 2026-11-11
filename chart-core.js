@@ -199,7 +199,8 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H);ctx.textBaseline="middle";
   if(!k||!k.length){ctx.fillStyle=th.txt;ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText("Keine Daten",W/2,H/2);return null}
   const subs=[];if(cfg.rsi.on&&I.rsi)subs.push("rsi");if(cfg.macd.on&&I.macd)subs.push("macd");if(cfg.risk.on&&I.risk)subs.push("risk");if(cfg.heat.on&&I.heat)subs.push("heat");
-  const subH=subs.length?Math.round((H-TA)*[0,0.2,0.17,0.15,0.13][subs.length]):0,mainH=H-TA-subH*subs.length;
+  const MIN=S.minP||{},nFull=subs.filter(s=>!MIN[s]).length,fullH=nFull?Math.round((H-TA)*[0,0.2,0.17,0.15,0.13][nFull]):0,hOf=s=>MIN[s]?18:fullH,mainH=H-TA-subs.reduce((a,s)=>a+hOf(s),0);
+  const PNAME={rsi:"RSI",macd:"MACD",risk:"Risiko",heat:"Hitze"};
   const from=S.view.from,to=S.view.to,cw=pw/(to-from),X=i=>(i-from+0.5)*cw;
   const i0=Math.max(0,Math.floor(from)),i1=Math.min(k.length-1,Math.ceil(to));
   let lo=Infinity,hi=-Infinity;for(let i=i0;i<=i1;i++){if(k[i].l<lo)lo=k[i].l;if(k[i].h>hi)hi=k[i].h}
@@ -318,8 +319,9 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
 
   // Unterfenster
   const panes=[],axQ=[],subTags=[];let top=mainH;
-  subs.forEach(s=>{const pT=top+6,pB=top+subH-6;panes.push({s,top,h:subH});line(0,top,W,top,th.grid,1);
+  subs.forEach(s=>{const subH=hOf(s),pT=top+6,pB=top+subH-6;panes.push({s,top,h:subH,mini:!!MIN[s]});line(0,top,W,top,th.grid,1);
     ctx.save();ctx.beginPath();ctx.rect(0,top,pw,subH);ctx.clip();
+    if(MIN[s]){font(10,1);ctx.textAlign="left";ctx.fillStyle=th.txt;ctx.fillText(`▸ ${PNAME[s]}  (zugeklappt – Doppeltipp öffnet)`,52,top+subH/2);ctx.restore();top+=subH;return}
     if(s==="rsi"){const Yr=v=>pT+(100-v)/100*(pB-pT);const hiL=+cfg.rsi.hi||70,loL=+cfg.rsi.lo||30;
       ctx.fillStyle="rgba(179,136,255,.06)";ctx.fillRect(0,Yr(hiL),pw,Yr(loL)-Yr(hiL));
       line(0,Yr(hiL),pw,Yr(hiL),th.grey,1,[4,3]);line(0,Yr(loL),pw,Yr(loL),th.grey,1,[4,3]);line(0,Yr(50),pw,Yr(50),th.grid,1,[2,3]);

@@ -31,7 +31,7 @@ h1 .dot{width:28px;height:28px;border-radius:8px;background:var(--gold);display:
 .sym input{width:100%;font:700 1rem var(--f-num);background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:9px;padding:9px 12px;text-transform:uppercase}
 .sug{position:absolute;z-index:20;top:100%;left:0;right:0;background:var(--panel);border:1px solid var(--line);border-radius:9px;max-height:320px;overflow:auto;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .sug button{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:0;color:var(--fg);padding:8px 12px;cursor:pointer;font:500 .88rem var(--f-body)}
-.sug button:hover,.sug button.on{background:var(--chip)}.sug b{font-family:var(--f-num)}.sug small{color:var(--muted)}
+.sug button:hover,.sug button.on{background:var(--chip)}.sug b{font-family:var(--f-num)}.sug small{color:var(--muted)}.sugE{padding:8px 12px;color:var(--muted);font-size:.84rem}.sug{min-width:260px}
 .chartbox{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;height:min(72vh,820px);min-height:420px;touch-action:none;user-select:none;-webkit-user-select:none}
 @media (max-width:700px){.chartbox{height:66vh;min-height:380px}}
 canvas{display:block;width:100%;height:100%;cursor:crosshair}
@@ -475,17 +475,34 @@ $("refresh").onclick=()=>load(true);
 $("curSeg").onclick=async e=>{const b=e.target.closest("[data-cur]");if(!b||b.dataset.cur===S.cur)return;S.cur=b.dataset.cur;save();
   const k0=S.k.length;await applyCur();if(S.view&&S.view.man){S.view.man=false}await refreshExt();recompute()};
 let sugI=-1;
-function showSug(){const q=$("sym").value.trim().toUpperCase(),list=S.list[S.mkt];if(!q){$("sug").hidden=true;return}
-  const m=list.filter(x=>x.s.toUpperCase().startsWith(q)||(x.n&&x.n.toUpperCase().includes(q))).slice(0,30);
-  if(!m.length){$("sug").hidden=true;return}sugI=-1;
-  $("sug").innerHTML=m.map(x=>`<button data-s="${esc(x.s)}"><b>${esc(x.s)}${S.mkt==="k"?"<small>/USDT</small>":""}</b><small>${esc(x.n||"")}</small></button>`).join("");$("sug").hidden=false}
-function pick(s){S.sym=s.toUpperCase();$("sug").hidden=true;save();renderBar();load();$("sym").blur()}
+// Namen bekannter Coins (sofort), weitere Namen kommen über die CoinGecko-Suche dazu
+const CNAME={BTC:"Bitcoin",ETH:"Ethereum",SOL:"Solana",XRP:"Ripple XRP",BNB:"BNB Binance Coin",DOGE:"Dogecoin",ADA:"Cardano",TRX:"Tron",TON:"Toncoin",AVAX:"Avalanche",SHIB:"Shiba Inu",LINK:"Chainlink",DOT:"Polkadot",BCH:"Bitcoin Cash",LTC:"Litecoin",
+  NEAR:"Near Protocol",UNI:"Uniswap",APT:"Aptos",SUI:"Sui",PEPE:"Pepe",ICP:"Internet Computer",ETC:"Ethereum Classic",XLM:"Stellar",HBAR:"Hedera",FIL:"Filecoin",ARB:"Arbitrum",OP:"Optimism",ATOM:"Cosmos",INJ:"Injective",
+  RENDER:"Render",IMX:"Immutable",AAVE:"Aave",MKR:"Maker",TAO:"Bittensor",SEI:"Sei",TIA:"Celestia",WIF:"dogwifhat",BONK:"Bonk",FLOKI:"Floki",JUP:"Jupiter",ONDO:"Ondo",ENA:"Ethena",WLD:"Worldcoin",LDO:"Lido DAO",
+  ALGO:"Algorand",VET:"VeChain",GRT:"The Graph",SAND:"The Sandbox",MANA:"Decentraland",AXS:"Axie Infinity",CRV:"Curve",POL:"Polygon",MATIC:"Polygon",XMR:"Monero",KAS:"Kaspa",TRUMP:"Official Trump",HYPE:"Hyperliquid",
+  FET:"Fetch.ai Artificial Superintelligence",STX:"Stacks",RUNE:"THORChain",EGLD:"MultiversX",THETA:"Theta",FLOW:"Flow",CHZ:"Chiliz",GALA:"Gala",APE:"ApeCoin",DYDX:"dYdX",PENGU:"Pudgy Penguins",VIRTUAL:"Virtuals Protocol",
+  OKB:"OKB",CRO:"Cronos",ZEC:"Zcash",DASH:"Dash",NEO:"Neo",IOTA:"IOTA",XTZ:"Tezos",EOS:"EOS",KAIA:"Kaia",PYTH:"Pyth",JTO:"Jito",ORDI:"Ordinals",SATS:"SATS",NOT:"Notcoin",W:"Wormhole",ZRO:"LayerZero",STRK:"Starknet"};
+const GECKO={},norm=t=>String(t||"").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Z0-9]/g,"");
+let geT=0,geQ="";
+function sugList(q){const Q=norm(q),out=[];if(!Q)return out;const seen=new Set();
+  const score=(sym,name)=>{const S0=norm(sym),N=norm(name);if(S0===Q)return 0;if(N===Q)return 1;if(N.startsWith(Q))return 2;if(S0.startsWith(Q))return 3;if(N.includes(Q))return 4;return 9};
+  S.list.k.forEach((x,i)=>{const n=CNAME[x.s]||GECKO[x.s]||"",sc=score(x.s,n);if(sc<9){out.push({s:x.s,m:"k",n:n||"Krypto",sc,r:i});seen.add("k"+x.s)}});
+  S.list.a.forEach((x,i)=>{const sc=score(x.s.replace(/\..*$/,""),x.n);if(sc<9)out.push({s:x.s,m:"a",n:x.n||"Aktie / Index",sc,r:5000+i})});
+  return out.sort((a,b)=>a.sc-b.sc||a.r-b.r).slice(0,30)}
+function showSug(){const q=$("sym").value.trim();if(!q){$("sug").hidden=true;return}const m=sugList(q);sugI=m.length?0:-1;
+  $("sug").innerHTML=m.length?m.map((x,i)=>`<button data-s="${esc(x.s)}" data-m="${x.m}" class="${i===0?"on":""}"><b>${esc(x.s)}${x.m==="k"?"<small>/USDT</small>":""}</b><small>${esc(x.n)}${x.m==="a"?" · Aktie":""}</small></button>`).join(""):`<div class="sugE">Suche „${esc(q)}“ …</div>`;
+  $("sug").hidden=false;
+  // Namenssuche (z. B. „Bitcoin“) über CoinGecko, nur Coins, die es an der Börse gibt
+  const Q=norm(q);if(Q.length>=3&&Q!==geQ){clearTimeout(geT);geT=setTimeout(async()=>{geQ=Q;try{const j=await getJSON("https://api.coingecko.com/api/v3/search?query="+encodeURIComponent(q),8000);
+    const have=new Set(S.list.k.map(x=>x.s));let add=0;for(const c of(j.coins||[]).slice(0,25)){const sy=String(c.symbol||"").toUpperCase();if(have.has(sy)&&!CNAME[sy]&&!GECKO[sy]){GECKO[sy]=c.name;add++}}
+    if(add&&document.activeElement===$("sym"))showSug();else if(!sugList(q).length&&document.activeElement===$("sym"))$("sug").innerHTML=`<div class="sugE">Nichts gefunden</div>`}catch(e){}},300)}}
+function pick(s,m){if(m&&m!==S.mkt){S.mkt=m;if(!TF[S.mkt].includes(S.tf))S.tf=S.mkt==="a"?"1d":S.tf}S.sym=s.toUpperCase();$("sug").hidden=true;save();renderBar();load();$("sym").blur()}
 $("sym").addEventListener("input",showSug);$("sym").addEventListener("focus",()=>{$("sym").select();showSug()});
 $("sym").addEventListener("keydown",e=>{const bs=[...$("sug").querySelectorAll("button")];
   if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();sugI=Math.max(0,Math.min(bs.length-1,sugI+(e.key==="ArrowDown"?1:-1)));bs.forEach((b,i)=>b.classList.toggle("on",i===sugI))}
-  if(e.key==="Enter"){e.preventDefault();const v=sugI>=0&&bs[sugI]?bs[sugI].dataset.s:$("sym").value.trim().replace(/\/?USDT$/i,"");if(v)pick(v)}
+  if(e.key==="Enter"){e.preventDefault();const b=sugI>=0&&bs[sugI]?bs[sugI]:bs[0];if(b)pick(b.dataset.s,b.dataset.m);else{const v=$("sym").value.trim().replace(/\/?USDT(\.P)?$/i,"").replace(/^[A-Z]+:/i,"");if(v)pick(v,"k")}}
   if(e.key==="Escape")$("sug").hidden=true});
-$("sug").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-s]");if(b){e.preventDefault();pick(b.dataset.s)}});
+$("sug").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-s]");if(b){e.preventDefault();pick(b.dataset.s,b.dataset.m)}});
 $("sym").addEventListener("blur",()=>setTimeout(()=>$("sug").hidden=true,150));
 
 // ---------- Indikator-Einstellungen ----------
@@ -1651,6 +1668,6 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
 <script src="bps.js?v=4"></script>
-<script src="wl.js?v=1"></script>
+<script src="wl.js?v=2"></script>
 </body>
 </html>

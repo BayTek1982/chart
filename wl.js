@@ -61,7 +61,7 @@ function setup(){const b=$("wlBody");
     if(d.setf!=null){const k=+d.setf;if(k)FLAG[d.s]=k;else delete FLAG[d.s];saveF();pop=null;return draw()}
     if(d.rm!=null){L().items.splice(+d.rm,1);saveW();return draw()}
     if(d.mv!=null){const it=L().items,i=+d.mv,j=i+ +d.d;if(j>=0&&j<it.length){[it[i],it[j]]=[it[j],it[i]];saveW()}return draw()}
-    if(d.s&&!edit&&t.classList.contains("wlRow")){pick(d.s);setTimeout(draw,50)}});
+    if(d.s&&!edit&&t.classList.contains("wlRow")){pick(d.s,"k");setTimeout(draw,50)}});
   // Ziehen zum Sortieren (Maus, im Bearbeiten-Modus)
   let dragI=-1;b.addEventListener("dragstart",e=>{const r=e.target.closest(".wlRow");if(r)dragI=+r.dataset.i});
   b.addEventListener("dragover",e=>{if(dragI>=0)e.preventDefault()});
@@ -69,7 +69,7 @@ function setup(){const b=$("wlBody");
   // ↑/↓ wechselt das Symbol wie in TradingView
   document.addEventListener("keydown",e=>{if(!open()||e.target.closest("input,textarea,select"))return;if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
     const it=L().items.filter(s=>!s.startsWith("###")&&(!filt||(FLAG[s]||0)===filt));if(!it.length)return;e.preventDefault();
-    let i=it.indexOf(S.sym);i=i<0?0:(i+(e.key==="ArrowDown"?1:-1)+it.length)%it.length;pick(it[i]);setTimeout(draw,50)})}
+    let i=it.indexOf(S.sym);i=i<0?0:(i+(e.key==="ArrowDown"?1:-1)+it.length)%it.length;pick(it[i],"k");setTimeout(draw,50)})}
 window.wlShow=()=>{draw();quotes()};window.wlFlag=s=>FLAG[s]?FL[FLAG[s]][0]:null;
 setup();setInterval(()=>{if(open()&&document.visibilityState==="visible")quotes()},5000);
 })();

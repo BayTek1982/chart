@@ -31,7 +31,8 @@ h1 .dot{width:28px;height:28px;border-radius:8px;background:var(--gold);display:
 .sym input{width:100%;font:700 1rem var(--f-num);background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:9px;padding:9px 12px;text-transform:uppercase}
 .sug{position:absolute;z-index:20;top:100%;left:0;right:0;background:var(--panel);border:1px solid var(--line);border-radius:9px;max-height:320px;overflow:auto;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .sug button{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:0;color:var(--fg);padding:8px 12px;cursor:pointer;font:500 .88rem var(--f-body)}
-.sug button:hover,.sug button.on{background:var(--chip)}.sug b{font-family:var(--f-num)}.sug small{color:var(--muted)}.sugE{padding:8px 12px;color:var(--muted);font-size:.84rem}.sug{min-width:260px}
+.sug button:hover,.sug button.on{background:var(--chip)}.sug b{font-family:var(--f-num)}.sug small{color:var(--muted)}.exT{display:inline-block;font:700 .66rem var(--f-num);padding:1px 5px;border-radius:4px;border:1px solid var(--line);color:var(--muted);margin-left:2px}.exT.okx{color:#fff;background:#111;border-color:#444}
+.sugE{padding:8px 12px;color:var(--muted);font-size:.84rem}.sug{min-width:260px}
 .chartbox{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;height:min(72vh,820px);min-height:420px;touch-action:none;user-select:none;-webkit-user-select:none}
 @media (max-width:700px){.chartbox{height:66vh;min-height:380px}}
 canvas{display:block;width:100%;height:100%;cursor:crosshair}
@@ -268,9 +269,9 @@ async function binK(sym,tf,limit,endTime){const j=await getJSON(`https://data-ap
 function kFetch(sym,tf,limit,endTime){return S.src==="OKX Perp"?okxK(sym,tf,Math.min(limit,600),endTime):binK(sym,tf,limit,endTime)}
 async function loadList(){
   if(S.ex==="okx")try{const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP");
-    S.list.k=(j.data||[]).filter(x=>/-USDT-SWAP$/.test(x.instId)).map(x=>({s:x.instId.slice(0,-10),n:"Perp",v:+x.volCcy24h*+x.last})).sort((a,b)=>b.v-a.v)}catch(e){}
+    S.list.k=(j.data||[]).filter(x=>/-USDT-SWAP$/.test(x.instId)).map(x=>({s:x.instId.slice(0,-10),n:"Perp",ex:"okx",v:+x.volCcy24h*+x.last})).sort((a,b)=>b.v-a.v)}catch(e){}
   if(S.ex!=="okx"||!S.list.k.length)try{const t=await getJSON("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI");
-    S.list.k=t.filter(x=>/USDT$/.test(x.symbol)&&+x.closeTime>Date.now()-2*864e5).map(x=>({s:x.symbol.slice(0,-4),n:"",v:+x.quoteVolume})).filter(x=>!/^(USDC|FDUSD|TUSD|USDP|DAI|EUR|BUSD|USD1)$/.test(x.s)).sort((a,b)=>b.v-a.v)}catch(e){}
+    S.list.k=t.filter(x=>/USDT$/.test(x.symbol)&&+x.closeTime>Date.now()-2*864e5).map(x=>({s:x.symbol.slice(0,-4),n:"",ex:"bin",v:+x.quoteVolume})).filter(x=>!/^(USDC|FDUSD|TUSD|USDP|DAI|EUR|BUSD|USD1)$/.test(x.s)).sort((a,b)=>b.v-a.v)}catch(e){}
   try{const j=await getJSON(RAW+"gz_1d.json?t="+Math.floor(Date.now()/36e5),40000);S.list.a=(j.items||[]).map(x=>({s:x.y,n:x.n,c:x.c}))}catch(e){}}
 async function klines(){const s=S.sym,tf=S.tf;
   if(S.mkt==="k"){const order=S.ex==="okx"?["okx","bin"]:["bin","okx"];
@@ -505,11 +506,11 @@ const GECKO={},norm=t=>String(t||"").toUpperCase().normalize("NFD").replace(/[̀
 let geT=0,geQ="";
 function sugList(q){const Q=norm(q),out=[];if(!Q)return out;const seen=new Set();
   const score=(sym,name)=>{const S0=norm(sym),N=norm(name);if(S0===Q)return 0;if(N===Q)return 1;if(N.startsWith(Q))return 2;if(S0.startsWith(Q))return 3;if(N.includes(Q))return 4;return 9};
-  S.list.k.forEach((x,i)=>{const n=CNAME[x.s]||GECKO[x.s]||"",sc=score(x.s,n);if(sc<9){out.push({s:x.s,m:"k",n:n||"Krypto",sc,r:i});seen.add("k"+x.s)}});
+  S.list.k.forEach((x,i)=>{const n=CNAME[x.s]||GECKO[x.s]||"",sc=score(x.s,n);if(sc<9){out.push({s:x.s,m:"k",n:n||"Krypto",ex:x.ex,sc,r:i});seen.add("k"+x.s)}});
   S.list.a.forEach((x,i)=>{const sc=score(x.s.replace(/\..*$/,""),x.n);if(sc<9)out.push({s:x.s,m:"a",n:x.n||"Aktie / Index",sc,r:5000+i})});
   return out.sort((a,b)=>a.sc-b.sc||a.r-b.r).slice(0,30)}
 function showSug(){const q=$("sym").value.trim();if(!q){$("sug").hidden=true;return}const m=sugList(q);sugI=m.length?0:-1;
-  $("sug").innerHTML=m.length?m.map((x,i)=>`<button data-s="${esc(x.s)}" data-m="${x.m}" class="${i===0?"on":""}"><b>${x.m==="k"&&window.wlFlag&&wlFlag(x.s)?`<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${wlFlag(x.s)};margin-right:6px"></i>`:""}${esc(x.s)}${x.m==="k"?"<small>/USDT</small>":""}</b><small>${esc(x.n)}${x.m==="a"?" · Aktie":""}</small></button>`).join(""):`<div class="sugE">Suche „${esc(q)}“ …</div>`;
+  $("sug").innerHTML=m.length?m.map((x,i)=>`<button data-s="${esc(x.s)}" data-m="${x.m}" class="${i===0?"on":""}"><b>${x.m==="k"&&window.wlFlag&&wlFlag(x.s)?`<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${wlFlag(x.s)};margin-right:6px"></i>`:""}${esc(x.s)}${x.m==="k"?(x.ex==="okx"?"<small>USDT.P</small>":"<small>USDT</small>"):""}</b><small>${esc(x.n)}${x.m==="a"?" · Aktie":x.ex==="okx"?' · <span class="exT okx">OKX Perp</span>':' · <span class="exT">Binance Spot</span>'}</small></button>`).join(""):`<div class="sugE">Suche „${esc(q)}“ …</div>`;
   $("sug").hidden=false;
   // Namenssuche (z. B. „Bitcoin“) über CoinGecko, nur Coins, die es an der Börse gibt
   const Q=norm(q);if(Q.length>=3&&Q!==geQ){clearTimeout(geT);geT=setTimeout(async()=>{geQ=Q;try{const j=await getJSON("https://api.coingecko.com/api/v3/search?query="+encodeURIComponent(q),8000);

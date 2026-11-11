@@ -23,7 +23,7 @@ function dmi(k,len){const n=k.length,tr=trArr(k),pd=new Array(n).fill(0),md=new 
 // Kerzen eines höheren Timeframes aus den Chart-Kerzen bauen (Ersatz, wenn nichts geladen ist)
 function agg(tf){const k=S.k,s=sec(tf)*1e3,key=t=>tf==="1w"?Math.floor((Math.floor(t/864e5)+3)/7):tf==="1M"?(()=>{const d=new Date(t);return d.getUTCFullYear()*12+d.getUTCMonth()})():Math.floor(t/s);
   const o=[];let pk=null;for(const q of k){const kk=key(q.t);if(kk!==pk){o.push({t:tf==="1w"?(kk*7-3)*864e5:kk*s,o:q.o,h:q.h,l:q.l,c:q.c,v:q.v});pk=kk}else{const b=o[o.length-1];b.h=Math.max(b.h,q.h);b.l=Math.min(b.l,q.l);b.c=q.c;b.v+=q.v}}return o}
-function htf(tf,need){if(tf===S.tf)return S.k;const h=typeof bfHK==="function"?bfHK(tf):null;if(h&&h.length)return h;if(S.src==="Binance")need.push(tf);return sec(tf)>sec(S.tf)?agg(tf):null}
+function htf(tf,need){if(tf===S.tf)return S.k;const h=typeof bfHK==="function"?bfHK(tf):null;if(h&&h.length)return h;if(SRCOK())need.push(tf);return sec(tf)>sec(S.tf)?agg(tf):null}
 const tIdx=t=>bfIdx(t);
 
 // ---------- Beschriftung (0b) ----------

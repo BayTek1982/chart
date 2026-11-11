@@ -151,11 +151,28 @@ html,body{height:100%;overflow:hidden}
   .top #tfSeg{order:10;flex:1 1 100%;flex-wrap:nowrap;padding:2px}.top #tfSeg button{padding:5px 8px;font-size:.8rem;flex:1 0 auto}
   .acts{gap:4px;margin-left:0}.acts .btn{padding:7px 9px;font-size:.84rem}
   .lb{display:none}.ic{display:inline}
-  #shareBtn,#pngBtn{display:none}
+  #shareBtn,#pngBtn,#refresh{display:none}
   .bodbox{flex-basis:clamp(110px,22%,190px)!important}
   .tools button{width:34px;height:32px}
   #bodTab{font-size:9.5px!important;max-height:calc(100% - 28px);overflow-y:auto}
 }
+.wl{padding:10px 12px;font-size:.86rem}
+.wlTop{display:flex;gap:6px;align-items:center}.wlTop select{flex:1;min-width:0;background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:6px}
+.wlTop .btn{padding:6px 9px;font-size:.8rem}.wlTop .btn.on{border-color:var(--acc,#f0a030)}
+.wlEx{margin:8px 0 4px;display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:.78rem;opacity:.9}.wlEx button{background:none;border:1px solid var(--line);color:inherit;border-radius:7px;padding:3px 8px;cursor:pointer;font-size:.78rem}
+.wlEx button.on{border-color:#f0a030;color:#f0a030}.wlSrc{margin-left:auto;opacity:.6}
+.wlFl{display:flex;gap:6px;align-items:center;margin:6px 0}.wlFl button{background:none;border:1px solid var(--line);color:inherit;border-radius:7px;padding:2px 8px;cursor:pointer;font-size:.76rem}.wlFl button.on{border-color:#f0a030}
+.wl .dot{width:18px;height:18px;padding:0!important;border-radius:50%!important;background:var(--c)!important;border:2px solid var(--line)}.wl .dot.on{border-color:#fff!important}
+.wlHd,.wlRow{display:grid;grid-template-columns:18px minmax(0,1fr) auto 74px auto;gap:6px;align-items:center}.wlHd{grid-template-columns:minmax(0,1fr) auto 74px;padding:4px 4px 4px 28px;font-size:.72rem;opacity:.6;border-bottom:1px solid var(--line)}
+.wlRow{padding:7px 4px;border-bottom:1px solid rgba(128,128,128,.12);cursor:pointer;font-family:var(--f-num)}.wlRow:hover{background:rgba(128,128,128,.08)}.wlRow.cur{background:rgba(240,160,48,.12)}
+.wlRow .fl{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(128,128,128,.5);background:var(--c);padding:0;cursor:pointer}.wlRow .fl.set{border-color:var(--c)}
+.wlRow .sy{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlRow .sy small{opacity:.5;font-weight:400}.wlRow .px{text-align:right}.wlRow .ch{text-align:right}.wlRow .ch.up{color:#26a69a}.wlRow .ch.dn{color:#ef5350}
+.wlRow .ed button,.wlSec button{background:none;border:none;color:inherit;opacity:.7;cursor:pointer;padding:2px 4px}
+.wlSec{padding:8px 4px 3px;font-size:.72rem;font-weight:700;letter-spacing:.04em;opacity:.75;text-transform:uppercase;display:flex;justify-content:space-between}
+.wlPop{display:flex;gap:8px;padding:6px 4px 8px 28px}.wlPop .dot{color:#999;font-size:10px;line-height:14px}
+.wlImp{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;font-size:.8rem}.wlImp b{display:block;margin:6px 0 3px}.wlImp p{margin:2px 0 6px;opacity:.75}.wlImp .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.wlImp textarea{width:100%;box-sizing:border-box;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:8px;padding:6px;font-family:var(--f-num);font-size:.78rem;margin-bottom:6px}.wlImp .btn{padding:5px 9px;font-size:.78rem}
+.wlE{font-size:.74rem;opacity:.6;margin:8px 2px}
 </style>
 </head>
 <body>
@@ -167,6 +184,7 @@ html,body{height:100%;overflow:hidden}
     <div class="seg" id="tfSeg"></div>
     <div class="seg curseg" id="curSeg" title="Währung der Kurse"><button data-cur="orig">$</button><button data-cur="eur">€</button></div>
     <div class="acts">
+      <button class="btn ghost" id="wlBtn" title="Watchlist">☆<span class="lb"> Watchlist</span></button>
       <button class="btn" id="indBtn">ƒ<span class="lb"> Indikatoren</span></button>
       <button class="btn ghost" id="anaBtn"><span class="lb">Analyse</span><span class="ic">≡</span></button>
       <button class="btn ghost" id="shareBtn" title="Link mit Coin, Zeitrahmen und Indikatoren kopieren">🔗</button>
@@ -192,6 +210,7 @@ html,body{height:100%;overflow:hidden}
   </div></div>
   <aside class="side" id="side" hidden><div class="dh"><h2 id="sideH">Indikatoren</h2><button class="x" id="sideX" aria-label="Schließen">✕</button></div>
     <div class="db" id="dlgBody"></div>
+    <div class="db wl" id="wlBody" hidden></div>
     <div class="db ana" id="anaBody" hidden><span class="sub" id="anaSub"></span><div class="rows" id="ana"></div>
       <span class="sub">Automatisch aus den eingeschalteten Indikatoren. Orientierung, keine Anlageberatung.</span></div></aside>
   </div>
@@ -213,26 +232,42 @@ function toast(t){const d=document.createElement("div");d.className="toast";d.te
 
 // ---------- Zustand ----------
 const saved=LS("blc1")||LS("bcb1")||{};
-const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[],sel:null,pend:null,dwd:null,mag:saved.mag!==false,dwShared:false,mkt:"k",sym:saved.sym||"BTC",tf:saved.tf||"4h",cfg:CC.withDefaults(saved.cfg),profiles:saved.profiles||{},k:[],I:{},view:null,cross:null,src:"",list:{k:[],a:[]}};
+const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[],sel:null,pend:null,dwd:null,mag:saved.mag!==false,dwShared:false,mkt:"k",sym:saved.sym||"BTC",tf:saved.tf||"4h",cfg:CC.withDefaults(saved.cfg),profiles:saved.profiles||{},k:[],I:{},view:null,cross:null,src:"",ex:saved.ex==="binance"?"binance":"okx",list:{k:[],a:[]}};
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(!h.get("s"))return;
   S.mkt="k";S.sym=h.get("s").toUpperCase().replace(/[^A-Z0-9.^=\-]/g,"");if(h.get("tf"))S.tf=h.get("tf");
   if(h.get("i"))try{S.cfg=CC.withDefaults(JSON.parse(decodeURIComponent(escape(atob(h.get("i"))))))}catch(e){}
   if(h.get("d"))try{S.hashDw=JSON.parse(decodeURIComponent(escape(atob(h.get("d")))))}catch(e){}})();
 if(!TF[S.mkt].includes(S.tf))S.tf="1d";
-const save=()=>LS("blc1",{mkt:S.mkt,sym:S.sym,tf:S.tf,cfg:S.cfg,profiles:S.profiles,cur:S.cur,mag:S.mag});
+const save=()=>LS("blc1",{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cfg:S.cfg,profiles:S.profiles,cur:S.cur,mag:S.mag});
 
 // ---------- Daten ----------
+// Börsen: OKX Perpetual (USDT-SWAP, wie „OKX:…USDT.P“ in TradingView) und Binance Spot
+const SRCOK=()=>S.src==="Binance"||S.src==="OKX Perp";
+const KSTEP={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"30m":18e5,"1h":36e5,"2h":72e5,"4h":144e5,"12h":432e5,"1d":864e5,"1w":6048e5,"1M":2592e6};
+const okxRow=r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[6]});
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+// OKX liefert max. 300 Kerzen (aktuell) bzw. 100 (Historie) je Abruf → mehrere Abrufe parallel, versetzt gestartet
+async function okxK(sym,tf,limit,endTime){const id=sym+"-USDT-SWAP",bar=OKXB[tf],st=KSTEP[tf],U="https://www.okx.com/api/v5/market/";let out=[],t0;
+  if(!endTime){const j=await getJSON(`${U}candles?instId=${id}&bar=${bar}&limit=300`);if(j.code!=="0"||!j.data||!j.data.length)return[];out=j.data.map(okxRow);t0=Math.min(...out.map(x=>x.t))}
+  else t0=endTime+1;
+  const need=Math.max(0,Math.ceil((limit-out.length)/100)),reqs=[];
+  for(let q=0;q<need;q++)reqs.push(wait(q*110).then(()=>getJSON(`${U}history-candles?instId=${id}&bar=${bar}&limit=100&after=${t0-q*100*st}`,15000)).then(j=>j&&j.code==="0"?(j.data||[]).map(okxRow):[]).catch(()=>[]));
+  for(const a of await Promise.all(reqs))out=out.concat(a);
+  const m=new Map();out.forEach(x=>m.set(x.t,x));return[...m.values()].sort((a,b)=>a.t-b.t).slice(-limit)}
+async function binK(sym,tf,limit,endTime){const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=${Math.min(1000,limit)}${endTime?"&endTime="+endTime:""}`,15000);
+  return Array.isArray(j)?j.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],b:+r[9]})):[]}
+// Kerzen von derselben Quelle wie der Chart (für höhere Zeitrahmen, ältere Kerzen usw.)
+function kFetch(sym,tf,limit,endTime){return S.src==="OKX Perp"?okxK(sym,tf,Math.min(limit,600),endTime):binK(sym,tf,limit,endTime)}
 async function loadList(){
-  try{const t=await getJSON("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI");
+  if(S.ex==="okx")try{const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP");
+    S.list.k=(j.data||[]).filter(x=>/-USDT-SWAP$/.test(x.instId)).map(x=>({s:x.instId.slice(0,-10),n:"Perp",v:+x.volCcy24h*+x.last})).sort((a,b)=>b.v-a.v)}catch(e){}
+  if(S.ex!=="okx"||!S.list.k.length)try{const t=await getJSON("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI");
     S.list.k=t.filter(x=>/USDT$/.test(x.symbol)&&+x.closeTime>Date.now()-2*864e5).map(x=>({s:x.symbol.slice(0,-4),n:"",v:+x.quoteVolume})).filter(x=>!/^(USDC|FDUSD|TUSD|USDP|DAI|EUR|BUSD|USD1)$/.test(x.s)).sort((a,b)=>b.v-a.v)}catch(e){}
   try{const j=await getJSON(RAW+"gz_1d.json?t="+Math.floor(Date.now()/36e5),40000);S.list.a=(j.items||[]).map(x=>({s:x.y,n:x.n,c:x.c}))}catch(e){}}
 async function klines(){const s=S.sym,tf=S.tf;
-  if(S.mkt==="k"){
-    try{const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${s}USDT&interval=${tf}&limit=1000`);
-      if(Array.isArray(j)&&j.length)return{src:"Binance",k:j.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],b:+r[9]}))}}catch(e){}
-    try{const j=await getJSON(`https://www.okx.com/api/v5/market/candles?instId=${s}-USDT&bar=${OKXB[tf]}&limit=300`);
-      const d=(j.data||[]).map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5]})).reverse();if(d.length)return{src:"OKX",k:d}}catch(e){}
-    throw new Error(`${s}/USDT wurde bei Binance und OKX nicht gefunden.`)}
+  if(S.mkt==="k"){const order=S.ex==="okx"?["okx","bin"]:["bin","okx"];
+    for(const x of order){try{const k=x==="okx"?await okxK(s,tf,1000):await binK(s,tf,1000);if(k.length)return{src:x==="okx"?"OKX Perp":"Binance",k}}catch(e){}}
+    throw new Error(`${s}/USDT wurde bei OKX (Perpetual) und Binance nicht gefunden.`)}
   const j=await getJSON(RAW+"c/"+s.replace(/[^A-Za-z0-9.\-]/g,"_")+".json?t="+Math.floor(Date.now()/3e5));
   const rows=j[tf]||[];if(!rows.length)throw new Error(`Keine ${TFLAB[tf]}-Daten für ${s}.`);
   return{src:"Yahoo (stündlich)",k:rows.map(r=>({t:r[0],o:r[1],h:r[2],l:r[3],c:r[4],v:r[5]||0}))}}
@@ -299,7 +334,7 @@ function notice(t){$("notice").hidden=!t;$("notice").textContent=t||""}
 // ---------- TradingView-Link ----------
 const YEX={HK:"HKEX",T:"TSE",KS:"KRX",DE:"XETR",PA:"EURONEXT",AS:"EURONEXT",BR:"EURONEXT",MI:"MIL",MC:"BME",HE:"OMXHEX",L:"LSE",SW:"SIX"};
 const TVIDX={"^GSPC":"SP:SPX","^NDX":"NASDAQ:NDX","^DJI":"DJ:DJI","^RUT":"TVC:RUT","^GDAXI":"XETR:DAX","^MDAXI":"XETR:MDAX","^TECDAX":"XETR:TDXP","^STOXX50E":"TVC:SX5E","^HSI":"TVC:HSI","^N225":"TVC:NI225","^KS11":"TVC:KOSPI","GC=F":"COMEX:GC1!","SI=F":"COMEX:SI1!","CL=F":"NYMEX:CL1!","BZ=F":"TVC:UKOIL","NG=F":"NYMEX:NG1!","HG=F":"COMEX:HG1!","PL=F":"NYMEX:PL1!","PA=F":"NYMEX:PA1!","DX-Y.NYB":"TVC:DXY"};
-function tvSym(){if(S.mkt==="k")return(/OKX/.test(S.src)?"OKX:":"BINANCE:")+S.sym+"USDT";const y=S.sym;if(TVIDX[y])return TVIDX[y];
+function tvSym(){if(S.mkt==="k")return/OKX/.test(S.src)?"OKX:"+S.sym+"USDT.P":"BINANCE:"+S.sym+"USDT";const y=S.sym;if(TVIDX[y])return TVIDX[y];
   const m=y.match(/^(.+)\.([A-Z]{1,2})$/);if(m&&YEX[m[2]])return YEX[m[2]]+":"+(m[2]==="HK"?m[1].replace(/^0+/,""):m[1].replace(/-/g,"_"));return y.replace(/-/g,".")}
 const tvUrl=()=>`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSym())}&interval=${{"1m":"1","3m":"3","5m":"5","15m":"15","30m":"30","1h":"60","2h":"120","4h":"240","12h":"720","1d":"D","1w":"W","1M":"M"}[S.tf]}`;
 
@@ -730,23 +765,27 @@ renderBar();renderTools();loadList().then(()=>{if(S.mkt==="a"){applyCur().then((
 
 // ---------- Seitenleiste: Indikatoren oder Analyse ----------
 let sideM="ind";
-function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("sideH").textContent=m==="ind"?"Indikatoren":"Bot-Analyse";sideOpen(true)}
-$("indBtn").onclick=()=>showSide("ind");$("anaBtn").onclick=()=>showSide("ana");
+function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow()}
+$("wlBtn").onclick=()=>showSide("wl");$("indBtn").onclick=()=>showSide("ind");$("anaBtn").onclick=()=>showSide("ana");
 $("refresh").onclick=()=>load();
 
 // ---------- Live-Kurse per WebSocket (Binance) ----------
 const WSU=["wss://data-stream.binance.vision/ws/","wss://stream.binance.com:9443/ws/"];
 let ws=null,wsKey="",wsT=0,wsI=0,rcT=0;
 function liveState(on,txt){$("live").classList.toggle("on",on);if(txt!=null)$("liveT").textContent=txt}
-function wsStop(){clearTimeout(wsT);if(ws){const s=ws;ws=null;try{s.close()}catch(e){}}}
-function wsStart(){const key=S.sym+"|"+S.tf;
-  if(S.src!=="Binance"||!S.kO.length){wsStop();wsKey="";liveState(false,S.kO.length?"ohne Live (OKX)":"–");return}
-  if(ws&&wsKey===key&&ws.readyState<2)return;wsStop();wsKey=key;liveState(false,"verbinde …");let got=false;
-  let sock;try{sock=new WebSocket(WSU[wsI%WSU.length]+S.sym.toLowerCase()+"usdt@kline_"+S.tf)}catch(e){return}
-  ws=sock;
-  sock.onmessage=e=>{if(sock!==ws)return;try{const m=JSON.parse(e.data);if(m&&m.k){got=true;tick(m.k)}}catch(_){}};
+function wsStop(){clearTimeout(wsT);if(ws){const s=ws;ws=null;clearInterval(s._p);try{s.close()}catch(e){}}}
+function wsStart(){const key=S.src+"|"+S.sym+"|"+S.tf;
+  if(!SRCOK()||!S.kO.length){wsStop();wsKey="";liveState(false,S.kO.length?"ohne Live":"–");return}
+  if(ws&&wsKey===key&&ws.readyState<2)return;wsStop();wsKey=key;liveState(false,"verbinde …");let got=false;const okx=S.src==="OKX Perp";
+  $("live").title="Live-Verbindung zu "+(okx?"OKX (Perpetual)":"Binance (Spot)");
+  let sock;try{sock=new WebSocket(okx?"wss://ws.okx.com:8443/ws/v5/business":WSU[wsI%WSU.length]+S.sym.toLowerCase()+"usdt@kline_"+S.tf)}catch(e){return}
+  ws=sock;const sym=S.sym,tf=S.tf;
+  if(okx)sock.onopen=()=>{try{sock.send(JSON.stringify({op:"subscribe",args:[{channel:"candle"+OKXB[tf],instId:sym+"-USDT-SWAP"}]}))}catch(_){}sock._p=setInterval(()=>{try{sock.send("ping")}catch(_){}},20000)};
+  sock.onmessage=e=>{if(sock!==ws||e.data==="pong")return;try{const m=JSON.parse(e.data);
+    if(okx){if(m&&m.arg&&Array.isArray(m.data))for(const r of m.data){got=true;tick({t:r[0],o:r[1],h:r[2],l:r[3],c:r[4],v:r[6],i:tf,s:sym+"USDT"})}}
+    else if(m&&m.k){got=true;tick(m.k)}}catch(_){}};
   sock.onerror=()=>{try{sock.close()}catch(_){}};
-  sock.onclose=()=>{if(sock!==ws)return;ws=null;liveState(false,"getrennt – verbinde neu …");if(!got)wsI++;clearTimeout(wsT);wsT=setTimeout(()=>{if(document.visibilityState==="visible")wsStart()},3000)}}
+  sock.onclose=()=>{clearInterval(sock._p);if(sock!==ws)return;ws=null;liveState(false,"getrennt – verbinde neu …");if(!got)wsI++;clearTimeout(wsT);wsT=setTimeout(()=>{if(document.visibilityState==="visible")wsStart()},3000)}}
 function tick(q){const a=S.kO,n=a.length;if(!n||q.i!==S.tf||q.s!==S.sym+"USDT")return;
   const c={t:+q.t,o:+q.o,h:+q.h,l:+q.l,c:+q.c,v:+q.v,b:+q.V},last=a[n-1];if(!(c.c>0)||c.t<last.t)return;
   const F=S.F,same=S.k===a,d=F===1?c:{t:c.t,o:c.o*F,h:c.h*F,l:c.l*F,c:c.c*F,v:c.v},neu=c.t>last.t;
@@ -755,17 +794,19 @@ function tick(q){const a=S.kO,n=a.length;if(!n||q.i!==S.tf||q.s!==S.sym+"USDT")r
   if(neu){clearTimeout(rcT);rcT=0;recompute();return}
   if(!rcT)rcT=setTimeout(()=>{rcT=0;if(S.pend||S.dwd||drag||pinch)paint();else recompute()},900)}
 {const load0=load;load=async function(keep){wsStop();await load0(keep);wsStart()}}
+// Erster Aufruf von load() lief schon vor diesem Umbau → Live-Verbindung starten, sobald Kerzen da sind
+{const t=setInterval(()=>{if(S.kO.length){clearInterval(t);if(!ws)wsStart()}},300)}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){if(!ws)load(true)}});
 // Ersatz ohne Live-Verbindung (z. B. OKX): jede Minute neu laden
 setInterval(()=>{if(!ws&&document.visibilityState==="visible"&&S.kO.length<=1000)load(true)},60000);
 
 // ---------- Ältere Kerzen nachladen, wenn man nach links schiebt ----------
 let histBusy=false;const histEnd={};
-async function older(){const key=S.sym+"|"+S.tf;if(histBusy||S.src!=="Binance"||!S.kO.length||S.kO.length>=5000||histEnd[key])return;histBusy=true;const id=loadId;
-  try{const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${S.sym}USDT&interval=${S.tf}&limit=1000&endTime=${S.kO[0].t-1}`);
-    if(id!==loadId)return;if(!Array.isArray(j)||!j.length){histEnd[key]=1;return}
-    const add=j.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],b:+r[9]})).filter(x=>x.t<S.kO[0].t);
-    if(j.length<1000)histEnd[key]=1;if(!add.length)return;
+async function older(){const key=S.src+"|"+S.sym+"|"+S.tf;if(histBusy||!SRCOK()||!S.kO.length||S.kO.length>=5000||histEnd[key])return;histBusy=true;const id=loadId;
+  try{const want=S.src==="OKX Perp"?500:1000,j=await kFetch(S.sym,S.tf,want,S.kO[0].t-1);
+    if(id!==loadId)return;if(!j.length){histEnd[key]=1;return}
+    const add=j.filter(x=>x.t<S.kO[0].t);
+    if(j.length<want*.9)histEnd[key]=1;if(!add.length)return;
     S.kO=add.concat(S.kO);await applyCur();if(id!==loadId)return;if(S.view){S.view.from+=add.length;S.view.to+=add.length}
     await refreshExt();recompute()}
   catch(e){}finally{histBusy=false}}
@@ -790,7 +831,7 @@ function szCol(s){const c=S.cfg.bod;return s===1?c.fL:s===2?c.fSQ:s===3?c.fS:s==
 
 async function bodLoad(){const key=bKey();if(BOD.busy)return;BOD.busy=true;
   if(BOD.key!==key){BOD.key=key;BOD.oi=new Map();BOD.cur=null;BOD.sym="";BOD.st="lädt"}
-  try{if(S.src!=="Binance"){BOD.st="keine";return}
+  try{if(!SRCOK()){BOD.st="keine";return}
     if(!BOIP[S.tf]){BOD.st="tf";return}
     let rows=null,fs="";
     for(const s of(BOD.sym?[BOD.sym]:[S.sym+"USDT","1000"+S.sym+"USDT"])){
@@ -993,14 +1034,14 @@ function bwMTF(k,pvl,c){const n=k.length,tol=(+c.tolPct||0)/100,bMin=+c.bMin,ext
   return{dir:mDir,ok:mOk,aBrk,cHit,inBC:aBrk&&!cHit&&q.l<=Math.max(b1,b2)&&q.h>=Math.min(b1,b2),inGK:cHit&&q.l<=Math.max(g1,g2)&&q.h>=Math.min(g1,g2)}}
 const bwStat=r=>!r.ok||r.dir===0?"—":!r.aBrk?"warten (A)":r.inBC?"● im B→C":!r.cHit?"A✓ → Ziel":r.inGK?"● im 0→C":"Ziel ✓";
 
-async function bwMtfLoad(){const c=S.cfg.bwi;if(BW.mtfBusy||!c.on||!c.mtfOn||!c.mTblOn||S.src!=="Binance")return;const sym=S.sym,cs=BWSEC[S.tf];BW.mtfBusy=true;
-  try{for(let i=0;i<8;i++){const tf=c["mtf"+i];if(!tf||!c["mOn"+i]||!BWSEC[tf]||BWSEC[tf]<=cs)continue;const key=sym+"|"+tf,e=BW.mtf[key];if(e&&Date.now()-e.t<55000)continue;
-      try{const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=1000`,15000);
-        if(Array.isArray(j)&&j.length)BW.mtf[key]={t:Date.now(),k:j.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4]}))}}catch(e){}}}
+async function bwMtfLoad(){const c=S.cfg.bwi;if(BW.mtfBusy||!c.on||!c.mtfOn||!c.mTblOn||!SRCOK())return;const sym=S.sym,cs=BWSEC[S.tf];BW.mtfBusy=true;
+  try{for(let i=0;i<8;i++){const tf=c["mtf"+i];if(!tf||!c["mOn"+i]||!BWSEC[tf]||BWSEC[tf]<=cs)continue;const key=S.src+"|"+sym+"|"+tf,e=BW.mtf[key];if(e&&Date.now()-e.t<55000)continue;
+      try{const j=await kFetch(sym,tf,1000);
+        if(j.length)BW.mtf[key]={t:Date.now(),k:j}}catch(e){}}}
   finally{BW.mtfBusy=false;if(sym===S.sym){bwMtfRows();paint()}}}
 function bwMtfRows(){const c=S.cfg.bwi,cs=BWSEC[S.tf],rows=[];
   for(let i=0;i<8;i++){const tf=c["mtf"+i];if(!tf||!c["mOn"+i]||!BWSEC[tf]||BWSEC[tf]<cs)continue;let r=null;
-    if(tf===S.tf&&c.skOn)r=BW.R&&BW.R.self;else{const e=BW.mtf[S.sym+"|"+tf];if(e)r=bwMTF(e.k,+c["pv"+i]||10,c)}
+    if(tf===S.tf&&c.skOn)r=BW.R&&BW.R.self;else{const e=BW.mtf[S.src+"|"+S.sym+"|"+tf];if(e)r=bwMTF(e.k,+c["pv"+i]||10,c)}
     rows.push({tf,r})}
   BW.mtfRows=rows}
 setInterval(()=>{if(document.visibilityState==="visible")bwMtfLoad()},60000);
@@ -1278,13 +1319,13 @@ BF.htf={};BF.busy=false;
 const BFCOL=["1m","5m","15m","1h","4h","1d","1w"];
 const bfCol=()=>{const s=BWSEC[S.tf];return s<300?0:s<900?1:s<3600?2:s<14400?3:s<86400?4:s<604800?5:6};
 const bfOn=(c,key)=>{const a=BFCOL.indexOf(c[key+"Ab"]),b=BFCOL.indexOf(c[key+"Bis"]),t=bfCol();return t>=(a<0?0:a)&&t<=(b<0?6:b)};
-async function bfHtfLoad(list){if(BF.busy||S.src!=="Binance")return;BF.busy=true;const sym=S.sym;let got=false;
-  try{for(const tf of list){const key=sym+"|"+tf,e=BF.htf[key];if(e&&Date.now()-e.t<55000)continue;
-      try{const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=1000`,15000);
-        if(Array.isArray(j)&&j.length){BF.htf[key]={t:Date.now(),k:j.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5]}))};got=true}}catch(e){}}}
+async function bfHtfLoad(list){if(BF.busy||!SRCOK())return;BF.busy=true;const sym=S.sym;let got=false;
+  try{for(const tf of list){const key=S.src+"|"+sym+"|"+tf,e=BF.htf[key];if(e&&Date.now()-e.t<55000)continue;
+      try{const j=await kFetch(sym,tf,1000);
+        if(j.length){BF.htf[key]={t:Date.now(),k:j};got=true}}catch(e){}}}
   finally{BF.busy=false;if(got&&sym===S.sym)recompute()}}
 setInterval(()=>{if(document.visibilityState==="visible"&&S.cfg.bft.on)BF.needHtf&&bfHtfLoad(BF.needHtf)},60000);
-const bfHK=tf=>{const e=BF.htf[S.sym+"|"+tf];if(!e)return null;const F=S.F||1;return F===1?e.k:e.k.map(q=>({t:q.t,o:q.o*F,h:q.h*F,l:q.l*F,c:q.c*F,v:q.v}))};
+const bfHK=tf=>{const e=BF.htf[S.src+"|"+S.sym+"|"+tf];if(!e)return null;const F=S.F||1;return F===1?e.k:e.k.map(q=>({t:q.t,o:q.o*F,h:q.h*F,l:q.l*F,c:q.c*F,v:q.v}))};
 function bfATR(k,len){const n=k.length,a=new Array(n).fill(null);let s=0;for(let i=0;i<n;i++){const pc=i?k[i-1].c:k[i].c,tr=Math.max(k[i].h-k[i].l,Math.abs(k[i].h-pc),Math.abs(k[i].l-pc));
   if(i<len){s+=tr;if(i===len-1)a[i]=s/len}else a[i]=(a[i-1]*(len-1)+tr)/len}return a}
 function bfMA(c,typ,len,v){const n=c.length,o=new Array(n).fill(null);len=Math.max(1,len|0);
@@ -1600,6 +1641,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
     for(const[y,t,col]of items){const xx=Math.max(4,Math.min(L.pw-4,lx));ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t,xx,Y(y)+dy);ctx.fillStyle=c.vplOwn?c.vplTxtC:col;ctx.fillText(t,xx,Y(y)+dy)}}
   ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
-<script src="bps.js?v=1"></script>
+<script src="bps.js?v=2"></script>
+<script src="wl.js?v=1"></script>
 </body>
 </html>

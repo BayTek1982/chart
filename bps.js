@@ -351,7 +351,7 @@ function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=
   {const cr=cv.getBoundingClientRect();document.querySelectorAll("#box .ov .t,#box .ov .o,#box .ov .lg,#box .bwt:not([hidden]),#heatTab:not([hidden])").forEach(o=>{const r=o.getBoundingClientRect();if(r.width&&r.height)ext.push({x:r.left-cr.left,y:r.top-cr.top,w:r.width,h:r.height})})}
   const hitAt=(x,y,w,h)=>{for(const r of pl.concat(ext))if(x<r.x+r.w&&x+w>r.x&&y-h/2<r.y+r.h&&y+h/2>r.y)return r;return null};
   const items=all.map(t=>{const fs=FS[t.sz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const lines=String(t.t).split("\n"),w=Math.max(...lines.map(s=>ctx.measureText(s).width)),h=(fs+2)*lines.length,px=X(t.x),py=Y(t.y);let x,y,cl=false;
-    if(t.pos==="a"){x=px-w/2;y=py-(t.box?8:5)-h/2}else if(t.pos==="b"){x=px-w/2;y=py+(t.box?8:5)+h/2}else if(t.pos==="r"){x=px+5;if(x+w>L.pw-6){x=L.pw-w-6;cl=true}y=py}else if(t.pos==="ar"){x=px-w;y=py-3-h/2}else if(t.pos==="br"){x=px-w;y=py+3+h/2}else{x=px-6-w;y=py}
+    if(t.pos==="a"){x=px-w/2;y=py-(t.box?8:5)-h/2}else if(t.pos==="b"){x=px-w/2;y=py+(t.box?8:5)+h/2}else if(t.pos==="r"){x=Math.max(px+5,X(S.k.length-1)+cw*.6+8);if(x+w>L.pw-6){x=L.pw-w-6;cl=true}y=py}else if(t.pos==="ar"){x=px-w;y=py-3-h/2}else if(t.pos==="br"){x=px-w;y=py+3+h/2}else{x=px-6-w;y=py}
     return{t,fs,lines,w,h,x,y,py,cl}}).sort((a,b)=>(a.t.box?0:1)-(b.t.box?0:1)||a.y-b.y);
   for(const it of items){const{t,fs,lines,w,h,py}=it;let y=it.y;
     let x=it.x;

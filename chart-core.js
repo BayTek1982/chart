@@ -249,7 +249,11 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   ctx.fillStyle=th.bg;ctx.fillRect(0,0,W,H);ctx.textBaseline="middle";
   if(!k||!k.length){ctx.fillStyle=th.txt;ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText("Keine Daten",W/2,H/2);return null}
   const subs=[];if(cfg.rsi.on&&I.rsi)subs.push("rsi");if(cfg.macd.on&&I.macd)subs.push("macd");if(cfg.risk.on&&I.risk)subs.push("risk");if(cfg.heat.on&&I.heat)subs.push("heat");
-  const MIN=S.minP||{},nFull=subs.filter(s=>!MIN[s]).length,fullH=nFull?Math.round((H-TA)*[0,0.2,0.17,0.15,0.13][nFull]):0,hOf=s=>MIN[s]?18:fullH,mainH=H-TA-subs.reduce((a,s)=>a+hOf(s),0);
+  // Reihenfolge und Höhe der unteren Fenster (vom Nutzer verschoben / gezogen)
+  const ORD=S.paneOrd||[];subs.sort((a,b)=>{const ia=ORD.indexOf(a),ib=ORD.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib)});
+  const MIN=S.minP||{},PH=S.paneH||{},nFull=subs.filter(s=>!MIN[s]).length,fullH=nFull?Math.round((H-TA)*[0,0.2,0.17,0.15,0.13][nFull]):0,
+    hOf0=s=>MIN[s]?18:PH[s]?Math.max(40,Math.round((H-TA)*PH[s])):fullH,sum0=subs.reduce((a,s)=>a+hOf0(s),0),sc=sum0>(H-TA)*.72?(H-TA)*.72/sum0:1,
+    hOf=s=>MIN[s]?18:Math.round(hOf0(s)*sc),mainH=H-TA-subs.reduce((a,s)=>a+hOf(s),0);
   const PNAME={rsi:"RSI",macd:"MACD",risk:"Risiko",heat:"Hitze"};
   const from=S.view.from,to=S.view.to,cw=pw/(to-from),X=i=>(i-from+0.5)*cw;
   const i0=Math.max(0,Math.floor(from)),i1=Math.min(k.length-1,Math.ceil(to));
@@ -362,7 +366,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   // Beschriftung am Linienende: Name (Preis); fast gleiche Preise zusammenfassen
   lbls.sort((a,b)=>a.y-b.y);const mg=[];lbls.forEach(l=>{const m=mg[mg.length-1];if(m&&Math.abs(m.p-l.p)<=Math.abs(l.p)*0.0008){if(!m.n.split(" · ").includes(l.n))m.n+=" · "+l.n}else mg.push({...l})});
   font(10,1);ctx.textAlign="left";let prevL=-99;
-  const edgeVis=(last0-from+0.5)*cw<=pw;
+  const edgeVis=(last0-from+0.5)*cw<=pw+40;
   mg.forEach(l=>{if(!edgeVis||l.y<mT-4||l.y>mB+4)return;const t=`${l.n} (${fmt(l.p)})`,w=ctx.measureText(t).width;const y=Math.max(l.y,prevL+12);prevL=y;
     let x=LE+5;if(x+w>pw-3){x=pw-3-w;ctx.fillStyle=lightTh?"rgba(255,255,255,.82)":"rgba(14,19,27,.78)";ctx.fillRect(x-3,y-6,w+6,12)}
     ctx.fillStyle=l.col;ctx.fillText(t,x,y);lbR.push({x:x-3,y:y-7,w:w+6,h:14})});
@@ -370,8 +374,10 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
 
   // Unterfenster
   const panes=[],axQ=[],subTags=[];let top=mainH;
-  subs.forEach(s=>{const subH=hOf(s),pT=top+6,pB=top+subH-6;panes.push({s,top,h:subH,mini:!!MIN[s]});line(0,top,W,top,th.grid,1);
+  S._pBtn=[];subs.forEach(s=>{const subH=hOf(s),pT=top+6,pB=top+subH-6;panes.push({s,top,h:subH,mini:!!MIN[s]});line(0,top,W,top,th.grid,1);
     ctx.save();ctx.beginPath();ctx.rect(0,top,pw,subH);ctx.clip();
+    // ▲▼ zum Verschieben (nur wenn es mehr als ein unteres Fenster gibt)
+    if(subs.length>1){const bx=pw+14;(S._pBtn=S._pBtn||[]).push({s,d:-1,x:bx-10,y:top+1,w:20,h:20},{s,d:1,x:bx+12,y:top+1,w:20,h:20})}
     if(MIN[s]){font(10,1);ctx.textAlign="left";ctx.fillStyle=th.txt;ctx.fillText(`▸ ${PNAME[s]}  (zugeklappt – Doppeltipp öffnet)`,52,top+subH/2);ctx.restore();top+=subH;return}
     if(s==="rsi"){const Yr=v=>pT+(100-v)/100*(pB-pT);const hiL=+cfg.rsi.hi||70,loL=+cfg.rsi.lo||30;
       ctx.fillStyle="rgba(179,136,255,.06)";ctx.fillRect(0,Yr(hiL),pw,Yr(loL)-Yr(hiL));
@@ -409,7 +415,9 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
     ctx.restore();top+=subH});
 
   // Achsen
-  ctx.fillStyle=th.axis;ctx.fillRect(pw,0,AX,H);ctx.fillRect(0,H-TA,pw,TA);line(pw,0,pw,H,th.grid,1);line(0,H-TA,W,H-TA,th.grid,1);
+  ctx.fillStyle=th.axis;ctx.fillRect(pw,0,AX,H);ctx.fillRect(0,H-TA,pw,TA);
+  // ▲▼ der unteren Fenster in der Preisskala (dort liegt nichts darüber)
+  (S._pBtn||[]).forEach(b=>{ctx.fillStyle=th.grid;ctx.fillRect(b.x+1,b.y+1,b.w-2,b.h-2);font(10,1);ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle=th.txt;ctx.fillText(b.d<0?"▲":"▼",b.x+b.w/2,b.y+b.h/2+.5)});line(pw,0,pw,H,th.grid,1);line(0,H-TA,W,H-TA,th.grid,1);
   panes.forEach(p=>line(pw,p.top,W,p.top,th.grid,1));
   font(10);ctx.fillStyle=th.txt;ctx.textAlign="left";for(let v=Math.ceil(lo/st)*st;v<=hi;v+=st){const y=Y(v);if(y>8&&y<mainH-8)ctx.fillText(fmt(v),pw+6,y)}
   axQ.forEach(a=>{ctx.fillStyle=th.txt;ctx.fillText(a.t,pw+6,a.y)});
@@ -423,7 +431,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   if(Y(price)>=mT&&Y(price)<=mB)line(0,Y(price),pw,Y(price),price>=k[last].o?th.up:th.red,1,[1,3]);
 
   // Fadenkreuz
-  const L={pw,mainH,panes,X,Y,P,cw,from,to,i0,i1,TA,H,W,lo,hi,mT,mB,AX,lbR};
+  const L={pw,mainH,panes,X,Y,P,cw,from,to,i0,i1,TA,H,W,lo,hi,mT,mB,AX,lbR,pBtn:S._pBtn||[]};
   if(S.cross){const {x,y}=S.cross;const i=Math.round(from+x/cw-0.5);if(i>=0&&i<=last&&x<pw){const cx=X(i);line(cx,0,cx,H-TA,th.cross,1,[3,3]);
       if(y<mainH){line(0,y,pw,y,th.cross,1,[3,3]);tagDraw(ctx,pw,y,th.grey,fmt(P(y)),AX,th,true)}
       font(10,1);const tl=tlab(k[i].t,tf,true),tw=ctx.measureText(tl).width+12;ctx.fillStyle=th.grey;ctx.fillRect(cx-tw/2,H-TA+2,tw,TA-4);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(tl,cx,H-TA/2);L.ci=i}}

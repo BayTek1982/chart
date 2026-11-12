@@ -362,8 +362,7 @@ function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=
       if(!done){x=it.x;y=it.y}}
     pl.push({x:x-2,y:y-h/2-1,w:w+4,h:h+2});
     if(t.box){ctx.fillStyle=t.box;ctx.beginPath();ctx.roundRect?ctx.roundRect(x-4,y-h/2-2,w+8,h+4,3):ctx.rect(x-4,y-h/2-2,w+8,h+4);ctx.fill()}
-    else if(it.cl||x<it.x||Math.abs(y-py)>h*.6){ctx.fillStyle=th.bg;ctx.globalAlpha=.8;ctx.fillRect(x-3,y-h/2-1,w+6,h+2);ctx.globalAlpha=1}
-    lines.forEach((s,q)=>{const yy=y-h/2+(fs+2)*(q+.5);ctx.textAlign="left";if(!t.box){ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(s,x,yy)}ctx.fillStyle=t.col;ctx.fillText(s,x,yy)});
+    lines.forEach((s,q)=>{const yy=y-h/2+(fs+2)*(q+.5);ctx.textAlign="left";if(!t.box){ctx.lineWidth=4;ctx.lineJoin="round";ctx.strokeStyle=th.bg;ctx.strokeText(s,x,yy)}ctx.fillStyle=t.col;ctx.fillText(s,x,yy)});
     if(t.tip)BP.hit.push({x:x-4,y:y-h/2-3,w:w+8,h:h+6,tip:t.tip})}
   ctx.restore();
   // Tabellen

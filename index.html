@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e131b">
 <title>Live-Chart · Bayazit</title>
-<link rel="icon" type="image/svg+xml" href="icons/bot.svg">
+<link rel="icon" type="image/svg+xml" href="icons/chart.svg">
+<link rel="apple-touch-icon" href="icons/chart-180.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -166,6 +168,7 @@ html,body{height:100%;overflow:hidden}
   .tools button{width:34px;height:32px}
   #bodTab{font-size:9.5px!important;max-height:calc(100% - 28px);overflow-y:auto}
 }
+#tfSeg .tfMore{position:sticky;right:0;z-index:1;background:var(--chip);box-shadow:-8px 0 8px -4px var(--chip)}
 /* Kopfzeile in einer Zeile (Handy und Klapphandy), Zeitrahmen scrollen bei Bedarf */
 @media (max-width:1150px){
   .top{flex-wrap:nowrap!important;align-items:center}
@@ -182,6 +185,11 @@ html,body{height:100%;overflow:hidden}
   .top .curseg button{padding:5px 6px}
   #shareBtn{display:none}
 }
+.alTop{display:flex;align-items:center;gap:8px}.alSt{margin-left:auto;font-size:.8rem;opacity:.7}
+.alHint{margin:8px 0;font-size:.8rem;opacity:.85}.alForm{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;display:grid;gap:8px}
+.alForm label{display:grid;gap:3px;font-size:.78rem;opacity:.9}.alForm label.chk{display:flex;align-items:center;gap:6px}.alForm input,.alForm select{background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:8px;padding:7px;font:inherit;font-family:var(--f-num)}
+.alForm .row{display:flex;gap:6px}.alR{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.15)}.alR.off{opacity:.5}.alR .tx{flex:1;font-family:var(--f-num);font-size:.84rem}.alR small{opacity:.7}
+.alR button{background:none;border:0;color:inherit;opacity:.7;cursor:pointer;padding:3px 6px}.alLog{font-size:.8rem;padding:3px 2px}.alLog small{opacity:.65}
 .wl{padding:10px 12px;font-size:.86rem}
 .wlTop{display:flex;gap:6px;align-items:center}.wlTop select{flex:1;min-width:0;background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:6px}
 .wlTop .btn{padding:6px 9px;font-size:.8rem}.wlTop .btn.on{border-color:var(--acc,#f0a030)}
@@ -211,6 +219,7 @@ html,body{height:100%;overflow:hidden}
     <div class="seg" id="tfSeg"></div>
     <div class="seg curseg" id="curSeg" title="Währung der Kurse"><button data-cur="orig">$</button><button data-cur="eur">€</button></div>
     <div class="acts">
+      <button class="btn ghost" id="alBtn" title="Alarme">🔔<span class="lb"> Alarme</span></button>
       <button class="btn ghost" id="wlBtn" title="Watchlist">☆<span class="lb"> Watchlist</span></button>
       <button class="btn" id="indBtn">ƒ<span class="lb"> Indikatoren</span></button>
       <button class="btn ghost" id="anaBtn"><span class="lb">Analyse</span><span class="ic">≡</span></button>
@@ -238,6 +247,7 @@ html,body{height:100%;overflow:hidden}
   <aside class="side" id="side" hidden><div class="dh"><h2 id="sideH">Indikatoren</h2><button class="x" id="sideX" aria-label="Schließen">✕</button></div>
     <div class="db" id="dlgBody"></div>
     <div class="db wl" id="wlBody" hidden></div>
+    <div class="db wl" id="alBody" hidden></div>
     <div class="db ana" id="anaBody" hidden><span class="sub" id="anaSub"></span><div class="rows" id="ana"></div>
       <span class="sub">Automatisch aus den eingeschalteten Indikatoren. Orientierung, keine Anlageberatung.</span></div></aside>
   </div>
@@ -504,8 +514,8 @@ function renderEbar(){const b=$("ebar"),d=S.dw.find(z=>z.id===S.sel);if(!d){b.hi
   if(b.dataset.id===d.id&&b.dataset.t===d.type)return;b.dataset.id=d.id;b.dataset.t=d.type;
   const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5"};
   const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","fib","vl"].includes(d.type);
-  b.innerHTML=`<b>${names[d.type]||""}</b>${!noCol?`<input type="color" data-e="col" value="${d.col}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
-$("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col")d.col=e.target.value;if(k==="w")d.w=+e.target.value;if(k==="ext")d.ext=e.target.checked;if(k==="ds")d.ds=e.target.value;if(k==="lock")d.lock=e.target.checked;saveDw();paint()});
+  b.innerHTML=`<b>${names[d.type]||""}</b>${!noCol?`<input type="color" data-e="col" value="${d.col}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${["tl","hl","ray"].includes(d.type)?`<label title="Meldung, wenn der Kurs die Linie kreuzt"><input type="checkbox" data-e="alarm" ${d.alarm?"checked":""}> 🔔 Alarm</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
+$("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col")d.col=e.target.value;if(k==="w")d.w=+e.target.value;if(k==="ext")d.ext=e.target.checked;if(k==="alarm"){d.alarm=e.target.checked;if(d.alarm&&window.alPerm)alPerm();toast(d.alarm?"🔔 Alarm aktiv – meldet, wenn der Kurs die Linie kreuzt":"Alarm aus")}if(k==="ds")d.ds=e.target.value;if(k==="lock")d.lock=e.target.checked;saveDw();paint()});
 $("ebar").addEventListener("click",e=>{const k=e.target.dataset&&e.target.dataset.e,d=S.dw.find(z=>z.id===S.sel);if(!d)return;
   if(k==="del"){S.dw=S.dw.filter(z=>z.id!==d.id);S.sel=null;saveDw();paint()}
   if(k==="copy"){const n=JSON.parse(JSON.stringify(d)),dt=5*(CC.tIdx?((S.k[1]&&S.k[0])?S.k[1].t-S.k[0].t:0):0),dp=(L?(L.hi-L.lo)*.04:0)/S.F;n.id=nid();n.lock=false;n.pts=n.pts.map(q=>({t:q.t+dt,p:q.p-dp}));if(n.t2)n.t2+=dt;if(n.tp!=null)n.tp-=dp;if(n.sl!=null)n.sl-=dp;S.dw.push(n);S.sel=n.id;saveDw();renderEbar();paint();toast("Kopie angelegt – zum Verschieben antippen und ziehen")}if(k==="txt"){const t=prompt("Text:",d.text||"");if(t!=null){d.text=t.slice(0,80);saveDw();paint()}}});
@@ -842,8 +852,8 @@ renderBar();renderTools();loadList().then(()=>{if(S.mkt==="a"){applyCur().then((
 
 // ---------- Seitenleiste: Indikatoren oder Analyse ----------
 let sideM="ind";
-function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow()}
-$("wlBtn").onclick=()=>showSide("wl");$("indBtn").onclick=()=>showSide("ind");$("anaBtn").onclick=()=>showSide("ana");
+function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("alBody").hidden=m!=="al";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":m==="al"?"Alarme":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow();if(m==="al"&&window.alShow)alShow()}
+$("wlBtn").onclick=()=>showSide("wl");$("alBtn").onclick=()=>showSide("al");$("indBtn").onclick=()=>showSide("ind");$("anaBtn").onclick=()=>showSide("ana");
 $("refresh").onclick=()=>load();
 
 // ---------- Live-Kurse per WebSocket (Binance) ----------
@@ -1731,7 +1741,8 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
     for(const[y,t,col]of items){const xx=Math.max(4,Math.min(L.pw-4,lx));ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t,xx,Y(y)+dy);ctx.fillStyle=c.vplOwn?c.vplTxtC:col;ctx.fillText(t,xx,Y(y)+dy)}}
   ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
-<script src="bps.js?v=5"></script>
+<script src="bps.js?v=6"></script>
 <script src="wl.js?v=4"></script>
+<script src="al.js?v=1"></script>
 </body>
 </html>

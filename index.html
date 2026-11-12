@@ -236,7 +236,7 @@ html,body{height:100%;overflow:hidden}
     <button class="autob" id="autoB" hidden title="Preisachse wieder automatisch">Auto</button>
     <div class="tools" id="tools"></div><button id="toolTg" type="button" title="Zeichenwerkzeuge ein-/ausblenden">✎</button>
     <div id="heatTab" hidden></div><div id="rkTab" class="bwt" hidden></div>
-    <div class="bwt" id="bpMt" hidden></div><div class="bwt" id="bpVt" hidden></div><div class="bwt" id="bsBias" hidden></div><div class="bwt" id="bsLs" hidden></div><div class="bwt" id="bfVp" hidden></div><div class="bwt" id="bfRk" hidden></div><div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
+    <div class="bwt" id="bpMt" hidden></div><div class="bwt" id="bpVt" hidden></div><div class="bwt" id="bsBias" hidden></div><div class="bwt" id="bsIm" hidden></div><div class="bwt" id="bsLs" hidden></div><div class="bwt" id="bfVp" hidden></div><div class="bwt" id="bfRk" hidden></div><div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
     <div class="ebar" id="ebar" hidden></div>
     <div class="loading" id="loading">Lädt …</div>
   </div>
@@ -254,7 +254,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=21"></script>
+<script src="chart-core.js?v=22"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -705,7 +705,9 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   C("msEq","17) EQH / EQL (gleiche Hochs/Tiefs)"),N("msEqTol","17) Toleranz (x ATR)",0.01,5,0.05),C("msSw","17) Strong / Weak High & Low"),C("msInt","17) Interne Struktur (klein, für Einstiege)"),N("msIntLen","17) Stärke intern",1,10),COL("msBullC","17) Bullisch"),COL("msBearC","17) Bärisch"),COL("msNeuC","17) Kürzel/EQ"),{k:"msSz",t:"17) Schriftgröße Kürzel",type:"sel",o:GRS},C("msTbl","17) Zeile Struktur in der Bias-Tabelle"),
   C("maOn","19) Gleitende Durchschnitte anzeigen"),N("maBars","19) Länge der Linien im Chart (Kerzen)",100,5000),C("maLbl","19) Namen am rechten Ende"),{k:"maSz",t:"19) Schriftgröße Namen",type:"sel",o:GRS},C("m1On","19) Linie 1"),{k:"m1T",t:"19) Linie 1 Typ",type:"sel",o:[["SMA","SMA"],["EMA","EMA"],["WMA","WMA"],["HMA","HMA"],["RMA","RMA"],["VWMA","VWMA"]]},N("m1Len","19) Linie 1 Länge",1,1000),{k:"m1Tf",t:"19) Linie 1 Zeitrahmen",type:"sel",o:TFL},COL("m1Col","19) Linie 1 Farbe"),N("m1W","19) Linie 1 Stärke",1,4),C("m2On","19) Linie 2"),{k:"m2T",t:"19) Linie 2 Typ",type:"sel",o:[["SMA","SMA"],["EMA","EMA"],["WMA","WMA"],["HMA","HMA"],["RMA","RMA"],["VWMA","VWMA"]]},N("m2Len","19) Linie 2 Länge",1,1000),{k:"m2Tf",t:"19) Linie 2 Zeitrahmen",type:"sel",o:TFL},COL("m2Col","19) Linie 2 Farbe"),N("m2W","19) Linie 2 Stärke",1,4),C("m3On","19) Linie 3"),{k:"m3T",t:"19) Linie 3 Typ",type:"sel",o:[["SMA","SMA"],["EMA","EMA"],["WMA","WMA"],["HMA","HMA"],["RMA","RMA"],["VWMA","VWMA"]]},N("m3Len","19) Linie 3 Länge",1,1000),{k:"m3Tf",t:"19) Linie 3 Zeitrahmen",type:"sel",o:TFL},COL("m3Col","19) Linie 3 Farbe"),N("m3W","19) Linie 3 Stärke",1,4),
   C("gcOn","19) Golden / Death Cross markieren (Linie 2 × Linie 3)"),C("bmOn","19) Bull Market Support Band (20W SMA + 21W EMA)"),COL("bmCol","19) Farbe BMSB"),C("vwDOn","19) VWAP Tag"),COL("vwDCol","19) VWAP Tag Farbe"),N("vwDN","19) Anzahl Tage",1,20),C("vwWOn","19) VWAP Woche"),COL("vwWCol","19) VWAP Woche Farbe"),N("vwWN","19) Anzahl Wochen",1,10),
-  C("ckOn","21) Long-/Short-Check in der Bias-Tabelle"),N("ckGood","21) Grün ab (Punkte)",1,7),N("ckMid","21) Orange ab",1,7),],
+  C("ckOn","21) Long-/Short-Check in der Bias-Tabelle"),N("ckGood","21) Grün ab (Punkte)",1,7),N("ckMid","21) Orange ab",1,7),
+  C("imOn","9) Intermarket-Tabelle anzeigen"),{k:"imPos",t:"9) Position",type:"sel",o:POS},{k:"imSz",t:"9) Schriftgröße",type:"sel",o:GRS.slice(0,3)},
+  {k:"imScore",t:"9) Risk-Score über Zeitraum",type:"sel",o:[["A","A = 1 Tag (unruhig)"],["B","B = 7 Tage (Standard)"],["C","C = 30 Tage (träge)"]]},N("imThr","9) Schwelle Risk-On / Risk-Off (Punkte)",1,8),],
   i:"Teil 1 deines Strategie Indikators: dynamische Fibonacci aus Hoch/Tief der letzten X Kerzen mit Level-Sets (E, SK, KL, ICT), Ziele, Golden Zone, Labels, MTF-Bias-Tabelle (EMA 21/50), FVG und LSOB mit Entry-Signalen. Dazu Volume Profile (sichtbarer Bereich, Periode oder Zeitraum), Marktstruktur mit CHoCH/BOS, EQH/EQL und Strong/Weak, Linien 1–3 mit Golden/Death Cross, BMSB, VWAP Tag/Woche und die Long-/Short-Checkliste in der Bias-Tabelle (Maus über die Zeile für die Punkte). Die Intermarket-Tabelle fehlt noch. Ohne Alarme."}}
  {const POS=[["ol","Oben links"],["om","Oben Mitte"],["or","Oben rechts"],["ml","Mitte links"],["mm","Mitte"],["mr","Mitte rechts"],["ul","Unten links"],["um","Unten Mitte"],["ur","Unten rechts"]],GRS=[["winzig","Winzig"],["klein","Klein"],["normal","Normal"],["gross","Groß"]],TFS=[["","–"],["1m","1m"],["3m","3m"],["5m","5m"],["15m","15m"],["30m","30m"],["1h","1h"],["2h","2h"],["4h","4h"],["12h","12h"],["1d","1D"],["1w","1W"],["1M","1M"]],N=(k,t,min,max,step)=>({k,t,type:"num",min,max,step}),C=(k,t)=>({k,t,type:"chk"});
  ALL.bwi={k:"bwi",t:"Wellen Indikator",d:"SK-System 0-A-B-C, Ziel, Korrekturlevel, Setup, MTF, Divergenz, Liquidität",p:[
@@ -783,7 +785,7 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
    C("vtOn","17) VP-Tabelle anzeigen"),SL("vtPos","17) Position",POS),SL("vtSz","17) Größe",GR.slice(0,3)),C("vtPoc","17) Spalte POC"),C("vtLage","17) Spalte Lage")],
    i:"Nachbau deines Pattern Scanner V2.5. Standard wie in deinem Code: Trendlinien, Seitwärtskasten, HTF-Level, Volumenprofil-Level und MTF-Trendlinien an; Kerzenmuster, Chart-Pattern und S/R-Zonen aus (Schnellschalter unter 0). Achtung: „Anzeige erst ab Timeframe“ steht wie bei dir auf 15m – auf 1m und 5m bleibt der Chart dann leer. Tippe auf ein Schild für die Erklärung. Tabellen: Doppelklick legt sie in den Hintergrund, noch einmal minimiert, ein drittes Mal normal."}}
  const G=[
-  ["Bayazit Strategie Indikator v2.26","Nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB, Volume Profile, Marktstruktur, Linien/VWAP, Checkliste. Ohne Intermarket und Alarme.",["bsi"]],
+  ["Bayazit Strategie Indikator v2.26","Nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB, Volume Profile, Marktstruktur, Linien/VWAP, Intermarket-Geldfluss, Checkliste. Ohne Alarme.",["bsi"]],
   ["Bayazit Wellen Indikator V2.30","Nachbau aus deinem Pine-Code: SK-System, Setup-Tabelle mit Positions-Box, MTF-Tabelle, Elliott, RSI-Divergenz, Liquidität. Ohne Alarme.",["bwi"]],
   ["Bayazit Pattern Scanner V2.5","Nach deinem Pine-Code: Kerzenmuster, Chart-Pattern + SFP, Trendlinien, S/R-Zonen, Seitwärtskasten, HTF-Level, MTF-Trendlinien + Tabelle, Volumenprofil-Level + Tabelle. Ohne Alarme.",["bps"]],
   ["Bayazit Fibonacci Trend V2.4","Nach deinem Pine-Code: Struktur, Fibonacci, Kerzen nach Trend, Volumenprofil-Level, Haupt-Trendlinien, Linien/VWAP, S/R-Zonen, FVG, Orderblöcke, Risiko-Tabelle. Ohne Alarme.",["bft"]],
@@ -1298,7 +1300,7 @@ function bwiPaint(th){const c=S.cfg.bwi,R=BW.R,rt=$("bwRt"),tb=$("bwTb"),mt=$("b
 // Tabellen per Doppelklick: normal → Hintergrund (durchscheinend) → minimiert → normal
 {const KEY="blcTab";let st={};try{st=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
   const ap=el=>{const v=st[el.id]||0;el.classList.toggle("tbg",v===1);el.classList.toggle("tmin",v===2);el.title=v===2?"Doppelklick: wieder einblenden":"Doppelklick: in den Hintergrund / minimieren"};
-  ["bwRt","bwTb","bwMt","bodTab","heatTab","bfVp","bfRk","bsBias","bsLs","bpMt","bpVt","rkTab"].forEach(id=>{const el=$(id);if(!el)return;ap(el);el.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();st[id]=((st[id]||0)+1)%3;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}ap(el)})})}
+  ["bwRt","bwTb","bwMt","bodTab","heatTab","bfVp","bfRk","bsBias","bsLs","bpMt","bpVt","rkTab","bsIm"].forEach(id=>{const el=$(id);if(!el)return;ap(el);el.addEventListener("dblclick",e=>{e.preventDefault();e.stopPropagation();st[id]=((st[id]||0)+1)%3;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(_){}ap(el)})})}
 
 // alte Einzel-Schalter aus dem Chart-Bot sind im Wellen Indikator aufgegangen
 S.cfg.sk.on=false;S.cfg.rsic.on=false;S.cfg.liq.on=false;
@@ -1636,7 +1638,37 @@ function bsiCalc(){const c=S.cfg.bsi;BS.R=null;if(!c.on||S.k.length<30)return;co
   try{bsiCalc2(R)}catch(e){console.error(e)}
   BS.R=R}
 
-function bsiPaint(th){const c=S.cfg.bsi,R=BS.R,bt=$("bsBias"),lt=$("bsLs");BS.hit=[];if(!c.on||!R||!L){bt.hidden=lt.hidden=true;return}
+// ---------- 9) Intermarket – Geldfluss (Aktien, Gold, Anleihen, Dollar, Krypto) ----------
+// Klassische Märkte: Tagesschlüsse aus dem Coin-Scanner (GitHub Actions, Yahoo); Krypto: CoinGecko (Marktkapitalisierung, 24 Std / 7 / 30 Tage)
+const IM={rows:null,reg:null,score:null,flow:"",t:0,busy:false};
+async function imLoad(){if(IM.busy||Date.now()-IM.t<600000)return;IM.busy=true;try{
+  const st=a=>{if(!a||a.length<2)return[null,null,null];const c=a[a.length-1][1],o=d=>a.length>d?(c/a[a.length-1-d][1]-1)*100:null,td=d=>Math.max(1,Math.round(d*5/7));return[o(td(1)),o(td(7)),o(td(30))]};
+  const [j,mk,usdt]=await Promise.all([getJSON("https://scanner.kompassapps.de/data/intermarket.json?"+Math.floor(Date.now()/6e5),15000).catch(()=>null),
+    getJSON("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&price_change_percentage=24h,7d,30d",15000).catch(()=>null),
+    getJSON("https://api.coingecko.com/api/v3/coins/tether/market_chart?vs_currency=usd&days=31&interval=daily",15000).catch(()=>null)]);
+  const s=j&&j.s||{},R={spx:st(s.spx),ndx:st(s.ndx),gold:st(s.gold),silber:st(s.silber),anl:st(s.anleihen),dxy:st(s.dollar),oel:st(s.oel)};
+  if(Array.isArray(mk)&&mk.length){const STB=new Set(["usdt","usdc","dai","fdusd","usde","usds","tusd","pyusd","usdd","busd","usd1","rlusd","usdtb","bsc-usd","susds","susde","usdf","gho","frax","lusd","eurc"]);
+    const ks=["price_change_percentage_24h_in_currency","price_change_percentage_7d_in_currency","price_change_percentage_30d_in_currency"];
+    const agg=f=>ks.map(k=>{let w=0,sm=0;for(const c of mk){if(!f(c)||c[k]==null||!c.market_cap)continue;const prev=c.market_cap/(1+c[k]/100);w+=prev;sm+=c.market_cap}return w?(sm/w-1)*100:null});
+    const btc=mk.find(c=>c.id==="bitcoin"),tot=agg(()=>true);R.btc=btc?ks.map(k=>btc[k]):[null,null,null];R.alt=agg(c=>c.id!=="bitcoin"&&c.id!=="ethereum"&&!STB.has(String(c.symbol).toLowerCase()));
+    let uc=[null,null,null];if(usdt&&usdt.market_caps&&usdt.market_caps.length>30){const m=usdt.market_caps,cN=m[m.length-1][1],ch=d=>(cN/m[Math.max(0,m.length-1-d)][1]-1)*100;uc=[ch(1),ch(7),ch(30)]}
+    R.usd=uc.map((u,i)=>u==null||tot[i]==null?null:((1+u/100)/(1+tot[i]/100)-1)*100);R.btd=R.btc.map((b,i)=>b==null||tot[i]==null?null:((1+b/100)/(1+tot[i]/100)-1)*100)}
+  IM.rows=R;IM.t=Date.now();imScore();recompute()}catch(e){}finally{IM.busy=false}}
+function imScore(){const R=IM.rows;if(!R)return;const c=S.cfg.bsi,pi={A:0,B:1,C:2}[c.imScore]??1,g=a=>a?a[pi]:null,sg=x=>x==null?0:x>0?1:x<0?-1:0;
+  const sc=sg(g(R.spx))+sg(g(R.ndx))+sg(g(R.btc))+sg(g(R.alt))-sg(g(R.gold))-sg(g(R.anl))-sg(g(R.dxy))-sg(g(R.usd)),th=+c.imThr||3;
+  IM.score=sc;IM.reg=sc>=th?1:sc<=-th?-1:0;const fB=g(R.btd)||0,fA=g(R.alt)||0,fC=g(R.btc)||0,fU=g(R.usd)||0;
+  IM.flow=fU>0&&fC<0&&fA<0?"Geld → Stablecoins (Abfluss)":fB<0&&fA>0?"Geld → Altcoins":fB>0&&fC>0?"Geld → Bitcoin":fB>0&&fA<0?"Altcoins schwächer als BTC":fU<0&&fC>0?"Geld fließt in Krypto":"Keine klare Rotation"}
+setInterval(()=>{if(S.cfg.bsi&&S.cfg.bsi.on&&S.cfg.bsi.imOn&&document.visibilityState==="visible")imLoad()},60000);
+function imPaint(){const el=$("bsIm"),c=S.cfg.bsi;if(!c.on||!c.imOn||c.view==="min"){el.hidden=true;return}if(!IM.rows){el.hidden=true;imLoad();return}imScore();
+  const R=IM.rows,pt=x=>x==null?"–":(x>0?"+":"")+x.toFixed(2).replace(".",",")+"%",bg=x=>x==null?"rgba(128,128,128,.4)":x>0?"rgba(0,168,107,.85)":x<0?"rgba(211,47,47,.85)":"rgba(128,128,128,.4)",hb="rgba(0,0,0,.9)";
+  const cell=(t,b,col)=>`<span style="background:${b};color:${col||"#fff"};padding:1px 6px">${esc(t)}</span>`;
+  let h=cell("Markt",hb)+cell("1T",hb)+cell("7T",hb)+cell("30T",hb);
+  for(const[k,n]of[["spx","Aktien"],["ndx","Tech-Aktien"],["btc","Bitcoin"],["alt","Altcoins"],["gold","Gold 🛡"],["silber","Silber"],["anl","Anleihen 🛡"],["dxy","US-Dollar 🛡"],["usd","Stablecoin-Dom. 🛡"],["btd","BTC-Dominanz"],["oel","WTI Öl"]]){const a=R[k]||[null,null,null];h+=cell(n,hb)+a.map(x=>cell(pt(x),bg(x))).join("")}
+  const rc=IM.reg===1?"#00a86b":IM.reg===-1?"#d32f2f":"#ff9800";
+  h+=cell("Risk-Modus",hb)+cell(IM.reg===1?"RISK-ON":IM.reg===-1?"RISK-OFF":"GEMISCHT",rc)+cell("Score",hb)+cell((IM.score>0?"+":"")+IM.score,rc);
+  h+=cell("Krypto-Flow",hb)+`<span style="background:#ffd700;color:#000;padding:1px 6px;grid-column:span 3">${esc(IM.flow)}</span>`;
+  el.style.gridTemplateColumns="auto auto auto auto";el.innerHTML=h;el.hidden=false;bwPlace(el,c.imPos,0,0,c.imSz)}
+function bsiPaint(th){try{imPaint()}catch(e){}const c=S.cfg.bsi,R=BS.R,bt=$("bsBias"),lt=$("bsLs");BS.hit=[];if(!c.on||!R||!L){bt.hidden=lt.hidden=true;return}
   const k=S.k,last=k.length-1,X=L.X,Y=L.Y,cw=L.cw,F=v=>CC.fmt(v),i0=Math.max(0,L.i0-1),i1=Math.min(last,L.i1+1);
   try{bsVP(th)}catch(e){console.error(e)}
   ctx.save();ctx.beginPath();ctx.rect(0,0,L.pw,L.mainH);ctx.clip();
@@ -1709,8 +1741,8 @@ function bsiCalc2(R){const c=S.cfg.bsi,k=S.k,n=k.length,last=n-1,M=R.M,F=v=>CC.f
   if(need.length&&need.some(tf=>!BF.htf[S.sym+"|"+tf]))bfHtfLoad(need);
   // 21) Checkliste
   if(R.bias&&c.ckOn){const b4=R.bias[3]&&R.bias[3][1],b5=R.bias[4]&&R.bias[4][1],cl=k[last].c,z=R.zone,za=z?z.a[last]:null,zb=z?z.b[last]:null,inZ=za!=null&&zb!=null&&cl<=Math.max(za,zb)&&cl>=Math.min(za,zb),nm3=c.m3T+" "+c.m3Len;
-    const L1=[[b4===1,"Bias 4H bullisch"],[b5===1,"Bias 1D bullisch"],[ms.tr===1,"Marktstruktur bullisch"],[R.mv3!=null&&cl>R.mv3,"Kurs über "+nm3],[inZ&&R.isLong,"Kurs in Golden Zone (LONG-Fib)"],[false,"Intermarket RISK-ON (noch keine Daten)"],[R.vwD!=null&&cl>R.vwD,"Kurs über Tages-VWAP"]];
-    const S1=[[b4===-1,"Bias 4H bärisch"],[b5===-1,"Bias 1D bärisch"],[ms.tr===-1,"Marktstruktur bärisch"],[R.mv3!=null&&cl<R.mv3,"Kurs unter "+nm3],[inZ&&!R.isLong,"Kurs in Golden Zone (SHORT-Fib)"],[false,"Intermarket RISK-OFF (noch keine Daten)"],[R.vwD!=null&&cl<R.vwD,"Kurs unter Tages-VWAP"]];
+    const L1=[[b4===1,"Bias 4H bullisch"],[b5===1,"Bias 1D bullisch"],[ms.tr===1,"Marktstruktur bullisch"],[R.mv3!=null&&cl>R.mv3,"Kurs über "+nm3],[inZ&&R.isLong,"Kurs in Golden Zone (LONG-Fib)"],[IM.reg===1,IM.reg==null?"Intermarket RISK-ON (noch keine Daten)":"Intermarket RISK-ON"],[R.vwD!=null&&cl>R.vwD,"Kurs über Tages-VWAP"]];
+    const S1=[[b4===-1,"Bias 4H bärisch"],[b5===-1,"Bias 1D bärisch"],[ms.tr===-1,"Marktstruktur bärisch"],[R.mv3!=null&&cl<R.mv3,"Kurs unter "+nm3],[inZ&&!R.isLong,"Kurs in Golden Zone (SHORT-Fib)"],[IM.reg===-1,IM.reg==null?"Intermarket RISK-OFF (noch keine Daten)":"Intermarket RISK-OFF"],[R.vwD!=null&&cl<R.vwD,"Kurs unter Tages-VWAP"]];
     const cnt=a=>a.filter(x=>x[0]).length,tip=(h,a)=>h+"\n"+a.map(x=>(x[0]?"✓ ":"✗ ")+x[1]).join("\n");R.ck={l:cnt(L1),s:cnt(S1),tl:tip("LONG-Check:",L1),ts:tip("SHORT-Check:",S1)}}}
 
 // 15) Volume Profile – wird beim Zeichnen für den sichtbaren Bereich gerechnet

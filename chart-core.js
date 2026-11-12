@@ -72,7 +72,7 @@ const DEF={
     vpPoc:true,vpPocC:"#9c27b0",vpVa:true,vpVahC:"#90caf9",vpValC:"#ce93d8",vpExtR:true,vpZone:true,vpZoneC:"#90caf9",vpLbl:true,vplSz:"normal",vplPos:"profil",vplOffX:0,vplVert:"ueber",vplCont:"np",vplPer:true,vplOwn:false,vplTxtC:"#ffffff",vpaTxt:true,
     msOn:true,msLen:5,msLbl:true,msKeep:6,msBos:true,msBosTxt:false,msCh:true,msLnKeep:6,msEq:true,msEqTol:0.15,msSw:true,msInt:false,msIntLen:2,msBullC:"#26a69a",msBearC:"#ef5350",msNeuC:"#b0bec5",msSz:"winzig",msTbl:true,
     maOn:true,maBars:1500,maLbl:true,maSz:"winzig",m1On:true,m1T:"EMA",m1Len:21,m1Tf:"",m1Col:"#ffeb3b",m1W:1,m2On:true,m2T:"EMA",m2Len:50,m2Tf:"",m2Col:"#ff9800",m2W:1,m3On:true,m3T:"SMA",m3Len:200,m3Tf:"",m3Col:"#e91e63",m3W:2,
-    gcOn:true,bmOn:false,bmCol:"#00bcd4",vwDOn:true,vwDCol:"#ab47bc",vwDN:3,vwWOn:true,vwWCol:"#5c6bc0",vwWN:2,ckOn:true,ckGood:5,ckMid:3},
+    gcOn:true,bmOn:false,bmCol:"#00bcd4",vwDOn:true,vwDCol:"#ab47bc",vwDN:3,vwWOn:true,vwWCol:"#5c6bc0",vwWN:2,ckOn:true,ckGood:5,ckMid:3,imOn:true,imPos:"ul",imSz:"winzig",imScore:"B",imThr:3},
   bps:{on:true,mK:false,mC:false,mT:true,mS:false,mR:true,mH:true,mV:true,mM:true,kPre:"eigen",tfMin:"15m",lbMode:"kurz",lbSz:"normal",lbPr:true,
     kTrend:"ema",kTrLen:20,kZone:"swing",kZoneLen:10,kSide:true,kAdx:18,kVolF:false,kVolX:1.2,kConf:"sofort",kRules:true,kWick:5,kMinAtr:0.5,kDoji:10,kWickX:2,kTail:15,kTxt:"kurz",kSz:"winzig",kBull:"#26a69a",kBear:"#ef5350",kMax:100,
     twTol:0.15,wkMin:30,awMin:5,awMax:20,

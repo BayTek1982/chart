@@ -122,6 +122,7 @@ html,body{height:100%;overflow:hidden}
 .ccol .chartbox{flex:1 1 0;height:auto;min-height:0}
 .bodbox{position:relative;flex:0 0 clamp(176px,28%,270px);background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .bodbox canvas{cursor:default}
+.bodRs{position:absolute;left:0;right:0;top:0;height:9px;cursor:row-resize;z-index:3;touch-action:none}.bodRs::after{content:"";position:absolute;left:50%;top:3px;width:40px;height:3px;margin-left:-20px;border-radius:2px;background:var(--line)}
 .bodH{position:absolute;left:8px;top:4px;right:calc(var(--ax,74px) + 4px);display:flex;gap:8px;align-items:center;font:600 .7rem var(--f-num);color:var(--muted);white-space:nowrap;overflow:hidden;pointer-events:none}
 .bodH b.n{color:var(--fg);font:800 .76rem var(--f-body)}
 .bodH .seg{pointer-events:auto;padding:2px;border-radius:7px;flex:none}.bodH .seg button{font-size:.68rem;padding:2px 7px;border-radius:5px}
@@ -256,7 +257,7 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
     <div class="ebar" id="ebar" hidden></div>
     <div class="loading" id="loading">Lädt …</div>
   </div>
-  <div class="bodbox" id="bodBox" hidden><canvas id="bodCv"></canvas>
+  <div class="bodbox" id="bodBox" hidden><div class="bodRs" id="bodRs" title="Ziehen = Fenster höher/niedriger"></div><canvas id="bodCv"></canvas>
     <div class="bodH"><button id="bodZu" type="button" title="Fenster zuklappen / öffnen (auch Doppeltipp)">▾</button><b class="n">BOD V1.8</b><div class="seg" id="bodSeg"><button data-m="doi">ΔOI</button><button data-m="oi">OI</button><button data-m="delta">Delta</button><button data-m="cvd">CVD</button></div><span id="bodInfo"></span></div>
     <div id="bodTab" hidden></div><div id="bodTip" hidden></div>
   </div></div>
@@ -1041,7 +1042,7 @@ function bodTable(){const c=S.cfg.bod,R=BOD.R,el=$("bodTab");if(!R||!c.tab){el.h
   if(o[0]==="o")s.top=`calc(26px + ${off}%)`;else if(o[0]==="u")s.bottom=`calc(4px + ${off}%)`;else{s.top="50%";s.transform="translateY(-50%)"}
   if(o[1]==="l")s.left=`calc(6px + ${off}%)`;else if(o[1]==="r")s.right=`calc(var(--ax,74px) + 6px + ${off}%)`;else{s.left="calc((100% - var(--ax,74px)) / 2)";s.transform+=" translateX(-50%)"}}
 
-function bodPaint(th){const box=$("bodBox");if(box.hidden||!L||!S.k.length)return;
+function bodPaint(th){const box=$("bodBox");if(box.hidden||!L||!S.k.length)return;BOD.axX=L.pw;
   const cvs=$("bodCv"),r=cvs.getBoundingClientRect(),d=devicePixelRatio||1;if(r.width<10||r.height<10)return;
   if(cvs.width!==Math.round(r.width*d)||cvs.height!==Math.round(r.height*d)){cvs.width=Math.round(r.width*d);cvs.height=Math.round(r.height*d)}
   const x=cvs.getContext("2d");x.setTransform(d,0,0,d,0,0);const W=r.width,H=r.height,pw=L.pw,cw=L.cw,from=L.from,c=S.cfg.bod,R=BOD.R,n=S.k.length;
@@ -1059,6 +1060,7 @@ function bodPaint(th){const box=$("bodBox");if(box.hidden||!L||!S.k.length)retur
   if(!isFinite(lo)){x.fillStyle=th.txt;x.textAlign="center";const st=BOD.key===bKey()?BOD.st:"lädt";
     x.fillText(st==="lädt"?"Open Interest wird geladen …":st==="tf"?`Kein Open Interest auf ${TFLAB[S.tf]} (verfügbar 5m bis 1D) – Volumen-Delta und CVD gehen trotzdem.`:"Kein Open Interest für diesen Bereich (höchstens 30 Tage zurück) – Volumen-Delta und CVD gehen trotzdem.",pw/2,H/2+8);return}
   if(col){lo=Math.min(lo,0);hi=Math.max(hi,0)}const pad=(hi-lo)*0.12||Math.abs(hi)*0.01||1;lo-=col&&lo===0?0:pad;hi+=col&&hi===0?0:pad;
+  if(BOD.zy&&BOD.zy!==1){const m=(lo+hi)/2,h=(hi-lo)/2*BOD.zy;lo=m-h;hi=m+h}BOD.axX=pw;
   const T=24,B=H-5,Y=v=>B-(v-lo)/(hi-lo)*(B-T),X=i=>(i-from+0.5)*cw;
   x.strokeStyle=th.grid;x.lineWidth=1;x.fillStyle=th.txt;x.textAlign="left";
   for(let g=0;g<=2;g++){const v=lo+(hi-lo)*(g+0.5)/3,y=Math.round(Y(v))+.5;x.beginPath();x.moveTo(0,y);x.lineTo(pw,y);x.stroke();x.fillText(fv(v),pw+6,y)}
@@ -1830,6 +1832,18 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
     const items=[];if(c.vpPoc)items.push([pP,tx("POC",pP,c.vplPer?" "+name:""),c.vpPocC]);if(c.vpVa)items.push([vah,tx("VAH",vah,""),c.vpVahC],[val,tx("VAL",val,""),c.vpValC]);
     for(const[y,t,col]of items){const xx=Math.max(4,Math.min(L.pw-4,lx));ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t,xx,Y(y)+dy);ctx.fillStyle=c.vplOwn?c.vplTxtC:col;ctx.fillText(t,xx,Y(y)+dy)}}
   ctx.restore();R.vp={poc:pP,vah,val,name}}
+
+// OI & Delta: Preisskala ziehen = strecken/stauchen (Doppelklick auf die Skala = automatisch), oberen Rand ziehen = Fenster höher/niedriger
+{const cv2=$("bodCv"),box=$("bodBox"),rs=$("bodRs");let ax=null,rz=null;
+  const hSet=h=>{box.style.flexBasis=Math.round(h)+"px";box.style.setProperty("flex-basis",Math.round(h)+"px","important")};
+  {const h=LS("blcBodH");if(h)hSet(h)}
+  cv2.addEventListener("pointermove",e=>{if(ax){const f=Math.exp((e.clientY-ax.y)/120);BOD.zy=Math.max(.1,Math.min(20,ax.z*f));paint();return}cv2.style.cursor=BOD.axX&&e.offsetX>BOD.axX?"ns-resize":"default"});
+  cv2.addEventListener("pointerdown",e=>{if(!BOD.axX||e.offsetX<=BOD.axX)return;ax={y:e.clientY,z:BOD.zy||1};cv2.setPointerCapture(e.pointerId);e.preventDefault()});
+  const axUp=()=>{ax=null};cv2.addEventListener("pointerup",axUp);cv2.addEventListener("pointercancel",axUp);
+  cv2.addEventListener("dblclick",e=>{if(BOD.axX&&e.offsetX>BOD.axX){BOD.zy=1;paint()}});
+  rs.addEventListener("pointerdown",e=>{rz={y:e.clientY,h:box.getBoundingClientRect().height};rs.setPointerCapture(e.pointerId);e.preventDefault()});
+  rs.addEventListener("pointermove",e=>{if(!rz)return;hSet(Math.max(70,Math.min(innerHeight*.7,rz.h+(rz.y-e.clientY))));paint()});
+  const rzUp=()=>{if(rz){rz=null;LS("blcBodH",Math.round(box.getBoundingClientRect().height))}};rs.addEventListener("pointerup",rzUp);rs.addEventListener("pointercancel",rzUp)}
 </script>
 <script src="bps.js?v=6"></script>
 <script src="wl.js?v=6"></script>

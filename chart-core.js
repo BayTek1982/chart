@@ -432,9 +432,11 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
 
   // Fadenkreuz
   const L={pw,mainH,panes,X,Y,P,cw,from,to,i0,i1,TA,H,W,lo,hi,mT,mB,AX,lbR,pBtn:S._pBtn||[]};
-  if(S.cross){const {x,y}=S.cross;const i=Math.round(from+x/cw-0.5);if(i>=0&&i<=last&&x<pw){const cx=X(i);line(cx,0,cx,H-TA,th.cross,1,[3,3]);
+  // Fadenkreuz auch rechts von der letzten Kerze (Zukunft) und links davon, wie in TradingView
+  if(S.cross){const {x,y}=S.cross;const i=Math.round(from+x/cw-0.5);if(i>=0&&x<pw&&x>=0){const cx=X(i);line(cx,0,cx,H-TA,th.cross,1,[3,3]);
       if(y<mainH){line(0,y,pw,y,th.cross,1,[3,3]);tagDraw(ctx,pw,y,th.grey,fmt(P(y)),AX,th,true)}
-      font(10,1);const tl=tlab(k[i].t,tf,true),tw=ctx.measureText(tl).width+12;ctx.fillStyle=th.grey;ctx.fillRect(cx-tw/2,H-TA+2,tw,TA-4);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(tl,cx,H-TA/2);L.ci=i}}
+      const st=last>0?k[last].t-k[last-1].t:0,tt=i<=last?k[i].t:k[last].t+(i-last)*st;
+      font(10,1);const tl=tlab(tt,tf,true),tw=ctx.measureText(tl).width+12;ctx.fillStyle=th.grey;ctx.fillRect(cx-tw/2,H-TA+2,tw,TA-4);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(tl,cx,H-TA/2);if(i<=last)L.ci=i}}
   return L}
 function tagDraw(ctx,pw,y,col,t,AX,th,strong){ctx.font=`600 10px "JetBrains Mono",ui-monospace,monospace`;const h=14;ctx.fillStyle=col;
   ctx.globalAlpha=strong?1:0.9;ctx.fillRect(pw+1,y-h/2,AX-2,h);ctx.globalAlpha=1;ctx.fillStyle="#0e131b";ctx.textAlign="left";ctx.fillText(t,pw+5,y+0.5)}

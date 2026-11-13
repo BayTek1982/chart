@@ -81,7 +81,7 @@ function setup(){const b=$("wlBody");
   b.addEventListener("dragover",e=>{if(dragI>=0)e.preventDefault()});
   b.addEventListener("drop",e=>{const r=e.target.closest("[data-i]");if(dragI<0||!r)return;e.preventDefault();const it=L().items,[x]=it.splice(dragI,1);it.splice(+r.dataset.i,0,x);dragI=-1;saveW();draw()});
   // ↑/↓ wechselt das Symbol wie in TradingView
-  document.addEventListener("keydown",e=>{if(!open()||e.target.closest("input,textarea,select"))return;if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
+  document.addEventListener("keydown",e=>{if(e.defaultPrevented||S.sel||!open()||e.target.closest("input,textarea,select"))return;if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
     const it=[...document.querySelectorAll("#wlBody .wlRow")].map(r=>r.dataset.s);if(!it.length)return;e.preventDefault();
     let i=it.indexOf(S.sym);i=i<0?0:(i+(e.key==="ArrowDown"?1:-1)+it.length)%it.length;pick(it[i],"k");setTimeout(draw,50)})}
 window.wlShow=()=>{draw();quotes()};

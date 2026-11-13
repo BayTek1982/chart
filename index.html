@@ -15,6 +15,8 @@
 :root{--bg:#f3f5f8;--panel:#fff;--line:#dde2ea;--fg:#141a24;--muted:#5d6878;--accent:#c77a12;--accent-ink:#fff;--up:#0f8a4f;--down:#c8372d;--chip:#e8ecf2;--gold:#d9951c;--goldbg:rgba(217,149,28,.16);
   --f-body:"Archivo",system-ui,sans-serif;--f-num:"JetBrains Mono",ui-monospace,Menlo,monospace;color-scheme:light}
 @media (prefers-color-scheme:dark){:root{--bg:#0e131b;--panel:#151c27;--line:#253041;--fg:#e7ecf3;--muted:#8d99ab;--accent:#f0a33a;--accent-ink:#1a1206;--up:#3ccf8a;--down:#ff6b5e;--chip:#1d2633;--gold:#f0a33a;--goldbg:rgba(240,163,58,.18);color-scheme:dark}}
+html.lt{--bg:#f3f5f8;--panel:#fff;--line:#dde2ea;--fg:#141a24;--muted:#5d6878;--accent:#c77a12;--accent-ink:#fff;--up:#0f8a4f;--down:#c8372d;--chip:#e8ecf2;--gold:#d9951c;--goldbg:rgba(217,149,28,.16);color-scheme:light}
+html.dk{--bg:#0e131b;--panel:#151c27;--line:#253041;--fg:#e7ecf3;--muted:#8d99ab;--accent:#f0a33a;--accent-ink:#1a1206;--up:#3ccf8a;--down:#ff6b5e;--chip:#1d2633;--gold:#f0a33a;--goldbg:rgba(240,163,58,.18);color-scheme:dark}
 *{box-sizing:border-box}html,body{margin:0}[hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
 .wrap{max-width:1800px;margin:0 auto;padding-block:max(14px,env(safe-area-inset-top)) 40px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));display:grid;gap:12px}
@@ -190,6 +192,18 @@ html,body{height:100%;overflow:hidden}
 .alForm label{display:grid;gap:3px;font-size:.78rem;opacity:.9}.alForm label.chk{display:flex;align-items:center;gap:6px}.alForm input,.alForm select{background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:8px;padding:7px;font:inherit;font-family:var(--f-num)}
 .alForm .row{display:flex;gap:6px}.alR{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid rgba(128,128,128,.15)}.alR.off{opacity:.5}.alR .tx{flex:1;font-family:var(--f-num);font-size:.84rem}.alR small{opacity:.7}
 .alR button{background:none;border:0;color:inherit;opacity:.7;cursor:pointer;padding:3px 6px}.alLog{font-size:.8rem;padding:3px 2px}.alLog small{opacity:.65}
+.dsrch{padding:8px 12px 0}.dsrch input{width:100%;box-sizing:border-box;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;font-size:.9rem}
+/* Geteilte Ansicht */
+#split{position:fixed;inset:0;display:grid;gap:3px;background:var(--line);z-index:50}
+#split iframe{width:100%;height:100%;border:0;background:var(--bg);display:block}
+html.split body>.wrap{display:none!important}
+#splitBar{position:fixed;right:8px;bottom:8px;z-index:60;display:flex;gap:6px}
+.layMenu{position:fixed;z-index:70;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:8px;display:grid;grid-template-columns:repeat(3,auto);gap:6px}
+.layMenu button{background:var(--chip);border:1px solid var(--line);color:inherit;border-radius:9px;padding:8px 10px;cursor:pointer;font:600 .8rem var(--f-body);display:grid;justify-items:center;gap:4px}
+.layMenu button.on{border-color:var(--accent);color:var(--accent)}.layMenu svg{width:34px;height:24px}
+html.emb .logo,html.emb #alBtn,html.emb #layBtn,html.emb #shareBtn,html.emb #pngBtn,html.emb #refresh,html.emb .curseg{display:none!important}
+html.emb .wrap{padding:4px!important;gap:4px!important}html.emb .top{flex-wrap:nowrap!important}html.emb .lb{display:none}html.emb .ic{display:inline}
+html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overflow-x:auto}html.emb #bodBox{display:none}
 .wl{padding:10px 12px;font-size:.86rem}
 .wlTop{display:flex;gap:6px;align-items:center}.wlTop select{flex:1;min-width:0;background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:6px}
 .wlTop .btn{padding:6px 9px;font-size:.8rem}.wlTop .btn.on{border-color:var(--acc,#f0a030)}
@@ -211,6 +225,7 @@ html,body{height:100%;overflow:hidden}
 </style>
 </head>
 <body>
+<div id="split" hidden></div><div id="layMenu" class="layMenu" hidden></div>
 <div class="wrap">
   <div class="bar top">
     <a class="logo" href="https://scanner.kompassapps.de/" title="Zum Coin-Scanner">✦</a>
@@ -219,6 +234,7 @@ html,body{height:100%;overflow:hidden}
     <div class="seg" id="tfSeg"></div>
     <div class="seg curseg" id="curSeg" title="Währung der Kurse"><button data-cur="orig">$</button><button data-cur="eur">€</button></div>
     <div class="acts">
+      <button class="btn ghost" id="layBtn" title="Mehrere Charts (geteilte Ansicht)">▦<span class="lb"> Layout</span></button>
       <button class="btn ghost" id="alBtn" title="Alarme">🔔<span class="lb"> Alarme</span></button>
       <button class="btn ghost" id="wlBtn" title="Watchlist">☆<span class="lb"> Watchlist</span></button>
       <button class="btn" id="indBtn">ƒ<span class="lb"> Indikatoren</span></button>
@@ -245,6 +261,7 @@ html,body{height:100%;overflow:hidden}
     <div id="bodTab" hidden></div><div id="bodTip" hidden></div>
   </div></div>
   <aside class="side" id="side" hidden><div class="dh"><h2 id="sideH">Indikatoren</h2><button class="x" id="sideX" aria-label="Schließen">✕</button></div>
+    <div class="dsrch" id="indSrchW"><input id="indSrch" type="search" placeholder="🔍 Indikator oder Einstellung suchen …" autocomplete="off"></div>
     <div class="db" id="dlgBody"></div>
     <div class="db wl" id="wlBody" hidden></div>
     <div class="db wl" id="alBody" hidden></div>
@@ -254,7 +271,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=23"></script>
+<script src="chart-core.js?v=24"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -268,14 +285,19 @@ async function getJSON(u,ms=20000){const c=new AbortController(),t=setTimeout(()
 function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
 
 // ---------- Zustand ----------
-const saved=LS("blc1")||LS("bcb1")||{};
+// Geteilte Ansicht: jedes Fenster ist ein eigener Chart (?slot=1…6) mit eigenem Coin/Zeitrahmen; Indikator-Einstellungen sind gemeinsam
+const SLOT=+(new URLSearchParams(location.search).get("slot"))||0,SLOTSYM=["BTC","BTC","ETH","SOL","XRP","BNB","DOGE"];
+if(SLOT)document.documentElement.classList.add("emb");
+const savedMain=LS("blc1")||LS("bcb1")||{};
+const saved=SLOT?Object.assign({},savedMain,{sym:SLOTSYM[SLOT]||"BTC"},LS("blc1s"+SLOT)||{}):savedMain;
 const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[],sel:null,pend:null,dwd:null,mag:saved.mag===false||saved.mag===0?0:saved.mag===2?2:1,dwShared:false,mkt:"k",sym:saved.sym||"BTC",tf:saved.tf||"4h",cfg:CC.withDefaults(saved.cfg),profiles:saved.profiles||{},k:[],I:{},view:null,cross:null,src:"",ex:saved.ex==="binance"?"binance":"okx",list:{k:[],a:[]}};
-(function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(!h.get("s"))return;
+(function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(SLOT||!h.get("s"))return;
   S.mkt="k";S.sym=h.get("s").toUpperCase().replace(/[^A-Z0-9.^=\-]/g,"");if(h.get("tf"))S.tf=h.get("tf");
   if(h.get("i"))try{S.cfg=CC.withDefaults(JSON.parse(decodeURIComponent(escape(atob(h.get("i"))))))}catch(e){}
   if(h.get("d"))try{S.hashDw=JSON.parse(decodeURIComponent(escape(atob(h.get("d")))))}catch(e){}})();
 if(!TF[S.mkt].includes(S.tf))S.tf="1d";
-const save=()=>LS("blc1",{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cfg:S.cfg,profiles:S.profiles,cur:S.cur,mag:S.mag});
+const save=()=>{if(SLOT){LS("blc1s"+SLOT,{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cur:S.cur});const m=LS("blc1")||{};LS("blc1",Object.assign(m,{cfg:S.cfg,profiles:S.profiles,mag:S.mag}))}
+  else LS("blc1",{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cfg:S.cfg,profiles:S.profiles,cur:S.cur,mag:S.mag})};
 
 // ---------- Daten ----------
 // Börsen: OKX Perpetual (USDT-SWAP, wie „OKX:…USDT.P“ in TradingView) und Binance Spot
@@ -380,7 +402,11 @@ const tvUrl=()=>`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(
 
 // ---------- Zeichnen ----------
 const cv=$("cv"),ctx=cv.getContext("2d");let L=null,raf=0;
-const dark=()=>matchMedia("(prefers-color-scheme: dark)").matches;
+// Hell / Dunkel: automatisch (wie das Gerät) oder fest eingestellt
+let THM=LS("blcTheme")||"auto";
+const dark=()=>THM==="dunkel"||(THM==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
+function applyTheme(){const h=document.documentElement;h.classList.toggle("dk",THM==="dunkel");h.classList.toggle("lt",THM==="hell");const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=dark()?"#0e131b":"#f3f5f8"}
+applyTheme();
 function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
@@ -457,7 +483,7 @@ const TOOLS=[["sel","✥","Auswählen / verschieben"],["tl","╱","Trendlinie"],
   ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
   ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
   ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],["-"],
-  ["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["hide","👁","Alle Zeichnungen aus-/einblenden"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
+  ["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["hide","👁","Alle Zeichnungen aus-/einblenden"],["theme","◐","Hell / Dunkel umschalten (automatisch → hell → dunkel)"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
 // Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
 const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6};const TWO=Object.keys(NEED);
 const DCOL={tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff"};
@@ -465,6 +491,7 @@ S.dwHide=LS("blcDwHide")===true;
 function renderTools(){$("tools").innerHTML=TOOLS.map(t=>t[0]==="-"?"<hr>":`<button data-tool="${t[0]}" title="${t[2]}" class="${(t[0]==="sel"&&!S.tool)||S.tool===t[0]||(t[0]==="mag"&&+S.mag)||(t[0]==="hide"&&S.dwHide)?"on":""}">${t[1]}${t[0]==="mag"&&+S.mag?`<sup class="magN">${S.mag}</sup>`:""}</button>`).join("")}
 $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");if(!b)return;const t=b.dataset.tool;
   if(t==="mag"){S.mag=((+S.mag||0)+1)%3;save();toast(["Magnet aus","Magnet schwach (rastet in der Nähe ein)","Magnet stark (rastet immer an Hoch/Tief/Open/Close ein)"][S.mag])}
+  else if(t==="theme"){THM=THM==="auto"?"hell":THM==="hell"?"dunkel":"auto";LS("blcTheme",THM);applyTheme();toast({auto:"Farben automatisch wie das Gerät",hell:"Heller Hintergrund",dunkel:"Dunkler Hintergrund"}[THM])}
   else if(t==="hide"){S.dwHide=!S.dwHide;S.sel=null;LS("blcDwHide",S.dwHide);toast(S.dwHide?"Zeichnungen ausgeblendet":"Zeichnungen eingeblendet")}
   else if(t==="clear"){if(S.dw.length&&confirm(`Alle ${S.dw.length} Zeichnungen für ${S.sym} löschen?`)){S.dw=[];S.sel=null;saveDw()}}
   else{S.tool=t==="sel"?null:t;S.pend=null;S.sel=null}
@@ -520,6 +547,10 @@ $("ebar").addEventListener("click",e=>{const k=e.target.dataset&&e.target.datase
   if(k==="del"){S.dw=S.dw.filter(z=>z.id!==d.id);S.sel=null;saveDw();paint()}
   if(k==="copy"){const n=JSON.parse(JSON.stringify(d)),dt=5*(CC.tIdx?((S.k[1]&&S.k[0])?S.k[1].t-S.k[0].t:0):0),dp=(L?(L.hi-L.lo)*.04:0)/S.F;n.id=nid();n.lock=false;n.pts=n.pts.map(q=>({t:q.t+dt,p:q.p-dp}));if(n.t2)n.t2+=dt;if(n.tp!=null)n.tp-=dp;if(n.sl!=null)n.sl-=dp;S.dw.push(n);S.sel=n.id;saveDw();renderEbar();paint();toast("Kopie angelegt – zum Verschieben antippen und ziehen")}if(k==="txt"){const t=prompt("Text:",d.text||"");if(t!=null){d.text=t.slice(0,80);saveDw();paint()}}});
 addEventListener("keydown",e=>{if(e.target.matches("input,select,textarea"))return;
+  // Markierte Zeichnung (auch Long/Short) mit den Pfeiltasten bewegen – mit Umschalt in großen Schritten
+  if(S.sel&&["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)&&!e.target.closest("input,textarea,select")){const d=S.dw.find(z=>z.id===S.sel);
+    if(d&&!d.lock&&L&&S.k.length>1){e.preventDefault();const f=e.shiftKey?10:1,st=S.k[S.k.length-1].t-S.k[S.k.length-2].t,dt=e.key==="ArrowLeft"?-st*f:e.key==="ArrowRight"?st*f:0,dp=e.key==="ArrowUp"||e.key==="ArrowDown"?(e.key==="ArrowUp"?1:-1)*(L.hi-L.lo)*.004*f/S.F:0;
+      d.pts=d.pts.map(q=>({t:q.t+dt,p:q.p+dp}));if(d.t2!=null)d.t2+=dt;if(d.tp!=null)d.tp+=dp;if(d.sl!=null)d.sl+=dp;saveDw();paint();return}}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"&&S.sel){e.preventDefault();const b=$("ebar").querySelector('[data-e="copy"]');if(b)b.click();return}
   if((e.key==="Delete"||e.key==="Backspace")&&S.sel){S.dw=S.dw.filter(z=>z.id!==S.sel);S.sel=null;saveDw();paint()}
   if(e.key==="Escape"){if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;S.sel=null;renderTools();paint()}});
@@ -804,12 +835,17 @@ function pInput(key,p){const v=S.cfg[key][p.k],id=`${key}.${p.k}`;
   if(p.type==="col")return`<label class="cl">${p.t} <input type="color" data-p="${id}" value="${esc(v)}"><button type="button" class="rs" data-rc="${id}" title="Standardfarbe">↺</button></label>`;
   if(p.type==="text")return`<label class="${p.wide?"wide":""}">${p.t} <input type="text" data-p="${id}" value="${esc(v)}"></label>`;
   return`<label>${p.t} <input type="number" data-p="${id}" value="${esc(v)}" min="${p.min??""}" max="${p.max??""}" step="${p.step||1}"></label>`}
-function renderDlg(){const c=S.cfg;let h=`<div class="grp"><div class="label">Profile</div><div class="prof">`+[1,2,3].map(n=>{const p=S.profiles[n];
+function normQ(t){return String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss").trim()}
+function renderDlg(){const c=S.cfg,Q=normQ($("indSrch").value);let h=Q?"":`<div class="grp"><div class="label">Profile</div><div class="prof">`+[1,2,3].map(n=>{const p=S.profiles[n];
     return`<button class="btn ghost" data-load="${n}" ${p?"":"disabled"} title="${p?"Laden":"leer"}">${p?esc(p.name):"Profil "+n+" (leer)"}</button>`}).join("")+
     `</div><div class="prof" style="margin-top:6px">`+[1,2,3].map(n=>`<button class="btn ghost" data-save="${n}" style="font-size:.76rem;padding:6px 9px">💾 als Profil ${n}</button>`).join("")+
     `<button class="btn ghost" data-reset style="font-size:.76rem;padding:6px 9px">↺ Standard</button></div></div>`;
   h+=`<div class="grp"><div class="label">Pivot-Länge (Hochs/Tiefs)</div><div class="it"><div class="pr"><label><input type="checkbox" data-p="pivot.auto" ${c.pivot.auto?"checked":""}> automatisch je Zeitrahmen (5m 5 · 15m 10 · 30m 5 · 1H 7 · 2H 10 · 4H 14 · 12H 12 · 1D 12 · 1W 15)</label><label>fest <input type="number" data-p="pivot.len" value="${c.pivot.len}" min="2" max="50"></label></div></div></div>`;
-  SCHEMA.forEach((g,gi)=>{const op=!!GOPEN[g.g],ar=`<span class="ga">${op?"▾":"▸"}</span>`;
+  if(Q)h="";
+  SCHEMA.forEach((g,gi)=>{
+    // Suche: Gruppe passt → ganz zeigen; sonst nur passende Indikatoren (Name, Beschreibung oder Einstellung)
+    let items=g.items;if(Q&&!normQ(g.g+" "+(g.note||"")).includes(Q)){items=g.items.filter(it=>{const A=it;return normQ((it.t||"")+" "+(it.d||"")+" "+(A?(A.t+" "+A.d+" "+(A.p||[]).map(p=>p.t).join(" ")):"")).includes(Q)});if(!items.length)return}
+    g={...g,items};const op=Q?true:!!GOPEN[g.g],ar=`<span class="ga">${op?"▾":"▸"}</span>`;
     h+=`<div class="grp${op?"":" zu"}">`+(g.own?(g.items.length?`<div class="gh"><input type="checkbox" data-grp="${gi}" aria-label="${esc(g.g)} an/aus" ${g.items.some(it=>!it.always&&c[it.k].on)?"checked":""}><button type="button" class="gt" data-gt="${esc(g.g)}">${esc(g.g)}${ar}</button></div>`:`<div class="gh off">${esc(g.g)}</div>`)+(op&&g.note?`<p class="gnote">${esc(g.note)}</p>`:""):`<button type="button" class="gt label" data-gt="${esc(g.g)}">${g.g}${ar}</button>`);
     if(!op&&g.items.length){h+=`</div>`;return}g.items.forEach(it=>{const o=c[it.k];
     const params=it.ma?[{k:"type",t:"Art",type:"sel",o:[["EMA","EMA"],["SMA","SMA"]]},{k:"len",t:"Länge",type:"num",min:1,max:500},{k:"col",t:"Farbe",type:"col"}]:(it.p||[]);
@@ -817,6 +853,7 @@ function renderDlg(){const c=S.cfg;let h=`<div class="grp"><div class="label">Pr
     h+=`<div class="it" style="margin-top:6px"><div class="hd"><label>${it.always?"":`<input type="checkbox" data-on="${it.k}" ${o.on?"checked":""}>`}<span>${esc(title)}${it.d?`<small>${esc(it.d)}</small>`:""}</span></label>${it.i?`<button type="button" class="ib" data-ib="${it.k}" aria-label="Info">ⓘ</button>`:""}</div>${it.i?`<div class="itx" id="ix-${it.k}" ${S.openInfo===it.k?"":"hidden"}>${esc(it.i)}</div>`:""}${params.length&&(o.on||it.always)?`<div class="pr">${params.map(p=>pInput(it.k,p)).join("")}</div>`:""}</div>`});h+=`</div>`});
   $("dlgBody").innerHTML=h}
 let GOPEN=LS("blcGrpOpen")||{};
+$("indSrch").addEventListener("input",()=>renderDlg());
 $("dlgBody").addEventListener("click",e=>{const b=e.target.closest("[data-gt]");if(!b)return;const k=b.dataset.gt;GOPEN[k]=!GOPEN[k];LS("blcGrpOpen",GOPEN);renderDlg()});
 function sideOpen(o){$("side").hidden=!o;$("stage").classList.toggle("open",o);if(o)renderDlg();paint()}
 $("indBtn").onclick=()=>sideOpen($("side").hidden);$("sideX").onclick=()=>sideOpen(false);
@@ -856,7 +893,7 @@ renderBar();renderTools();loadList().then(()=>{if(S.mkt==="a"){applyCur().then((
 
 // ---------- Seitenleiste: Indikatoren oder Analyse ----------
 let sideM="ind";
-function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("alBody").hidden=m!=="al";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":m==="al"?"Alarme":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow();if(m==="al"&&window.alShow)alShow()}
+function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("indSrchW").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("alBody").hidden=m!=="al";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":m==="al"?"Alarme":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow();if(m==="al"&&window.alShow)alShow()}
 $("wlBtn").onclick=()=>showSide("wl");$("alBtn").onclick=()=>showSide("al");$("indBtn").onclick=()=>showSide("ind");$("anaBtn").onclick=()=>showSide("ana");
 $("refresh").onclick=()=>load();
 
@@ -865,7 +902,7 @@ const WSU=["wss://data-stream.binance.vision/ws/","wss://stream.binance.com:9443
 let ws=null,wsKey="",wsT=0,wsI=0,rcT=0;
 function liveState(on,txt){$("live").classList.toggle("on",on);if(txt!=null)$("liveT").textContent=txt}
 function wsStop(){clearTimeout(wsT);if(ws){const s=ws;ws=null;clearInterval(s._p);try{s.close()}catch(e){}}}
-function wsStart(){const key=S.src+"|"+S.sym+"|"+S.tf;
+function wsStart(){if(document.documentElement.classList.contains("split")){wsStop();return}const key=S.src+"|"+S.sym+"|"+S.tf;
   if(!SRCOK()||!S.kO.length){wsStop();wsKey="";liveState(false,S.kO.length?"ohne Live":"–");return}
   if(ws&&wsKey===key&&ws.readyState<2)return;wsStop();wsKey=key;liveState(false,"verbinde …");let got=false;const okx=S.src==="OKX Perp";
   $("live").title="Live-Verbindung zu "+(okx?"OKX (Perpetual)":"Binance (Spot)");
@@ -1795,7 +1832,8 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   ctx.restore();R.vp={poc:pP,vah,val,name}}
 </script>
 <script src="bps.js?v=6"></script>
-<script src="wl.js?v=5"></script>
+<script src="wl.js?v=6"></script>
 <script src="al.js?v=1"></script>
+<script src="split.js?v=1"></script>
 </body>
 </html>

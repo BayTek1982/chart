@@ -254,7 +254,7 @@ html,body{height:100%;overflow:hidden}
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=22"></script>
+<script src="chart-core.js?v=23"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -660,7 +660,9 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   C("qGC","⑯ Golden / Death Cross"),{k:"gcAb",t:"⑯ Golden/Death Cross anzeigen ab",type:"sel",o:T7},{k:"gcBis",t:"⑯ Golden/Death Cross anzeigen bis",type:"sel",o:T7},COL("gcColU","⑯ Farbe GC"),COL("gcColD","⑯ Farbe DC"),C("bmOn","⑯ Bull Market Support Band (20W SMA + 21W EMA)"),COL("bmCol","⑯ Farbe BMSB"),
   C("qVW","⑯ VWAP (Tag / Woche)"),{k:"vwAb",t:"⑯ VWAP anzeigen ab",type:"sel",o:T7},{k:"vwBis",t:"⑯ VWAP anzeigen bis",type:"sel",o:T7},C("vwDOn","⑯ VWAP Tag"),COL("vwDCol","⑯ VWAP Tag Farbe"),N("vwDW","⑯ VWAP Tag Stärke",1,4),N("vwDN","⑯ Anzahl Tage",1,30),C("vwWOn","⑯ VWAP Woche"),COL("vwWCol","⑯ VWAP Woche Farbe"),N("vwWW","⑯ VWAP Woche Stärke",1,4),N("vwWN","⑯ Anzahl Wochen",1,12),
   C("qSR","⑰ S/R-Zonen"),{k:"srAb",t:"⑰ S/R-Zonen anzeigen ab",type:"sel",o:T7},{k:"srBis",t:"⑰ S/R-Zonen anzeigen bis",type:"sel",o:T7},N("srLen","⑰ Pivot-Länge",2,50),N("srMaxP","⑰ Rückblick (Anzahl Hochs/Tiefs)",10,150),N("srWid","⑰ Zonenbreite (× ATR)",0.1,3,0.1),N("srMinT","⑰ Mindest-Berührungen",1,10),N("srN","⑰ Zonen je Seite",1,5),N("srExt","⑰ Verlängern (Kerzen)",0,200),COL("srCol","⑰ Farbe"),N("srTr","⑰ Transparenz",0,100),C("srLbl","⑰ Kürzel (W/U × Berührungen)"),{k:"srSz",t:"⑰ Größe",type:"sel",o:GRS},
-  N("swLen","⑮ Sweep-Pivot (für OB+)",2,30),
+  C("qDiv","⑭ RSI-Divergenz-Linien"),{k:"divAb",t:"⑭ Divergenzen anzeigen ab",type:"sel",o:T7},{k:"divBis",t:"⑭ Divergenzen anzeigen bis",type:"sel",o:T7},N("rsiLen","⑭ RSI-Länge",2,50),N("divPiv","⑭ Pivot-Länge",2,20),N("divDist","⑭ Max. Abstand (Kerzen)",5,200),N("divKeep","⑭ Anzahl sichtbar",1,10),C("divHid","⑭ Versteckte Divergenzen"),COL("colDvU","⑭ Bullisch"),COL("colDvD","⑭ Bärisch"),
+  C("rsiCol","⑭ Kerzen färben bei RSI-Extrem (Vorrang vor Trendfarbe)"),N("rsiUp","⑭ Obere Grenze",50,100),COL("colRUp","⑭ Farbe oben"),N("rsiDn","⑭ Untere Grenze",0,50),COL("colRDn","⑭ Farbe unten"),
+  C("qSweep","⑮ Liquiditäts-Sweep"),{k:"sweepAb",t:"⑮ Sweeps anzeigen ab",type:"sel",o:T7},{k:"sweepBis",t:"⑮ Sweeps anzeigen bis",type:"sel",o:T7},N("swLen","⑮ Pivot-Länge (auch für OB+)",2,30),N("swKeep","⑮ Anzahl sichtbar",1,20),C("swBox","⑮ Docht markieren"),C("swWick","⑮ Docht färben"),C("swLine","⑮ Linie zum Level"),COL("colSwU","⑮ Unten (bullisch)"),COL("colSwD","⑮ Oben (bärisch)"),
   C("qFVG","⑱ Fair Value Gaps (FVG)"),{k:"fvgAb",t:"⑱ FVG anzeigen ab",type:"sel",o:T7},{k:"fvgBis",t:"⑱ FVG anzeigen bis",type:"sel",o:T7},N("fvMin","⑱ Mindestgröße (× ATR)",0,5,0.05),C("fvTrend","⑱ Nur in Trendrichtung"),N("fvN","⑱ Anzahl je Seite",1,10),C("fvCut","⑱ Gefüllten Teil abschneiden"),C("fvCE","⑱ 50 %-Linie (CE)"),COL("fvColU","⑱ Bullisch"),COL("fvColD","⑱ Bärisch"),N("fvTr","⑱ Transparenz",0,100),
   C("qOB","⑲ Orderblöcke (OB)"),{k:"obAb",t:"⑲ OB anzeigen ab",type:"sel",o:T7},{k:"obBis",t:"⑲ OB anzeigen bis",type:"sel",o:T7},{k:"obSrc",t:"⑲ Zone über",type:"sel",o:[["docht","Docht"],["koerper","Körper"]]},N("obLook","⑲ Suche zurück (Kerzen)",3,100),N("obN","⑲ Anzahl je Seite",1,10),C("obHideT","⑲ Nach erster Berührung ausblenden"),C("obMT","⑲ 50 %-Linie (Mean Threshold)"),COL("obColU","⑲ Bullisch"),COL("obColD","⑲ Bärisch"),N("obTr","⑲ Transparenz",0,100),
   C("qRisk","⑳ Risiko-Tabelle"),{k:"rkAb",t:"⑳ Risiko-Tabelle anzeigen ab",type:"sel",o:T7},{k:"rkBis",t:"⑳ Risiko-Tabelle anzeigen bis",type:"sel",o:T7},{k:"rkStep",t:"⑳ Schrittweite der Tabelle",type:"sel",o:[["0.05","0,05"],["0.1","0,1"]]},{k:"rkPos",t:"⑳ Position",type:"sel",o:POS},{k:"rkSz",t:"⑳ Größe",type:"sel",o:GRS},C("rkTime","⑳ Spalte „Zeit in Risikostufen“"),C("rkBar","⑳ mit Balken"),
@@ -788,7 +790,7 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
   ["Bayazit Strategie Indikator v2.26","Nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB, Volume Profile, Marktstruktur, Linien/VWAP, Intermarket-Geldfluss, Checkliste. Ohne Alarme.",["bsi"]],
   ["Bayazit Wellen Indikator V2.30","Nachbau aus deinem Pine-Code: SK-System, Setup-Tabelle mit Positions-Box, MTF-Tabelle, Elliott, RSI-Divergenz, Liquidität. Ohne Alarme.",["bwi"]],
   ["Bayazit Pattern Scanner V2.5","Nach deinem Pine-Code: Kerzenmuster, Chart-Pattern + SFP, Trendlinien, S/R-Zonen, Seitwärtskasten, HTF-Level, MTF-Trendlinien + Tabelle, Volumenprofil-Level + Tabelle. Ohne Alarme.",["bps"]],
-  ["Bayazit Fibonacci Trend V2.4","Nach deinem Pine-Code: Struktur, Fibonacci, Kerzen nach Trend, Volumenprofil-Level, Haupt-Trendlinien, Linien/VWAP, S/R-Zonen, FVG, Orderblöcke, Risiko-Tabelle. Ohne Alarme.",["bft"]],
+  ["Bayazit Fibonacci Trend V2.4","Nach deinem Pine-Code: Struktur, Fibonacci, Kerzen nach Trend (mit RSI-Extrem), RSI-Divergenzen, Liquiditäts-Sweeps, Volumenprofil-Level, Haupt-Trendlinien, Linien/VWAP, S/R-Zonen, FVG, Orderblöcke, Risiko-Tabelle. Ohne Alarme.",["bft"]],
   ["Bayazit Risiko-Indikator (0 bis 1)","",["risk"]],
   ["Bayazit Hitze (Kurs / 20-Wochen-Schnitt)","Früher „Blasen-Risiko“. Säulen ab 1,0, Farbzonen, Tabelle, Kerzen einfärben. Ohne Alarme.",["heat"]],
   ["Bayazit OI & Delta Monitor V1.8","Open Interest, ΔOI, Volumen-Delta, CVD und die Tabelle mit Fazit. Ohne Alarme.",["bod"]]];
@@ -1379,10 +1381,11 @@ function bftCalc(){const c=S.cfg.bft;BF.R=null;if(!c.on||S.k.length<30)return;
   BF.R=R}
 function bftPaint(th){const c=S.cfg.bft,R=BF.R;BF.hit=[];if(!c.on||!R||!L)return;const k=S.k,n=k.length,X=L.X,Y=L.Y,cw=L.cw,bw=Math.max(1,cw*0.7),i0=Math.max(0,L.i0),i1=Math.min(n-1,L.i1);
   ctx.save();ctx.beginPath();ctx.rect(0,0,L.pw,L.mainH);ctx.clip();
-  if(c.qCandle){const own=c.cDraw==="eigen";for(let i=i0;i<=i1;i++){const d=R.cDir[i],q=k[i],x=X(i),bo=d===1?c.colUp:d===-1?c.colDn:c.colNeu,br=own?(d===1?c.colUpB:d===-1?c.colDnB:c.colNeuB):bo,wk=own?(d===1?c.colUpW:d===-1?c.colDnW:c.colNeuW):bo;
+  if(c.qCandle){const own=c.cDraw==="eigen";for(let i=i0;i<=i1;i++){let d=R.cDir[i],q=k[i],x=X(i),bo=d===1?c.colUp:d===-1?c.colDn:c.colNeu,br=own?(d===1?c.colUpB:d===-1?c.colDnB:c.colNeuB):bo,wk=own?(d===1?c.colUpW:d===-1?c.colDnW:c.colNeuW):bo;{const rc=R.rc&&R.rc[i],sw=R.sw&&R.sw[i];if(rc){bo=rc;if(!own){br=rc;wk=rc}}if(sw&&own)wk=sw}
       const hol=own&&(c.hollow==="alle"||(c.hollow==="steig"&&q.c>=q.o)||(c.hollow==="fall"&&q.c<q.o)),a=Y(Math.max(q.o,q.c)),b=Y(Math.min(q.o,q.c)),hh=Math.max(1,b-a);
       ctx.strokeStyle=wk;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(Math.round(x)+.5,Y(q.h));ctx.lineTo(Math.round(x)+.5,Y(q.l));ctx.stroke();
-      ctx.fillStyle=hol?th.bg:bo;ctx.fillRect(x-bw/2,a,bw,hh);if(bw>=3){ctx.strokeStyle=br;ctx.strokeRect(x-bw/2+.5,a+.5,bw-1,Math.max(0,hh-1))}}}
+      ctx.fillStyle=hol&&!(R.rc&&R.rc[i])?th.bg:bo;ctx.fillRect(x-bw/2,a,bw,hh);if(bw>=3){ctx.strokeStyle=br;ctx.strokeRect(x-bw/2+.5,a+.5,bw-1,Math.max(0,hh-1))}}}
+  if(!c.qCandle&&R.rc){const bw2=Math.max(1,cw*.7);for(let i=i0;i<=i1;i++){const rc=R.rc[i];if(!rc)continue;const q=k[i],x=X(i),a=Y(Math.max(q.o,q.c)),b=Y(Math.min(q.o,q.c));ctx.strokeStyle=rc;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(Math.round(x)+.5,Y(q.h));ctx.lineTo(Math.round(x)+.5,Y(q.l));ctx.stroke();ctx.fillStyle=rc;ctx.fillRect(x-bw2/2,a,bw2,Math.max(1,b-a))}}
   for(const b of R.Xs){const x1=X(b.x1)-cw/2,x2=X(b.x2)+cw/2,y1=Y(b.y1),y2=Y(b.y2);if(b.bg){ctx.fillStyle=b.bg;ctx.fillRect(x1,y1,x2-x1,y2-y1)}if(b.bc){ctx.strokeStyle=b.bc;ctx.lineWidth=b.bw||1;ctx.strokeRect(x1,y1,x2-x1,y2-y1)}}
   for(const l of R.Ls){ctx.strokeStyle=l.col;ctx.lineWidth=l.w||1;ctx.setLineDash(l.dash||[]);ctx.beginPath();ctx.moveTo(X(l.x1),Y(l.y1));ctx.lineTo(X(l.x2),Y(l.y2));ctx.stroke()}ctx.setLineDash([]);ctx.textBaseline="middle";ctx.textAlign="left";
   let TT=R.Ts.filter(t=>!t.grp);const G={};R.Ts.forEach(t=>{if(t.grp)(G[t.grp]=G[t.grp]||[]).push(t)});
@@ -1529,7 +1532,25 @@ function bft2Calc(R){const c=S.cfg.bft,k=S.k,n=k.length,last=n-1,F=v=>CC.fmt(v),
       for(let q2=0;q2<=Math.round(1/st);q2++){const lv=+(q2*st).toFixed(2);if(!done&&lv>cur){rows.push({cur:true,r:cur,p:p*S.F});done=true}
         const z=q2<Math.round(1/st)&&tot?rs.filter(v=>v>=lv&&v<lv+st).length/tot*100:null;rows.push({r:lv,p:rkPrice(Ld.R,lv)*S.F,z,on:cur>=lv&&cur<lv+st})}
       if(!done)rows.push({cur:true,r:cur,p:p*S.F});R.rk={rows,cur}}}
-  BF.needHtf=[...new Set(need)];if(BF.needHtf.length&&BF.needHtf.some(tf=>!BF.htf[S.sym+"|"+tf]))bfHtfLoad(BF.needHtf)}
+  // ⑭ RSI-Divergenz-Linien + Kerzen färben bei RSI-Extrem, ⑮ Liquiditäts-Sweep (wie im Pine-Code, ohne Alarme)
+  {const nb=n,H=k.map(q=>q.h),Lw=k.map(q=>q.l),pH=(a,c0,p)=>{if(c0-p<0||c0+p>=nb)return false;for(let j=c0-p;j<=c0+p;j++){if(j===c0)continue;if(j<c0?a[j]>a[c0]:a[j]>=a[c0])return false}return true},
+    pL=(a,c0,p)=>{if(c0-p<0||c0+p>=nb)return false;for(let j=c0-p;j<=c0+p;j++){if(j===c0)continue;if(j<c0?a[j]<a[c0]:a[j]<=a[c0])return false}return true};
+    const rl=Math.max(2,+c.rsiLen||14),rsi=new Array(nb).fill(null);{let ag=0,al=0;for(let i=1;i<nb;i++){const d=k[i].c-k[i-1].c,g=d>0?d:0,l=d<0?-d:0;if(i<=rl){ag+=g;al+=l;if(i===rl){ag/=rl;al/=rl;rsi[i]=al===0?100:100-100/(1+ag/al)}}else{ag=(ag*(rl-1)+g)/rl;al=(al*(rl-1)+l)/rl;rsi[i]=al===0?100:100-100/(1+ag/al)}}}
+    R.rc=c.rsiCol?rsi.map(r=>r==null?null:r>=+c.rsiUp?c.colRUp:r<=+c.rsiDn?c.colRDn:null):null;
+    if(c.qDiv&&bfOn(c,"div")){const dp=Math.max(2,+c.divPiv||5),dv=[];let lPL=null,lPLr=null,lPLb=0,lPH=null,lPHr=null,lPHb=0;
+      for(let i=2*dp;i<nb;i++){const b=i-dp,rA=rsi[b];if(rA==null)continue;
+        if(pL(Lw,b,dp)){const v=Lw[b];if(lPL!=null&&b-lPLb<=c.divDist&&((v<lPL&&rA>lPLr)||(c.divHid&&v>lPL&&rA<lPLr)))dv.push({b1:lPLb,p1:lPL,b2:b,p2:v,d:1,h:v>lPL});lPL=v;lPLr=rA;lPLb=b}
+        if(pH(H,b,dp)){const v=H[b];if(lPH!=null&&b-lPHb<=c.divDist&&((v>lPH&&rA<lPHr)||(c.divHid&&v<lPH&&rA>lPHr)))dv.push({b1:lPHb,p1:lPH,b2:b,p2:v,d:-1,h:v<lPH});lPH=v;lPHr=rA;lPHb=b}}
+      for(const d of dv.slice(-Math.max(1,+c.divKeep||3))){const col=d.d===1?c.colDvU:c.colDvD;Ls.push({x1:d.b1,y1:d.p1,x2:d.b2,y2:d.p2,col,w:2,dash:d.h?[6,4]:[2,3]});
+        Ts.push({x:d.b2,y:d.p2,t:d.h?"hDiv":"Div",pos:d.d===1?"b":"a",col,sz:"winzig",tip:d.h?(d.d===1?"Versteckte bullische Divergenz: Kurs höheres Tief, RSI tieferes Tief – Trendfortsetzung nach oben.":"Versteckte bärische Divergenz: Kurs tieferes Hoch, RSI höheres Hoch – Trendfortsetzung nach unten."):(d.d===1?"Bullische RSI-Divergenz: Kurs tieferes Tief, RSI höheres Tief – Verkaufsdruck lässt nach.":"Bärische RSI-Divergenz: Kurs höheres Hoch, RSI tieferes Hoch – Kaufdruck lässt nach.")})}}
+    R.sw=null;if(c.qSweep&&bfOn(c,"sweep")){const sl=Math.max(2,+c.swLen||10),oH=[],oL=[],sw=[],wc=new Array(nb).fill(null);
+      for(let i=0;i<nb;i++){const b=i-sl,q=k[i];if(b>=0&&pH(H,b,sl)){oH.push({v:H[b],b});if(oH.length>10)oH.shift()}if(b>=0&&pL(Lw,b,sl)){oL.push({v:Lw[b],b});if(oL.length>10)oL.shift()}
+        for(let j=oH.length-1;j>=0;j--){const o=oH[j];if(i<=o.b+sl)continue;if(q.h>o.v&&q.c<o.v){sw.push({br:i,lb:o.b,p:o.v,hi:q.h,lo:q.l,d:-1,bt:Math.max(q.o,q.c),bb:Math.min(q.o,q.c)});oH.splice(j,1);wc[i]=c.colSwD}else if(q.c>o.v)oH.splice(j,1)}
+        for(let j=oL.length-1;j>=0;j--){const o=oL[j];if(i<=o.b+sl)continue;if(q.l<o.v&&q.c>o.v){sw.push({br:i,lb:o.b,p:o.v,hi:q.h,lo:q.l,d:1,bt:Math.max(q.o,q.c),bb:Math.min(q.o,q.c)});oL.splice(j,1);if(!wc[i])wc[i]=c.colSwU}else if(q.c<o.v)oL.splice(j,1)}}
+      if(c.swWick)R.sw=wc;
+      for(const w of sw.slice(-Math.max(1,+c.swKeep||5))){const col=w.d===1?c.colSwU:c.colSwD;if(c.swBox){const top=w.d===-1?w.hi:w.bb,bot=w.d===-1?w.bt:w.lo;Ls.push({x1:w.br,y1:top,x2:w.br,y2:bot,col,w:4,dash:[]})}
+        if(c.swLine)Ls.push({x1:w.lb,y1:w.p,x2:w.br,y2:w.p,col,w:1,dash:[6,4]})}}}
+  BF.needHtf=[...new Set(need)];if(BF.needHtf.length&&BF.needHtf.some(tf=>!BF.htf[S.src+"|"+S.sym+"|"+tf]))bfHtfLoad(BF.needHtf)}
 
 const bfRkCol=v=>{const g=(a,b,t)=>Math.round(a+(b-a)*t);return v<.5?`rgb(${g(0,240,v/.5)},${g(200,200,v/.5)},${g(83,0,v/.5)})`:`rgb(${g(240,230,(v-.5)/.5)},${g(200,30,(v-.5)/.5)},${g(0,30,(v-.5)/.5)})`};
 const bfRkTxt=v=>v<.2?"Sehr niedrig":v<.4?"Niedrig":v<.6?"Mittel":v<.8?"Hoch":"Sehr hoch";

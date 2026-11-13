@@ -456,7 +456,7 @@ function scaleY(f){setMan();const v=S.view,mid=(v.lo+v.hi)/2,half=(v.hi-v.lo)/2*
 cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
   if(ptrs.size===1&&!S.tool&&!S.pend&&paneDown(e.offsetX,e.offsetY)){drag=null;return}
   if(ptrs.size===1&&dwDown(e.offsetX,e.offsetY,e.pointerType)){drag=null;return}
-  if(ptrs.size===1&&S.view)drag={x:e.offsetX,y:e.offsetY,from:S.view.from,to:S.view.to,lo:L?L.lo:0,hi:L?L.hi:1,man:S.view.man,moved:false,vert:false,touch:e.pointerType==="touch",axis:onAxis(e.offsetX,e.offsetY)};
+  if(ptrs.size===1&&S.view)drag={x:e.offsetX,y:e.offsetY,from:S.view.from,to:S.view.to,lo:L?L.lo:0,hi:L?L.hi:1,man:S.view.man,moved:false,vert:false,touch:e.pointerType==="touch",axis:onAxis(e.offsetX,e.offsetY),sub:!!(L&&e.offsetY>L.mainH)};
   if(ptrs.size===2&&S.view){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),from:S.view.from,to:S.view.to,cx:(a.x+b.x)/2};drag=null}});
 cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
   {const pm=paneMove(e.offsetX,e.offsetY);if(pm===true)return;if(pm==="hover"&&!drag)return}
@@ -467,7 +467,7 @@ cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointe
   if(drag&&S.view){const dx=e.offsetX-drag.x,dy=e.offsetY-drag.y;if(Math.abs(dx)>3||Math.abs(dy)>3)drag.moved=true;
     if(drag.axis){if(drag.moved){const f=Math.exp(dy*0.006);S.view.man=true;const mid=(drag.lo+drag.hi)/2,half=(drag.hi-drag.lo)/2*f;S.view.lo=mid-half;S.view.hi=mid+half;paint()}return}
     if(drag.moved){const cw=(L?L.pw:cv.clientWidth)/(drag.to-drag.from);S.view.from=drag.from-dx/cw;S.view.to=drag.to-dx/cw;clampView();
-      if(!drag.vert&&(drag.man||Math.abs(dy)>12))drag.vert=true;
+      if(!drag.vert&&!drag.sub&&(drag.man||Math.abs(dy)>12))drag.vert=true;
       if(drag.vert&&L){const pp=(drag.hi-drag.lo)/(L.mB-L.mT),off=(drag.man?0:0);S.view.man=true;S.view.lo=drag.lo+dy*pp+off;S.view.hi=drag.hi+dy*pp+off}
       S.cross=drag.touch?null:{x:e.offsetX,y:e.offsetY};paint();return}}
   if(e.pointerType!=="touch"||drag){S.cross={x:e.offsetX,y:e.offsetY};paint()}});
@@ -976,10 +976,12 @@ async function bodLoad(){const key=bKey();if(BOD.busy)return;BOD.busy=true;
   finally{BOD.busy=false;if(key===bKey()){bodCalc();paint()}else if(S.cfg.bod.on)bodLoad()}}
 async function bodNow(key){try{const j=await getJSON(`${FAPI}fapi/v1/openInterest?symbol=${BOD.sym}`,10000);if(key===bKey()&&j&&+j.openInterest>0)BOD.cur=+j.openInterest}catch(e){}}
 async function bodRefresh(){if(!S.cfg.bod.on||BOD.st!=="ok"||BOD.busy||document.visibilityState!=="visible")return;const key=bKey();
-  try{const j=await getJSON(`${FAPI}futures/data/openInterestHist?symbol=${BOD.sym}&period=${S.tf}&limit=6`,10000);if(key!==bKey())return;
+  // Lücke nachladen (z. B. nach Ruhezustand/verstecktem Tab), nicht nur die letzten 6 Werte
+  let lt=0;for(const t of BOD.oi.keys())if(t>lt)lt=t;const lim=Math.max(6,Math.min(500,Math.ceil((Date.now()-lt)/(BSTEP[S.tf]||3e5))+3));
+  try{const j=await getJSON(`${FAPI}futures/data/openInterestHist?symbol=${BOD.sym}&period=${S.tf}&limit=${lim}`,10000);if(key!==bKey())return;
     if(Array.isArray(j))j.forEach(r=>BOD.oi.set(+r.timestamp,+r.sumOpenInterest))}catch(e){}
   await bodNow(key);if(key===bKey()){bodCalc();paint()}}
-setInterval(bodRefresh,60000);
+setInterval(bodRefresh,60000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")bodRefresh()});
 
 function bodCalc(){const c=S.cfg.bod,box=$("bodBox");if(box.hidden===c.on){box.hidden=!c.on}
   if(!c.on||!S.kO.length){BOD.R=null;$("bodTab").hidden=true;return}
@@ -1063,7 +1065,7 @@ function bodPaint(th){const box=$("bodBox");if(box.hidden||!L||!S.k.length)retur
   if(!isFinite(lo)){x.fillStyle=th.txt;x.textAlign="center";const st=BOD.key===bKey()?BOD.st:"lädt";
     x.fillText(st==="lädt"?"Open Interest wird geladen …":st==="tf"?`Kein Open Interest auf ${TFLAB[S.tf]} (verfügbar 5m bis 1D) – Volumen-Delta und CVD gehen trotzdem.`:"Kein Open Interest für diesen Bereich (höchstens 30 Tage zurück) – Volumen-Delta und CVD gehen trotzdem.",pw/2,H/2+8);return}
   if(col){lo=Math.min(lo,0);hi=Math.max(hi,0)}const pad=(hi-lo)*0.12||Math.abs(hi)*0.01||1;lo-=col&&lo===0?0:pad;hi+=col&&hi===0?0:pad;
-  if(BOD.zy&&BOD.zy!==1){const m=(lo+hi)/2,h=(hi-lo)/2*BOD.zy;lo=m-h;hi=m+h}BOD.axX=pw;
+  if(BOD.zy&&BOD.zy!==1){const m=(lo+hi)/2,h=(hi-lo)/2*BOD.zy;lo=m-h;hi=m+h}if(BOD.oy){const o=(hi-lo)*BOD.oy;lo+=o;hi+=o}BOD.axX=pw;
   const T=24,B=H-5,Y=v=>B-(v-lo)/(hi-lo)*(B-T),X=i=>(i-from+0.5)*cw;
   x.strokeStyle=th.grid;x.lineWidth=1;x.fillStyle=th.txt;x.textAlign="left";
   for(let g=0;g<=2;g++){const v=lo+(hi-lo)*(g+0.5)/3,y=Math.round(Y(v))+.5;x.beginPath();x.moveTo(0,y);x.lineTo(pw,y);x.stroke();x.fillText(fv(v),pw+6,y)}
@@ -1077,7 +1079,9 @@ function bodPaint(th){const box=$("bodBox");if(box.hidden||!L||!S.k.length)retur
   if(S.cross&&S.cross.x<pw){x.strokeStyle=th.cross;x.setLineDash([4,4]);x.beginPath();x.moveTo(S.cross.x+.5,0);x.lineTo(S.cross.x+.5,H);x.stroke();x.setLineDash([])}
   x.restore();
   let li=n-1;while(li>i0&&ser[li]==null)li--;const lv=ser[li];if(lv!=null&&li<=i1){const y=Y(lv),t=fv(lv);x.fillStyle=m==="oi"||m==="doi"?szCol(R.szen[li]):(m==="delta"?lv>=0:lv>=(ser[li-1]??lv))?c.fKauf:c.fVerk;
-    x.fillRect(pw+1,y-7,W-pw-2,14);x.fillStyle="#111";x.textAlign="left";x.fillText(t,pw+6,y)}}
+    x.fillRect(pw+1,y-7,W-pw-2,14);x.fillStyle="#111";x.textAlign="left";x.fillText(t,pw+6,y)}
+  if(BOD.cy!=null&&S.cross&&BOD.cy>T&&BOD.cy<B){const y=BOD.cy,v=lo+(B-y)/(B-T)*(hi-lo);x.strokeStyle=th.cross;x.setLineDash([4,4]);x.beginPath();x.moveTo(0,y+.5);x.lineTo(pw,y+.5);x.stroke();x.setLineDash([]);
+    x.fillStyle=th.grey||"#6b7280";x.fillRect(pw+1,y-7,W-pw-2,14);x.fillStyle="#fff";x.textAlign="left";x.fillText(fv(v),pw+6,y)}}
 
 // Hauptchart: Kerzen einfärben und Info-Marker (wie barcolor / label im Pine-Code)
 function bodMain(th){const c=S.cfg.bod,R=BOD.R;if(!c.on||!R||!L||(!c.kerzen&&!c.marker))return;const k=S.k,n=k.length,cw=L.cw,bw=Math.max(1,cw*0.7);
@@ -1451,13 +1455,13 @@ function tfMenu(btn){let m=$("tfMenu");if(m){m.remove();return}m=document.create
 {let open;try{open=JSON.parse(localStorage.getItem("blcTools"))}catch(e){}if(open==null)open=innerWidth>700;
   const ap=()=>{$("tools").classList.toggle("zu",!open);$("toolTg").classList.toggle("on",open);$("toolTg").textContent=open?"✕":"✎"};ap();
   $("toolTg").onclick=()=>{open=!open;if(!open&&S.tool){S.tool=null;renderTools()}try{localStorage.setItem("blcTools",JSON.stringify(open))}catch(e){}ap();paint()}}
-// OI & Delta Monitor zuklappen: Knopf ▾ oder Doppeltipp/Doppelklick auf das Fenster
+// OI & Delta Monitor zuklappen: Knopf ▾ oder Doppeltipp auf die Kopfzeile (im Diagramm setzt Doppeltipp die Skala zurück)
 {let zu=false;try{zu=!!JSON.parse(localStorage.getItem("blcBodZu"))}catch(e){}const box=$("bodBox");
   const ap=()=>{box.classList.toggle("zu",zu);$("bodZu").textContent=zu?"▸":"▾";paint()};
   const tg=()=>{zu=!zu;try{localStorage.setItem("blcBodZu",JSON.stringify(zu))}catch(e){}ap()};ap();
   $("bodZu").onclick=e=>{e.stopPropagation();tg()};let lt=0;
-  box.addEventListener("dblclick",e=>{if(e.target.closest("button,#bodTab"))return;e.preventDefault();if(Date.now()-lt>700)tg()});
-  let t0=0;box.addEventListener("pointerup",e=>{if(e.pointerType!=="touch"||e.target.closest("button,#bodTab"))return;const now=Date.now();if(now-t0<380){t0=0;lt=now;tg()}else t0=now})}
+  box.addEventListener("dblclick",e=>{if(e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"))return;e.preventDefault();if(Date.now()-lt>700)tg()});
+  let t0=0;box.addEventListener("pointerup",e=>{if(e.pointerType!=="touch"||e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"))return;const now=Date.now();if(now-t0<380){t0=0;lt=now;tg()}else t0=now})}
 
 // ════════════════════════════════════════════════════════════════
 //  Bayazit Fibonacci Trend V2.4 – Teile ⑫ ⑬ ⑯ ⑰ ⑱ ⑲ ⑳ nach dem Pine-Code
@@ -1840,10 +1844,32 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
 {const cv2=$("bodCv"),box=$("bodBox"),rs=$("bodRs");let ax=null,rz=null;
   const hSet=h=>{box.style.flexBasis=Math.round(h)+"px";box.style.setProperty("flex-basis",Math.round(h)+"px","important")};
   {const h=LS("blcBodH");if(h)hSet(h)}
-  cv2.addEventListener("pointermove",e=>{if(ax){const f=Math.exp((e.clientY-ax.y)/120);BOD.zy=Math.max(.1,Math.min(20,ax.z*f));paint();return}cv2.style.cursor=BOD.axX&&e.offsetX>BOD.axX?"ns-resize":"default"});
-  cv2.addEventListener("pointerdown",e=>{if(!BOD.axX||e.offsetX<=BOD.axX)return;ax={y:e.clientY,z:BOD.zy||1};cv2.setPointerCapture(e.pointerId);e.preventDefault()});
-  const axUp=()=>{ax=null};cv2.addEventListener("pointerup",axUp);cv2.addEventListener("pointercancel",axUp);
-  cv2.addEventListener("dblclick",e=>{if(BOD.axX&&e.offsetX>BOD.axX){BOD.zy=1;paint()}});
+  // Bedienung wie im Hauptchart: Ziehen = verschieben (Zeit + Werte), Rad/2 Finger = Zeit zoomen, Skala ziehen = strecken, Doppeltipp = automatisch
+  cv2.style.touchAction="none";const bp=new Map();let pz=null,pd=null,lt=0;
+  const reset=()=>{BOD.zy=1;BOD.oy=0;paint()};
+  cv2.addEventListener("pointerdown",e=>{cv2.setPointerCapture(e.pointerId);bp.set(e.pointerId,{x:e.offsetX,y:e.offsetY});e.preventDefault();
+    if(bp.size===2&&S.view){const [a,b]=[...bp.values()];pz={d:Math.hypot(a.x-b.x,a.y-b.y),from:S.view.from,to:S.view.to,cx:(a.x+b.x)/2};pd=ax=null;return}
+    if(BOD.axX&&e.offsetX>BOD.axX){ax={y:e.clientY,z:BOD.zy||1};return}
+    if(S.view)pd={x:e.offsetX,y:e.offsetY,from:S.view.from,to:S.view.to,oy:BOD.oy||0,moved:false,touch:e.pointerType==="touch"}});
+  cv2.addEventListener("pointermove",e=>{if(bp.has(e.pointerId))bp.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
+    if(ax){const f=Math.exp((e.clientY-ax.y)/120);BOD.zy=Math.max(.1,Math.min(20,ax.z*f));paint();return}
+    if(pz&&bp.size===2){const [a,b]=[...bp.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(d>10){const f=pz.d/d;S.view.from=pz.from;S.view.to=pz.to;const c=idxAt(pz.cx);
+      S.view.from=c-(c-pz.from)*f;S.view.to=c+(pz.to-c)*f;clampView();paint()}return}
+    if(pd){const dx=e.offsetX-pd.x,dy=e.offsetY-pd.y;if(Math.abs(dx)>3||Math.abs(dy)>3)pd.moved=true;
+      if(pd.moved){const cw=(L?L.pw:cv2.clientWidth)/(pd.to-pd.from);S.view.from=pd.from-dx/cw;S.view.to=pd.to-dx/cw;clampView();
+        BOD.oy=pd.oy+dy/Math.max(20,cv2.clientHeight-29)*(BOD.zy||1);S.cross=pd.touch?null:{x:e.offsetX,y:1e9};BOD.cy=pd.touch?null:e.offsetY;paint()}
+      cv2.style.cursor="grabbing";return}
+    const onAx=BOD.axX&&e.offsetX>BOD.axX;cv2.style.cursor=onAx?"ns-resize":"crosshair";
+    if(e.pointerType!=="touch"){S.cross=onAx?null:{x:e.offsetX,y:1e9};BOD.cy=onAx?null:e.offsetY;paint()}});
+  const up=e=>{bp.delete(e.pointerId);if(bp.size<2)pz=null;
+    if(pd&&!pd.moved&&pd.touch){const now=Date.now();if(now-lt<380){lt=0;S.cross=null;BOD.cy=null;reset();pd=null;return}lt=now;
+      if(S.cross){S.cross=null;BOD.cy=null}else{S.cross={x:e.offsetX,y:1e9};BOD.cy=e.offsetY}paint()}
+    if(!bp.size){pd=null;ax=null;cv2.style.cursor="crosshair"}};
+  cv2.addEventListener("pointerup",up);cv2.addEventListener("pointercancel",up);
+  cv2.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"&&!pd){S.cross=null;BOD.cy=null;paint()}});
+  cv2.addEventListener("dblclick",reset);
+  cv2.addEventListener("wheel",e=>{e.preventDefault();if(BOD.axX&&e.offsetX>BOD.axX){BOD.zy=Math.max(.1,Math.min(20,(BOD.zy||1)*(e.deltaY>0?1.1:1/1.1)));paint();return}
+    zoom(e.deltaY>0?1.12:1/1.12,e.offsetX)},{passive:false});
   rs.addEventListener("pointerdown",e=>{rz={y:e.clientY,h:box.getBoundingClientRect().height};rs.setPointerCapture(e.pointerId);e.preventDefault()});
   rs.addEventListener("pointermove",e=>{if(!rz)return;hSet(Math.max(70,Math.min(innerHeight*.7,rz.h+(rz.y-e.clientY))));paint()});
   const rzUp=()=>{if(rz){rz=null;LS("blcBodH",Math.round(box.getBoundingClientRect().height))}};rs.addEventListener("pointerup",rzUp);rs.addEventListener("pointercancel",rzUp)}

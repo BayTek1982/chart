@@ -272,7 +272,7 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=24"></script>
+<script src="chart-core.js?v=25"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -411,7 +411,7 @@ applyTheme();
 function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
-  const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH});
+  const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ});
   if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();rkPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
@@ -433,15 +433,18 @@ function analysis(){const rows=S.k.length?CC.summary(S.k,S.I,S.cfg,S.tf):[];
 const ptrs=new Map();let drag=null,pinch=null,lastTap=null,tapDbl=0;
 try{S.minP=JSON.parse(localStorage.getItem("blcMin"))||{}}catch(e){S.minP={}}
 // Untere Fenster: Höhe am Trennstrich ziehen, mit ▲▼ die Reihenfolge tauschen
-S.paneOrd=LS("blcPOrd")||[];S.paneH=LS("blcPH")||{};let paneDrag=null;
+S.paneOrd=LS("blcPOrd")||[];S.paneH=LS("blcPH")||{};S.paneZ=LS("blcPZ")||{};let paneDrag=null;
 function paneDown(x,y){if(!L||!L.panes)return false;
   const b=(L.pBtn||[]).find(q=>x>=q.x&&x<=q.x+q.w&&y>=q.y&&y<=q.y+q.h);
   if(b){const ord=L.panes.map(p=>p.s),i=ord.indexOf(b.s),j=i+b.d;if(j>=0&&j<ord.length){[ord[i],ord[j]]=[ord[j],ord[i]];S.paneOrd=ord;LS("blcPOrd",ord);paint()}return true}
   const p=L.panes.find(q=>!q.mini&&Math.abs(y-q.top)<=(innerWidth<700?11:6)&&x<L.pw);
-  if(p){paneDrag={s:p.s,bot:p.top+p.h};cv.style.cursor="row-resize";return true}return false}
+  if(p){paneDrag={s:p.s,bot:p.top+p.h};cv.style.cursor="row-resize";return true}
+  // Skala eines unteren Fensters ziehen = strecken/stauchen
+  const q=x>L.pw&&L.panes.find(q=>!q.mini&&y>q.top&&y<q.top+q.h);if(q){paneDrag={zoom:1,s:q.s,y0:y,z0:S.paneZ[q.s]||1};cv.style.cursor="ns-resize";return true}return false}
 function paneMove(x,y){if(!paneDrag){if(L&&L.panes&&L.panes.some(q=>!q.mini&&Math.abs(y-q.top)<=6&&x<L.pw)){cv.style.cursor="row-resize";return"hover"}return false}
+  if(paneDrag.zoom){S.paneZ[paneDrag.s]=Math.max(.1,Math.min(20,paneDrag.z0*Math.exp((paneDrag.y0-y)/-120)));paint();return true}
   const H=L.H-L.TA,h=Math.max(40,Math.min(H*.6,paneDrag.bot-y));S.paneH[paneDrag.s]=h/H;paint();return true}
-function paneUp(){if(!paneDrag)return false;paneDrag=null;LS("blcPH",S.paneH);return true}
+function paneUp(){if(!paneDrag)return false;paneDrag=null;LS("blcPH",S.paneH);LS("blcPZ",S.paneZ);return true}
 function dblAt(x,y){const p=L&&L.panes&&L.panes.find(q=>y>=q.top&&y<q.top+q.h);if(!p)return false;S.minP[p.s]=!S.minP[p.s];try{localStorage.setItem("blcMin",JSON.stringify(S.minP))}catch(e){}paint();return true}
 function idxAt(x){return S.view.from+x/((L?L.pw:cv.clientWidth-74)/(S.view.to-S.view.from))-0.5}
 function clampView(){const n=S.k.length,v=S.view,w=v.to-v.from;const W=Math.max(15,Math.min(n+60,w));const mid=(v.from+v.to)/2;v.from=mid-W/2;v.to=mid+W/2;
@@ -474,7 +477,7 @@ const up=e=>{ptrs.delete(e.pointerId);if(paneUp()){cv.style.cursor="crosshair";r
 cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
 cv.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"){S.cross=null;paint()}});
 cv.addEventListener("wheel",e=>{e.preventDefault();if(onAxis(e.offsetX,e.offsetY)){scaleY(e.deltaY>0?1.1:1/1.1);paint();return}zoom(e.deltaY>0?1.12:1/1.12,e.offsetX)},{passive:false});
-cv.addEventListener("dblclick",e=>{if(Date.now()-tapDbl<700)return;if(dblAt(e.offsetX,e.offsetY))return;if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
+cv.addEventListener("dblclick",e=>{if(Date.now()-tapDbl<700)return;{const q=L&&e.offsetX>L.pw&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h);if(q){delete S.paneZ[q.s];LS("blcPZ",S.paneZ);paint();return}}if(dblAt(e.offsetX,e.offsetY))return;if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
 $("autoB").onclick=()=>{if(S.view){S.view.man=false;paint()}};
 addEventListener("resize",paint);matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",paint);
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("box"));

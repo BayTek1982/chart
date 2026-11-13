@@ -4,7 +4,7 @@ const FL=[null,["#f23645","Rot"],["#2962ff","Blau"],["#089981","Grün"],["#ff980
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const W=ld("blcWl",null)||{cur:0,lists:[{name:"A Krypto OKX",items:["BTC","ETH","SOL","XRP","BNB","DOGE"]}]};
 const SORTS=[["eigen","Benutzerdefinierte Reihenfolge"],["sym","Nach Symbol"],["preis","Nach letztem Preis"],["ver","Nach Veränderung"],["verp","Nach Veränderung (%)"],["flag","Nach Fähnchen"],["vol","Nach Volumen"]];
-let sortOpen=false,FLAG=ld("blcFlag",{}),filt=0,edit=false,imp=false,pop=null,Q={},qT=0,qBusy=false;
+let impTxt="",impName="",sortOpen=false,FLAG=ld("blcFlag",{}),filt=0,edit=false,imp=false,pop=null,Q={},qT=0,qBusy=false;
 const saveW=()=>sv("blcWl",W),saveF=()=>sv("blcFlag",FLAG),L=()=>W.lists[W.cur]||W.lists[0];
 // Kurse: OKX = alle Perps in einem Abruf (Änderung seit 0 Uhr UTC wie TradingView), Binance = 24h
 async function quotes(){if(qBusy)return;qBusy=true;try{
@@ -14,7 +14,7 @@ async function quotes(){if(qBusy)return;qBusy=true;try{
     const j=await getJSON(`https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${encodeURIComponent(JSON.stringify(syms.map(s=>s+"USDT")))}`,10000).catch(async()=>{
       const a=await getJSON("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI",15000);return a.map(x=>({symbol:x.symbol,lastPrice:x.lastPrice,priceChange:x.lastPrice-x.openPrice,quoteVolume:x.quoteVolume,priceChangePercent:x.openPrice>0?((x.lastPrice/x.openPrice-1)*100):null}))});
     const q={};for(const x of j||[])if(/USDT$/.test(x.symbol))q[x.symbol.slice(0,-4)]={p:+x.lastPrice,ch:x.priceChangePercent==null?null:+x.priceChangePercent,d:x.priceChange==null?null:+x.priceChange,v:+x.quoteVolume||0};Q=q}}
-  }catch(e){}finally{qBusy=false}if(open())draw()}
+  }catch(e){}finally{qBusy=false}if(open()&&!imp)draw()}
 const open=()=>!$("side").hidden&&!$("wlBody").hidden;
 const pct=v=>v==null||!isFinite(v)?"–":(v>=0?"+":"")+v.toFixed(2).replace(".",",")+" %";
 function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
@@ -26,7 +26,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   if(sortOpen){const so=l.sort||{k:"eigen",d:1};h+=`<div class="wlSort">${SORTS.map(([k,t])=>`<button data-sort="${k}" class="${so.k===k?"on":""}">${t}${so.k===k&&k!=="eigen"?(so.d>0?" ↑":" ↓"):""}</button>`).join("")}</div>`}
   if(imp)h+=`<div class="wlImp"><b>Listen</b><div class="row"><button class="btn ghost" data-a="new">Neue Liste</button><button class="btn ghost" data-a="ren">Umbenennen</button><button class="btn ghost" data-a="del">Liste löschen</button></div>
     <b>Import aus TradingView</b><p>In TradingView: Watchlist-Menü → „Liste exportieren“. Die Datei hier auswählen oder den Inhalt einfügen (z. B. <code>###KRYPTO,OKX:BTCUSDT.P,OKX:ETHUSDT.P</code>).</p>
-    <textarea id="wlTxt" rows="3" placeholder="OKX:BTCUSDT.P, OKX:ETHUSDT.P …"></textarea><div class="row"><input type="file" id="wlFile" accept=".txt,text/plain"><button class="btn" data-a="imp">In neue Liste importieren</button><button class="btn ghost" data-a="impAdd">Zur aktuellen Liste</button></div>
+    <textarea id="wlTxt" rows="3" placeholder="OKX:BTCUSDT.P, OKX:ETHUSDT.P …">${esc(impTxt)}</textarea><div class="row"><input type="file" id="wlFile" accept=".txt,.csv,text/plain,text/csv"><button class="btn" data-a="imp">In neue Liste importieren</button><button class="btn ghost" data-a="impAdd">Zur aktuellen Liste</button></div>
     <b>Export</b><div class="row"><button class="btn ghost" data-a="exp">Im TradingView-Format kopieren</button></div>
     <b>Auf Handy / PC übertragen</b><p>Erstellt einen Link mit allen Listen und Fähnchen. Öffne ihn auf dem anderen Gerät, dann wird alles übernommen.</p><div class="row"><button class="btn" data-a="sync">Übertragungs-Link erstellen</button></div></div>`;
   h+=`<div class="wlHd"><span>Symbol</span><span>Kurs</span><span>Tag</span></div><div class="wlRows">`;let n=0;
@@ -45,7 +45,9 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   h+=`<p class="wlE">Tipp: Antippen öffnet den Chart · Punkt links = Fähnchen · ↑/↓ wechselt das Symbol (Tastatur) · Änderung ${S.ex==="okx"?"seit 0 Uhr UTC":"24 Std."}</p>`;
   b.innerHTML=h;
   const sel=$("wlSel");if(sel)sel.onchange=()=>{W.cur=+sel.value;saveW();draw()};
-  const fi=$("wlFile");if(fi)fi.onchange=async()=>{const f=fi.files[0];if(f)$("wlTxt").value=await f.text()}}
+  const ta=$("wlTxt");if(ta)ta.oninput=()=>{impTxt=ta.value};
+  // Datei gewählt → sofort als neue Liste importieren (Name = Dateiname)
+  const fi=$("wlFile");if(fi)fi.onchange=async()=>{const f=fi.files[0];if(!f)return;impTxt=await f.text();impName=f.name.replace(/\.(txt|csv)$/i,"");act("imp")}}
 function parse(t){const out=[];for(let x of String(t).split(/[,\n\r;]+/)){x=x.trim();if(!x)continue;if(x.startsWith("###")){out.push("###"+x.slice(3).trim());continue}
     x=x.replace(/^[A-Z0-9_]+:/i,"").replace(/\.P$/i,"").toUpperCase().replace(/(USDT|USDC|USD|PERP)$/,"").replace(/[^A-Z0-9]/g,"");if(x&&!out.includes(x))out.push(x)}return out}
 function act(a){const l=L();
@@ -55,9 +57,9 @@ function act(a){const l=L();
   if(a==="new"){const n=prompt("Name der neuen Liste:","Neue Liste");if(n){W.lists.push({name:n.trim()||"Liste",items:[]});W.cur=W.lists.length-1;saveW()}}
   if(a==="ren"){const n=prompt("Neuer Name:",l.name);if(n){l.name=n.trim()||l.name;saveW()}}
   if(a==="del"){if(W.lists.length<2){toast("Die letzte Liste bleibt stehen");return}if(confirm(`Liste „${l.name}“ löschen?`)){W.lists.splice(W.cur,1);W.cur=0;saveW()}}
-  if(a==="imp"||a==="impAdd"){const it=parse($("wlTxt").value);if(!it.length){toast("Nichts zum Importieren gefunden");return}
-    if(a==="imp"){W.lists.push({name:"Import "+new Date().toLocaleDateString("de-DE"),items:it});W.cur=W.lists.length-1}else it.forEach(s=>{if(!l.items.includes(s))l.items.push(s)});
-    saveW();imp=false;toast(it.filter(s=>!s.startsWith("###")).length+" Symbole importiert");quotes()}
+  if(a==="imp"||a==="impAdd"){const it=parse(impTxt||($("wlTxt")||{}).value||"");if(!it.length){toast("Nichts zum Importieren gefunden");return}
+    if(a==="imp"){W.lists.push({name:impName||"Import "+new Date().toLocaleDateString("de-DE"),items:it});W.cur=W.lists.length-1}else it.forEach(s=>{if(!l.items.includes(s))l.items.push(s)});
+    saveW();imp=false;impTxt="";impName="";toast(it.filter(s=>!s.startsWith("###")).length+" Symbole importiert");quotes()}
   if(a==="sync"){const pl=btoa(unescape(encodeURIComponent(JSON.stringify({l:W.lists,f:FLAG})))),url=location.origin+location.pathname+"#wl="+pl;
     if(navigator.share)navigator.share({title:"Meine Watchlist",url}).catch(()=>{});else(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast("Link kopiert – auf dem anderen Gerät öffnen")).catch(()=>prompt("Diesen Link auf dem anderen Gerät öffnen:",url))}
   if(a==="exp"){const t=l.items.map(s=>s.startsWith("###")?s:(S.ex==="okx"?"OKX:"+s+"USDT.P":"BINANCE:"+s+"USDT")).join(",");

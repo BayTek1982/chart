@@ -374,7 +374,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
 
   // Unterfenster
   const panes=[],axQ=[],subTags=[];let top=mainH;
-  S._pBtn=[];subs.forEach(s=>{const subH=hOf(s),pz=(S.paneZ||{})[s]||1,pm=top+subH/2,pT=pm-(subH/2-6)*pz,pB=pm+(subH/2-6)*pz;panes.push({s,top,h:subH,mini:!!MIN[s]});line(0,top,W,top,th.grid,1);
+  S._pBtn=[];subs.forEach(s=>{const subH=hOf(s),pz=(S.paneZ||{})[s]||1,pm=top+subH/2+((S.paneO||{})[s]||0)*subH,pT=pm-(subH/2-6)*pz,pB=pm+(subH/2-6)*pz;panes.push({s,top,h:subH,mini:!!MIN[s]});line(0,top,W,top,th.grid,1);
     ctx.save();ctx.beginPath();ctx.rect(0,top,pw,subH);ctx.clip();
     // ▲▼ zum Verschieben (nur wenn es mehr als ein unteres Fenster gibt)
     if(subs.length>1){const bx=pw+14;(S._pBtn=S._pBtn||[]).push({s,d:-1,x:bx-10,y:top+1,w:20,h:20},{s,d:1,x:bx+12,y:top+1,w:20,h:20})}

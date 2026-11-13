@@ -272,7 +272,7 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=25"></script>
+<script src="chart-core.js?v=26"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -411,7 +411,7 @@ applyTheme();
 function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
-  const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ});
+  const th=CC.THEME[dark()?"dark":"light"];L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.I,cfg:S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO});
   if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();rkPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
@@ -433,7 +433,7 @@ function analysis(){const rows=S.k.length?CC.summary(S.k,S.I,S.cfg,S.tf):[];
 const ptrs=new Map();let drag=null,pinch=null,lastTap=null,tapDbl=0;
 try{S.minP=JSON.parse(localStorage.getItem("blcMin"))||{}}catch(e){S.minP={}}
 // Untere Fenster: Höhe am Trennstrich ziehen, mit ▲▼ die Reihenfolge tauschen
-S.paneOrd=LS("blcPOrd")||[];S.paneH=LS("blcPH")||{};S.paneZ=LS("blcPZ")||{};let paneDrag=null;
+S.paneOrd=LS("blcPOrd")||[];S.paneH=LS("blcPH")||{};S.paneZ=LS("blcPZ")||{};S.paneO=LS("blcPO")||{};let paneDrag=null;
 function paneDown(x,y){if(!L||!L.panes)return false;
   const b=(L.pBtn||[]).find(q=>x>=q.x&&x<=q.x+q.w&&y>=q.y&&y<=q.y+q.h);
   if(b){const ord=L.panes.map(p=>p.s),i=ord.indexOf(b.s),j=i+b.d;if(j>=0&&j<ord.length){[ord[i],ord[j]]=[ord[j],ord[i]];S.paneOrd=ord;LS("blcPOrd",ord);paint()}return true}
@@ -456,7 +456,7 @@ function scaleY(f){setMan();const v=S.view,mid=(v.lo+v.hi)/2,half=(v.hi-v.lo)/2*
 cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
   if(ptrs.size===1&&!S.tool&&!S.pend&&paneDown(e.offsetX,e.offsetY)){drag=null;return}
   if(ptrs.size===1&&dwDown(e.offsetX,e.offsetY,e.pointerType)){drag=null;return}
-  if(ptrs.size===1&&S.view)drag={x:e.offsetX,y:e.offsetY,from:S.view.from,to:S.view.to,lo:L?L.lo:0,hi:L?L.hi:1,man:S.view.man,moved:false,vert:false,touch:e.pointerType==="touch",axis:onAxis(e.offsetX,e.offsetY),sub:!!(L&&e.offsetY>L.mainH)};
+  if(ptrs.size===1&&S.view)drag={x:e.offsetX,y:e.offsetY,from:S.view.from,to:S.view.to,lo:L?L.lo:0,hi:L?L.hi:1,man:S.view.man,moved:false,vert:false,touch:e.pointerType==="touch",axis:onAxis(e.offsetX,e.offsetY),sub:(L&&e.offsetY>L.mainH&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h))||null};if(drag&&drag.sub)drag.po=S.paneO[drag.sub.s]||0;
   if(ptrs.size===2&&S.view){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),from:S.view.from,to:S.view.to,cx:(a.x+b.x)/2};drag=null}});
 cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
   {const pm=paneMove(e.offsetX,e.offsetY);if(pm===true)return;if(pm==="hover"&&!drag)return}
@@ -467,17 +467,18 @@ cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointe
   if(drag&&S.view){const dx=e.offsetX-drag.x,dy=e.offsetY-drag.y;if(Math.abs(dx)>3||Math.abs(dy)>3)drag.moved=true;
     if(drag.axis){if(drag.moved){const f=Math.exp(dy*0.006);S.view.man=true;const mid=(drag.lo+drag.hi)/2,half=(drag.hi-drag.lo)/2*f;S.view.lo=mid-half;S.view.hi=mid+half;paint()}return}
     if(drag.moved){const cw=(L?L.pw:cv.clientWidth)/(drag.to-drag.from);S.view.from=drag.from-dx/cw;S.view.to=drag.to-dx/cw;clampView();
+      if(drag.sub)S.paneO[drag.sub.s]=drag.po+dy/drag.sub.h;
       if(!drag.vert&&!drag.sub&&(drag.man||Math.abs(dy)>12))drag.vert=true;
       if(drag.vert&&L){const pp=(drag.hi-drag.lo)/(L.mB-L.mT),off=(drag.man?0:0);S.view.man=true;S.view.lo=drag.lo+dy*pp+off;S.view.hi=drag.hi+dy*pp+off}
       S.cross=drag.touch?null:{x:e.offsetX,y:e.offsetY};paint();return}}
   if(e.pointerType!=="touch"||drag){S.cross={x:e.offsetX,y:e.offsetY};paint()}});
-const up=e=>{ptrs.delete(e.pointerId);if(paneUp()){cv.style.cursor="crosshair";return}if(dwUp(e.offsetX,e.offsetY))return;if(ptrs.size<2)pinch=null;if(drag&&!drag.moved&&drag.touch&&!drag.axis){const now=Date.now();
+const up=e=>{ptrs.delete(e.pointerId);if(drag&&drag.sub&&drag.moved)LS("blcPO",S.paneO);if(paneUp()){cv.style.cursor="crosshair";return}if(dwUp(e.offsetX,e.offsetY))return;if(ptrs.size<2)pinch=null;if(drag&&!drag.moved&&drag.touch&&!drag.axis){const now=Date.now();
     if(lastTap&&now-lastTap.t<380&&Math.abs(lastTap.x-e.offsetX)<35&&Math.abs(lastTap.y-e.offsetY)<35){lastTap=null;tapDbl=now;S.cross=null;if(!dblAt(e.offsetX,e.offsetY))resetView();paint()}
     else{lastTap={t:now,x:e.offsetX,y:e.offsetY};S.cross=S.cross?null:{x:e.offsetX,y:e.offsetY};paint()}}if(!ptrs.size)drag=null};
 cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
 cv.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"){S.cross=null;paint()}});
 cv.addEventListener("wheel",e=>{e.preventDefault();if(onAxis(e.offsetX,e.offsetY)){scaleY(e.deltaY>0?1.1:1/1.1);paint();return}zoom(e.deltaY>0?1.12:1/1.12,e.offsetX)},{passive:false});
-cv.addEventListener("dblclick",e=>{if(Date.now()-tapDbl<700)return;{const q=L&&e.offsetX>L.pw&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h);if(q){delete S.paneZ[q.s];LS("blcPZ",S.paneZ);paint();return}}if(dblAt(e.offsetX,e.offsetY))return;if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
+cv.addEventListener("dblclick",e=>{if(Date.now()-tapDbl<700)return;{const q=L&&e.offsetX>L.pw&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h);if(q){delete S.paneZ[q.s];delete S.paneO[q.s];LS("blcPZ",S.paneZ);LS("blcPO",S.paneO);paint();return}}if(dblAt(e.offsetX,e.offsetY))return;if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
 $("autoB").onclick=()=>{if(S.view){S.view.man=false;paint()}};
 addEventListener("resize",paint);matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",paint);
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("box"));
@@ -1857,7 +1858,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
       S.view.from=c-(c-pz.from)*f;S.view.to=c+(pz.to-c)*f;clampView();paint()}return}
     if(pd){const dx=e.offsetX-pd.x,dy=e.offsetY-pd.y;if(Math.abs(dx)>3||Math.abs(dy)>3)pd.moved=true;
       if(pd.moved){const cw=(L?L.pw:cv2.clientWidth)/(pd.to-pd.from);S.view.from=pd.from-dx/cw;S.view.to=pd.to-dx/cw;clampView();
-        BOD.oy=pd.oy+dy/Math.max(20,cv2.clientHeight-29)*(BOD.zy||1);S.cross=pd.touch?null:{x:e.offsetX,y:1e9};BOD.cy=pd.touch?null:e.offsetY;paint()}
+        BOD.oy=pd.oy+dy/Math.max(20,cv2.clientHeight-29);S.cross=pd.touch?null:{x:e.offsetX,y:1e9};BOD.cy=pd.touch?null:e.offsetY;paint()}
       cv2.style.cursor="grabbing";return}
     const onAx=BOD.axX&&e.offsetX>BOD.axX;cv2.style.cursor=onAx?"ns-resize":"crosshair";
     if(e.pointerType!=="touch"){S.cross=onAx?null:{x:e.offsetX,y:1e9};BOD.cy=onAx?null:e.offsetY;paint()}});

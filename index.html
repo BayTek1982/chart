@@ -484,7 +484,22 @@ addEventListener("resize",paint);matchMedia("(prefers-color-scheme: dark)").addE
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("box"));
 
 // ---------- Zeichenwerkzeuge ----------
-const TOOLS=[["sel","✥","Auswählen / verschieben"],["tl","╱","Trendlinie"],["hl","─","Horizontale Linie"],["ray","⟶","Horizontaler Strahl"],["vl","│","Vertikale Linie"],["rect","▭","Rechteck / Zone"],["text","T","Text"],
+// Demonstration (wie TradingView): Ziehen malt eine rote Leuchtspur, die nach kurzer Zeit von selbst verblasst – nichts wird gespeichert
+const DEMO={on:false,st:[],cv:null,raf:0};
+function demoCv(){if(DEMO.cv)return DEMO.cv;const c=document.createElement("canvas");c.id="demoCv";c.style.cssText="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4";$("box").appendChild(c);DEMO.cv=c;return c}
+function demoStart(x,y){DEMO.on=true;DEMO.st.push([{x,y,t:performance.now()}]);demoLoop()}
+function demoAdd(x,y){const s=DEMO.st[DEMO.st.length-1];if(!s)return;const p=s[s.length-1];if(Math.hypot(x-p.x,y-p.y)>1.5)s.push({x,y,t:performance.now()})}
+function demoLoop(){if(DEMO.raf)return;const step=()=>{const c=demoCv(),r=cv.getBoundingClientRect(),d=devicePixelRatio||1;
+  if(c.width!==Math.round(r.width*d)||c.height!==Math.round(r.height*d)){c.width=Math.round(r.width*d);c.height=Math.round(r.height*d)}
+  const x=c.getContext("2d");x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,r.width,r.height);const now=performance.now(),LIFE=1400;
+  DEMO.st=DEMO.st.map(s=>s.filter(p=>now-p.t<LIFE)).filter(s=>s.length);
+  x.lineCap="round";x.lineJoin="round";
+  DEMO.st.forEach(s=>{if(s.length===1){const p=s[0],a=1-(now-p.t)/LIFE;x.fillStyle=`rgba(255,59,48,${a})`;x.beginPath();x.arc(p.x,p.y,3.5,0,7);x.fill();return}
+    for(let i=1;i<s.length;i++){const a=1-(now-s[i].t)/LIFE;x.strokeStyle=`rgba(255,59,48,${a})`;x.shadowColor=`rgba(255,59,48,${a*.8})`;x.shadowBlur=8;x.lineWidth=3.5;
+      x.beginPath();x.moveTo(s[i-1].x,s[i-1].y);x.lineTo(s[i].x,s[i].y);x.stroke()}});
+  x.shadowBlur=0;
+  if(DEMO.st.length||DEMO.on)DEMO.raf=requestAnimationFrame(step);else DEMO.raf=0};DEMO.raf=requestAnimationFrame(step)}
+const TOOLS=[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstration (Laserpointer: zeichnen, verblasst von selbst)"],["tl","╱","Trendlinie"],["hl","─","Horizontale Linie"],["ray","⟶","Horizontaler Strahl"],["vl","│","Vertikale Linie"],["rect","▭","Rechteck / Zone"],["text","T","Text"],
   ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
   ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
   ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],["-"],
@@ -513,7 +528,8 @@ function toPt(x,y){const k=S.k,i=Math.round(S.view.from+x/L.cw-0.5);let t=CC.idx
 function hitDw(x,y){const list=dispDw();for(let j=list.length-1;j>=0;j--){const d=list[j];
     if(S.sel===d.id){const h=CC.dwHandles(d,L,S.k,S.tf).find(h=>Math.hypot(h.x-x,h.y-y)<11);if(h)return{d:S.dw[j],h:h.h}}}
   for(let j=list.length-1;j>=0;j--)if(CC.dwHit(list[j],L,S.k,S.tf,x,y))return{d:S.dw[j],h:null};return null}
-function dwDown(x,y,ptype){if(!L||!S.k.length||x>L.pw||y>L.mainH)return false;const pt=toPt(x,y);
+function dwDown(x,y,ptype){if(S.tool==="demo"&&L&&x<=L.pw){demoStart(x,y);return true}
+  if(!L||!S.k.length||x>L.pw||y>L.mainH)return false;const pt=toPt(x,y);
   if(S.pend){const d=S.pend;d.pts[d.pts.length-1]=pt;if(d.pts.length<NEED[d.type]){d.pts.push({...pt});paint();return true}S.pend=null;S.tool=null;S.sel=d.id;saveDw();renderTools();paint();return true}
   if(S.tool){const t=S.tool,d={id:nid(),type:t,col:DCOL[t]||"#f0a33a",w:2,pts:[pt]};if(S.dwHide){S.dwHide=false;LS("blcDwHide",false)}
     if(t==="brush"){d.w=2;S.dw.push(d);S.dwd={mode:"brush",d,x,y};paint();return true}
@@ -527,6 +543,7 @@ function dwDown(x,y,ptype){if(!L||!S.k.length||x>L.pw||y>L.mainH)return false;co
   if(S.sel){S.sel=null;paint()}return false}
 function lineP(d,t){const a=d.pts[0],b=d.pts[1];if(!b||b.t===a.t)return a.p;return a.p+(b.p-a.p)*(t-a.t)/(b.t-a.t)}
 function dwMove(x,y,pressed){if(!L)return false;
+  if(S.tool==="demo"){if(pressed&&DEMO.on)demoAdd(x,y);cv.style.cursor="crosshair";return true}
   if(S.dwd&&S.dwd.mode==="brush"){if(pressed&&Math.hypot(x-S.dwd.x,y-S.dwd.y)>3){S.dwd.x=x;S.dwd.y=y;const d=S.dwd.d;if(d.pts.length<600)d.pts.push(toPt(x,y));paint()}return true}
   if(S.pend&&S.dwd&&S.dwd.mode==="new"){if(Math.hypot(x-S.dwd.x,y-S.dwd.y)>6)S.dwd.moved=true;S.pend.pts[S.pend.pts.length-1]=toPt(x,y);paint();return true}
   if(S.pend){S.pend.pts[S.pend.pts.length-1]=toPt(x,y);paint();return true}
@@ -539,7 +556,7 @@ function dwMove(x,y,pressed){if(!L)return false;
     paint();return true}
   if(!pressed&&L){cv.style.cursor=S.tool?"crosshair":hitDw(x,y)?"move":cv.style.cursor}
   return false}
-function dwUp(x,y){if(S.dwd&&S.dwd.mode==="brush"){const d=S.dwd.d;S.dwd=null;if(d.pts.length<2)S.dw=S.dw.filter(z=>z!==d);else{S.sel=d.id;saveDw()}S.tool=null;renderTools();paint();return true}
+function dwUp(x,y){if(DEMO.on){DEMO.on=false;return true}if(S.dwd&&S.dwd.mode==="brush"){const d=S.dwd.d;S.dwd=null;if(d.pts.length<2)S.dw=S.dw.filter(z=>z!==d);else{S.sel=d.id;saveDw()}S.tool=null;renderTools();paint();return true}
   if(S.pend&&S.dwd&&S.dwd.mode==="new"){const moved=S.dwd.moved;S.dwd=null;if(moved){const d=S.pend;if(d.pts.length<NEED[d.type]){d.pts.push({...d.pts[d.pts.length-1]});paint();return true}S.pend=null;S.tool=null;S.sel=d.id;saveDw();renderTools();paint()}return true}
   if(S.dwd){const g=S.dwd;S.dwd=null;if(g.moved)saveDw();return true}return false}
 function renderEbar(){const b=$("ebar"),d=S.dw.find(z=>z.id===S.sel);if(!d){b.hidden=true;return}b.hidden=false;

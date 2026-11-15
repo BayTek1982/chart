@@ -219,7 +219,7 @@ function compute(k,cfg,tf,ext){const L=cfg.pivot.auto?(PIV[tf]||10):Math.max(2,+
 const nf=(p,d)=>p.toLocaleString("de-DE",{minimumFractionDigits:d,maximumFractionDigits:d});
 function fmt(p){if(p==null||!isFinite(p))return"–";const a=Math.abs(p);if(a>=1000)return nf(p,2);if(a>=100)return nf(p,2);if(a>=1)return nf(p,a>=10?3:4);return p.toLocaleString("de-DE",{maximumSignificantDigits:4})}
 const pct=v=>(v>=0?"+":"")+nf(v,1)+" %";
-function tlab(t,tf,full){const d=new Date(t),p=n=>String(n).padStart(2,"0");
+function tlab(t,tf,full){const d=new Date(t),p=n=>String(n).padStart(2,"0");if(TFMS[tf]>=6048e5&&tf!=="1M")tf="1w";else if(TFMS[tf]>=864e5&&tf!=="1M")tf="1d";
   if(tf==="1w"||tf==="1M")return`${p(d.getDate())}.${p(d.getMonth()+1)}.${String(d.getFullYear()).slice(2)}`;
   if(tf==="1d")return full?`${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`:`${p(d.getDate())}.${p(d.getMonth()+1)}.`;
   return full?`${p(d.getDate())}.${p(d.getMonth()+1)}. ${p(d.getHours())}:${p(d.getMinutes())}`:`${p(d.getHours())}:${p(d.getMinutes())}`}
@@ -423,7 +423,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   axQ.forEach(a=>{ctx.fillStyle=th.txt;ctx.fillText(a.t,pw+6,a.y)});
   ctx.textAlign="center";let lastDay=null;
   for(let i=Math.ceil(from/step)*step;i<=to;i+=step){if(i<0||i>last)continue;const d=new Date(k[i].t),day=d.toDateString();
-    const txt=(tf!=="1d"&&tf!=="1w"&&tf!=="1M"&&day!==lastDay)?tlab(k[i].t,"1d"):tlab(k[i].t,tf);lastDay=day;ctx.fillText(txt,X(i),H-TA/2)}
+    const txt=((TFMS[tf]||0)<864e5&&day!==lastDay)?tlab(k[i].t,"1d"):tlab(k[i].t,tf);lastDay=day;ctx.fillText(txt,X(i),H-TA/2)}
   // Preis-Schilder
   tags.push({y:Y(price),col:price>=k[last].o?th.up:th.red,t:fmt(price),main:1});
   tags.filter(t=>!t.off||t.main).sort((a,b)=>a.y-b.y).reduce((prev,t)=>{const y=Math.max(t.y,prev+15);tagDraw(ctx,pw,y,t.col,t.t,AX,th,t.main);return y},-99);
@@ -547,6 +547,6 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
     if(sel===d.id&&!d.lock){dwHandles(d,L,k,tf).forEach(h=>{ctx.fillStyle=th.bg;ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,5,0,7);ctx.fill();ctx.stroke()})}});
   ctx.restore()}
 
-return{heatPal:t=>{PALTV=!!t},dfLevels,DEF,PIV,THEME,withDefaults,compute,draw,summary,fmt,tlab,vprofile,rkCol,heatCol,heatTxt,tIdx,idxT,drawDrawings,dwHandles,dwHit,DFIB};
+return{addTf:(k,ms,base)=>{TFMS[k]=ms;PIV[k]=PIV[base]||10},heatPal:t=>{PALTV=!!t},dfLevels,DEF,PIV,THEME,withDefaults,compute,draw,summary,fmt,tlab,vprofile,rkCol,heatCol,heatTxt,tIdx,idxT,drawDrawings,dwHandles,dwHit,DFIB};
 })();
 if(typeof module!=="undefined")module.exports=CC;

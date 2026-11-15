@@ -152,7 +152,7 @@ html,body{height:100%;overflow:hidden}
 #tfMenu .it{display:flex;align-items:center;border-radius:8px;background:var(--chip)}
 #tfMenu .it button{border:0;background:none;color:var(--fg);font:700 .9rem var(--f-num);padding:9px 8px;cursor:pointer}
 #tfMenu .it button.st{color:var(--muted);font-size:1rem;padding:9px 8px 9px 2px}#tfMenu .it button.st.on{color:var(--gold)}
-#tfMenu .it.cur{outline:2px solid var(--gold)}
+#tfMenu .it.cur{outline:2px solid var(--gold)}#tfMenu .it.add{grid-column:1/-1;background:none;border:1px dashed var(--line)}
 .ic{display:none}
 .bodbox.hasH{flex-basis:var(--bodH)!important}.bodbox.zu{flex-basis:28px!important}.bodbox.zu .bodRs{display:none}.bodbox.zu canvas,.bodbox.zu #bodTab,.bodbox.zu #bodSeg,.bodbox.zu #bodInfo{display:none!important}
 #bodZu{pointer-events:auto;border:0;background:var(--chip);color:var(--fg);border-radius:6px;font:700 .72rem var(--f-body);padding:2px 7px;cursor:pointer;flex:none}
@@ -272,13 +272,28 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=27"></script>
+<script src="chart-core.js?v=28"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
 const TF={k:["1m","3m","5m","15m","30m","1h","2h","4h","12h","1d","1w","1M"],a:["1h","4h","1d","1w"]};
 const TFLAB={"1m":"1m","3m":"3m","5m":"5m","15m":"15m","30m":"30m","1h":"1H","2h":"2H","4h":"4H","12h":"12H","1d":"1D","1w":"1W","1M":"1M"};
 const OKXB={"1m":"1m","3m":"3m","5m":"5m","15m":"15m","30m":"30m","1h":"1H","2h":"2H","4h":"4H","12h":"12Hutc","1d":"1Dutc","1w":"1Wutc","1M":"1Mutc"};
+// Eigene Intervalle (wie TradingView „Benutzerdefiniertes Intervall“): z. B. 7m, 90m, 6h, 2D, 3W – werden aus dem passenden Standard-Zeitrahmen zusammengesetzt
+const NATMS={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"30m":18e5,"1h":36e5,"2h":72e5,"4h":144e5,"12h":432e5,"1d":864e5,"1w":6048e5};
+const CTF={},CTFT=[];const MON0=4*864e5;
+function ctfParse(q){const m=String(q||"").trim().match(/^(\d+)\s*(m|min|h|std|d|t|tag|tage|w|wo|woche|wochen)?$/i);if(!m)return null;const n=+m[1];if(!(n>=1&&n<=1000))return null;
+  const u=(m[2]||"m").toLowerCase(),U=u[0]==="h"||u==="std"?"h":u[0]==="d"||u[0]==="t"?"d":u[0]==="w"?"w":"m";
+  const ms=n*{m:6e4,h:36e5,d:864e5,w:6048e5}[U];let key=n+U;for(const t in NATMS)if(NATMS[t]===ms)return{key:t,nat:true};return{key,ms,n,U}}
+function ctfReg(key){const p=ctfParse(key);if(!p||p.nat)return false;key=p.key;if(CTF[key])return true;
+  let base=null;for(const t in NATMS){const b=NATMS[t];if(b<=p.ms&&p.ms%b===0&&(p.U!=="w"||t==="1w")&&(p.U==="w"||t!=="1w"))base=t}if(!base)return false;
+  CTF[key]={base,n:p.ms/NATMS[base],ms:p.ms,wk:p.U==="w"};TFLAB[key]=p.n+(p.U==="m"?"m":p.U.toUpperCase());
+  if(!TF.k.includes(key)){TF.k.push(key);const ms=t=>NATMS[t]||(CTF[t]&&CTF[t].ms)||(t==="1M"?2592e6:0);TF.k.sort((a,b)=>ms(a)-ms(b))}
+  CTFT.forEach(([o,f])=>o[key]=p.ms*f);if(typeof CC!=="undefined"&&CC.addTf)CC.addTf(key,p.ms,base);return true}
+const ctfB=(key,t)=>{const c=CTF[key];return c.wk?Math.floor((t-MON0)/c.ms)*c.ms+MON0:Math.floor(t/c.ms)*c.ms};
+function ctfAgg(rows,key){const out=[];for(const r of rows){const b=ctfB(key,r.t),l=out[out.length-1];
+    if(l&&l.t===b){l.h=Math.max(l.h,r.h);l.l=Math.min(l.l,r.l);l.c=r.c;l.v+=r.v||0;if(r.b!=null)l.b=(l.b||0)+r.b}else out.push({t:b,o:r.o,h:r.h,l:r.l,c:r.c,v:r.v||0,b:r.b})}return out}
+let CTFX;try{CTFX=JSON.parse(localStorage.getItem("blcCtf"))}catch(e){}if(!Array.isArray(CTFX))CTFX=[];CTFX=CTFX.filter(ctfReg);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||"null");localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}};
@@ -303,18 +318,20 @@ const save=()=>{if(SLOT){LS("blc1s"+SLOT,{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cu
 // ---------- Daten ----------
 // Börsen: OKX Perpetual (USDT-SWAP, wie „OKX:…USDT.P“ in TradingView) und Binance Spot
 const SRCOK=()=>S.src==="Binance"||S.src==="OKX Perp";
-const KSTEP={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"30m":18e5,"1h":36e5,"2h":72e5,"4h":144e5,"12h":432e5,"1d":864e5,"1w":6048e5,"1M":2592e6};
+const KSTEP={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"30m":18e5,"1h":36e5,"2h":72e5,"4h":144e5,"12h":432e5,"1d":864e5,"1w":6048e5,"1M":2592e6};CTFT.push([KSTEP,1]);for(const k in CTF)KSTEP[k]=CTF[k].ms;
 const okxRow=r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[6]});
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 // OKX liefert max. 300 Kerzen (aktuell) bzw. 100 (Historie) je Abruf → mehrere Abrufe parallel, versetzt gestartet
-async function okxK(sym,tf,limit,endTime){const id=sym+"-USDT-SWAP",bar=OKXB[tf],st=KSTEP[tf],U="https://www.okx.com/api/v5/market/";let out=[],t0;
+async function okxK(sym,tf,limit,endTime){if(CTF[tf]){const c=CTF[tf];return ctfAgg(await okxK(sym,c.base,Math.min(limit*c.n,3000),endTime),tf).slice(-limit)}
+  const id=sym+"-USDT-SWAP",bar=OKXB[tf],st=KSTEP[tf],U="https://www.okx.com/api/v5/market/";let out=[],t0;
   if(!endTime){const j=await getJSON(`${U}candles?instId=${id}&bar=${bar}&limit=300`);if(j.code!=="0"||!j.data||!j.data.length)return[];out=j.data.map(okxRow);t0=Math.min(...out.map(x=>x.t))}
   else t0=endTime+1;
   const need=Math.max(0,Math.ceil((limit-out.length)/100)),reqs=[];
   for(let q=0;q<need;q++)reqs.push(wait(q*110).then(()=>getJSON(`${U}history-candles?instId=${id}&bar=${bar}&limit=100&after=${t0-q*100*st}`,15000)).then(j=>j&&j.code==="0"?(j.data||[]).map(okxRow):[]).catch(()=>[]));
   for(const a of await Promise.all(reqs))out=out.concat(a);
   const m=new Map();out.forEach(x=>m.set(x.t,x));return[...m.values()].sort((a,b)=>a.t-b.t).slice(-limit)}
-async function binK(sym,tf,limit,endTime){const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=${Math.min(1000,limit)}${endTime?"&endTime="+endTime:""}`,15000);
+async function binK(sym,tf,limit,endTime){if(CTF[tf]){const c=CTF[tf];return ctfAgg(await binK(sym,c.base,1000,endTime),tf).slice(-limit)}
+  const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=${Math.min(1000,limit)}${endTime?"&endTime="+endTime:""}`,15000);
   return Array.isArray(j)?j.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],b:+r[9]})):[]}
 // Kerzen von derselben Quelle wie der Chart (für höhere Zeitrahmen, ältere Kerzen usw.)
 function kFetch(sym,tf,limit,endTime){return S.src==="OKX Perp"?okxK(sym,tf,Math.min(limit,600),endTime):binK(sym,tf,limit,endTime)}
@@ -399,7 +416,8 @@ const YEX={HK:"HKEX",T:"TSE",KS:"KRX",DE:"XETR",PA:"EURONEXT",AS:"EURONEXT",BR:"
 const TVIDX={"^GSPC":"SP:SPX","^NDX":"NASDAQ:NDX","^DJI":"DJ:DJI","^RUT":"TVC:RUT","^GDAXI":"XETR:DAX","^MDAXI":"XETR:MDAX","^TECDAX":"XETR:TDXP","^STOXX50E":"TVC:SX5E","^HSI":"TVC:HSI","^N225":"TVC:NI225","^KS11":"TVC:KOSPI","GC=F":"COMEX:GC1!","SI=F":"COMEX:SI1!","CL=F":"NYMEX:CL1!","BZ=F":"TVC:UKOIL","NG=F":"NYMEX:NG1!","HG=F":"COMEX:HG1!","PL=F":"NYMEX:PL1!","PA=F":"NYMEX:PA1!","DX-Y.NYB":"TVC:DXY"};
 function tvSym(){if(S.mkt==="k")return/OKX/.test(S.src)?"OKX:"+S.sym+"USDT.P":"BINANCE:"+S.sym+"USDT";const y=S.sym;if(TVIDX[y])return TVIDX[y];
   const m=y.match(/^(.+)\.([A-Z]{1,2})$/);if(m&&YEX[m[2]])return YEX[m[2]]+":"+(m[2]==="HK"?m[1].replace(/^0+/,""):m[1].replace(/-/g,"_"));return y.replace(/-/g,".")}
-const tvUrl=()=>`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSym())}&interval=${{"1m":"1","3m":"3","5m":"5","15m":"15","30m":"30","1h":"60","2h":"120","4h":"240","12h":"720","1d":"D","1w":"W","1M":"M"}[S.tf]}`;
+const tvUrl=()=>`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSym())}&interval=${{"1m":"1","3m":"3","5m":"5","15m":"15","30m":"30","1h":"60","2h":"120","4h":"240","12h":"720","1d":"D","1w":"W","1M":"M"}[S.tf]||tvCtf()}`;
+function tvCtf(){const c=CTF[S.tf];if(!c)return"D";const m=c.ms/6e4;return c.wk?(m/10080)+"W":m%1440===0?(m/1440)+"D":String(m)}
 
 // ---------- Zeichnen ----------
 const cv=$("cv"),ctx=cv.getContext("2d");let L=null,raf=0;
@@ -928,15 +946,22 @@ function wsStart(){if(document.documentElement.classList.contains("split")){wsSt
   if(!SRCOK()||!S.kO.length){wsStop();wsKey="";liveState(false,S.kO.length?"ohne Live":"–");return}
   if(ws&&wsKey===key&&ws.readyState<2)return;wsStop();wsKey=key;liveState(false,"verbinde …");let got=false;const okx=S.src==="OKX Perp";
   $("live").title="Live-Verbindung zu "+(okx?"OKX (Perpetual)":"Binance (Spot)");
-  let sock;try{sock=new WebSocket(okx?"wss://ws.okx.com:8443/ws/v5/business":WSU[wsI%WSU.length]+S.sym.toLowerCase()+"usdt@kline_"+S.tf)}catch(e){return}
-  ws=sock;const sym=S.sym,tf=S.tf;
+  let sock;try{sock=new WebSocket(okx?"wss://ws.okx.com:8443/ws/v5/business":WSU[wsI%WSU.length]+S.sym.toLowerCase()+"usdt@kline_"+(CTF[S.tf]?CTF[S.tf].base:S.tf))}catch(e){return}
+  ws=sock;const sym=S.sym,tf=CTF[S.tf]?CTF[S.tf].base:S.tf;
   if(okx)sock.onopen=()=>{try{sock.send(JSON.stringify({op:"subscribe",args:[{channel:"candle"+OKXB[tf],instId:sym+"-USDT-SWAP"}]}))}catch(_){}sock._p=setInterval(()=>{try{sock.send("ping")}catch(_){}},20000)};
   sock.onmessage=e=>{if(sock!==ws||e.data==="pong")return;try{const m=JSON.parse(e.data);
     if(okx){if(m&&m.arg&&Array.isArray(m.data))for(const r of m.data){got=true;tick({t:r[0],o:r[1],h:r[2],l:r[3],c:r[4],v:r[6],i:tf,s:sym+"USDT"})}}
     else if(m&&m.k){got=true;tick(m.k)}}catch(_){}};
   sock.onerror=()=>{try{sock.close()}catch(_){}};
   sock.onclose=()=>{clearInterval(sock._p);if(sock!==ws)return;ws=null;liveState(false,"getrennt – verbinde neu …");if(!got)wsI++;clearTimeout(wsT);wsT=setTimeout(()=>{if(document.visibilityState==="visible")wsStart()},3000)}}
-function tick(q){const a=S.kO,n=a.length;if(!n||q.i!==S.tf||q.s!==S.sym+"USDT")return;
+// Eigenes Intervall: Live-Kerze des Basis-Zeitrahmens in die zusammengesetzte Kerze einrechnen
+let CTFL=null;
+function ctfLive(q){const key=S.tf,c=CTF[key],a=S.kO,n=a.length;if(!c||!n)return null;const t=+q.t,b=ctfB(key,t),last=a[n-1];if(b<last.t)return null;
+  const id=key+"|"+S.sym;if(!CTFL||CTFL.id!==id||CTFL.b!==b){const old=b===last.t;CTFL={id,b,rows:new Map(),o:old?last.o:+q.o,h0:old?last.h:-Infinity,l0:old?last.l:Infinity,v0:old?last.v:0,old,vf:null,first:t}}
+  CTFL.rows.set(t,{h:+q.h,l:+q.l,v:+q.v});let h=CTFL.h0,l=CTFL.l0,v=CTFL.v0;
+  CTFL.rows.forEach((r,tt)=>{h=Math.max(h,r.h);l=Math.min(l,r.l);if(CTFL.old&&tt===CTFL.first){if(CTFL.vf==null)CTFL.vf=r.v;v+=r.v-CTFL.vf}else v+=r.v});
+  return{t:b,o:CTFL.o,h,l,c:+q.c,v,i:key,s:q.s}}
+function tick(q){if(CTF[S.tf]&&q.i===CTF[S.tf].base){q=ctfLive(q);if(!q)return}const a=S.kO,n=a.length;if(!n||q.i!==S.tf||q.s!==S.sym+"USDT")return;
   const c={t:+q.t,o:+q.o,h:+q.h,l:+q.l,c:+q.c,v:+q.v,b:+q.V},last=a[n-1];if(!(c.c>0)||c.t<last.t)return;
   const F=S.F,same=S.k===a,d=F===1?c:{t:c.t,o:c.o*F,h:c.h*F,l:c.l*F,c:c.c*F,v:c.v},neu=c.t>last.t;
   if(!neu){a[n-1]=c;if(!same)S.k[n-1]=d}else{a.push(c);if(!same)S.k.push(d);if(S.view&&S.view.to>=n-1){S.view.from++;S.view.to++}}
@@ -968,7 +993,7 @@ setInterval(()=>{if(S.view&&S.view.from<150&&!drag&&!pinch&&!S.pend&&!S.dwd)olde
 //  Delta: echtes Käufer-/Verkäufer-Volumen aus den Kerzen (Taker-Volumen).
 // ════════════════════════════════════════════════════════════════
 const BOD={key:"",oi:new Map(),cur:null,st:"",busy:false,sym:"",R:null};
-const BSTEP={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"30m":18e5,"1h":36e5,"2h":72e5,"4h":144e5,"12h":432e5,"1d":864e5,"1w":6048e5,"1M":2592e6};
+const BSTEP={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"30m":18e5,"1h":36e5,"2h":72e5,"4h":144e5,"12h":432e5,"1d":864e5,"1w":6048e5,"1M":2592e6};CTFT.push([BSTEP,1]);for(const k in CTF)BSTEP[k]=CTF[k].ms;
 const BOIP={"5m":1,"15m":1,"30m":1,"1h":1,"2h":1,"4h":1,"12h":1,"1d":1};
 const FAPI="https://fapi.binance.com/";
 const bKey=()=>S.sym+"|"+S.tf;
@@ -1164,7 +1189,7 @@ function heatPaint(){const c=S.cfg.heat,el=$("heatTab"),I=S.I||{},p=L&&L.panes&&
 //  Nicht enthalten: Alarme, manuelle Punkte 0/A/B.
 // ════════════════════════════════════════════════════════════════
 const BW={R:null,hit:[],mtf:{},mtfRows:null,mtfBusy:false,mtfKey:""};
-const BWSEC={"1m":60,"3m":180,"5m":300,"15m":900,"30m":1800,"1h":3600,"2h":7200,"4h":14400,"12h":43200,"1d":86400,"1w":604800,"1M":2592000};
+const BWSEC={"1m":60,"3m":180,"5m":300,"15m":900,"30m":1800,"1h":3600,"2h":7200,"4h":14400,"12h":43200,"1d":86400,"1w":604800,"1M":2592000};CTFT.push([BWSEC,.001]);for(const k in CTF)BWSEC[k]=CTF[k].ms/1000;
 const bwLv=s=>String(s||"").split(";").map(x=>parseFloat(x.trim().replace(",","."))).filter(x=>isFinite(x));
 const bwPct=f=>String(Math.round(f*10000)/100).replace(".",",")+" %";
 const bwTF=tf=>tf==="1d"?"1D":tf==="1w"?"1W":tf;
@@ -1463,9 +1488,18 @@ function bftPaint(th){const c=S.cfg.bft,R=BF.R;BF.hit=[];if(!c.on||!R||!L)return
 
 // ════════ Schritt 1: Zeitrahmen-Favoriten, Werkzeug-Schalter, Fenster zuklappen ════════
 function tfMenu(btn){let m=$("tfMenu");if(m){m.remove();return}m=document.createElement("div");m.id="tfMenu";document.body.appendChild(m);
-  const draw=()=>{m.innerHTML=`<div class="h">Zeitrahmen wählen · ★ = Favorit in der Leiste</div>`+TF[S.mkt].map(t=>`<div class="it${t===S.tf?" cur":""}"><button data-pick="${t}">${TFLAB[t]}</button><button class="st${FAV.includes(t)?" on":""}" data-star="${t}" title="Als Favorit in die Leiste">${FAV.includes(t)?"★":"☆"}</button></div>`).join("")};
+  const draw=()=>{m.innerHTML=`<div class="h">Zeitrahmen wählen · ★ = Favorit in der Leiste</div>`+TF[S.mkt].map(t=>`<div class="it${t===S.tf?" cur":""}"><button data-pick="${t}">${TFLAB[t]}${CTF[t]?' <small style="opacity:.6">eigen</small>':""}</button>${CTF[t]?`<button class="st" data-del="${t}" title="Eigenes Intervall löschen">✕</button>`:""}<button class="st${FAV.includes(t)?" on":""}" data-star="${t}" title="Als Favorit in die Leiste">${FAV.includes(t)?"★":"☆"}</button></div>`).join("")
+    +(S.mkt==="k"?`<div class="it add"><button data-add="1" style="text-align:left;flex:1;font-family:inherit">＋ Eigenes Intervall hinzufügen …</button></div>`:"")};
   draw();const r=btn.getBoundingClientRect(),w=m.offsetWidth;m.style.top=Math.min(r.bottom+6,innerHeight-m.offsetHeight-8)+"px";m.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+"px";
-  m.onclick=e=>{e.stopPropagation();const s=e.target.closest("[data-star]"),p=e.target.closest("[data-pick]");
+  m.onclick=e=>{e.stopPropagation();const s=e.target.closest("[data-star]"),p=e.target.closest("[data-pick]"),ad=e.target.closest("[data-add]"),dl=e.target.closest("[data-del]");
+    if(ad){const q=prompt("Eigenes Intervall eingeben (Zahl + Einheit):\nm = Minuten, h = Stunden, D = Tage, W = Wochen\nBeispiele: 7m, 45m, 90m, 6h, 8h, 2D, 3D, 2W","");if(!q)return;const p=ctfParse(q);
+      if(!p){toast("Nicht erkannt – z. B. 7m, 90m, 6h, 2D oder 2W");return}
+      if(p.nat){S.tf=p.key;m.remove();save();renderBar();load();return}
+      if(!ctfReg(p.key)){toast("Dieses Intervall geht leider nicht");return}if(!CTFX.includes(p.key)){CTFX.push(p.key);LS("blcCtf",CTFX)}
+      if(!FAV.includes(p.key)){FAV=FAV.concat(p.key);try{localStorage.setItem("blcFav",JSON.stringify(FAV))}catch(_){}}
+      S.tf=p.key;m.remove();save();renderBar();load();return}
+    if(dl){const k=dl.dataset.del;CTFX=CTFX.filter(x=>x!==k);LS("blcCtf",CTFX);FAV=FAV.filter(x=>x!==k);if(!FAV.length)FAV=["4h"];try{localStorage.setItem("blcFav",JSON.stringify(FAV))}catch(_){}
+      const i=TF.k.indexOf(k);if(i>=0)TF.k.splice(i,1);delete CTF[k];if(S.tf===k){S.tf="4h";save();load()}draw();renderBar();return}
     if(s){const k=s.dataset.star;FAV=FAV.includes(k)?FAV.filter(x=>x!==k):FAV.concat(k);if(!FAV.length)FAV=[k];try{localStorage.setItem("blcFav",JSON.stringify(FAV))}catch(_){}draw();renderBar();return}
     if(p){S.tf=p.dataset.pick;m.remove();save();renderBar();load()}};
   setTimeout(()=>document.addEventListener("click",function cl(e){if(!m.contains(e.target)){m.remove();document.removeEventListener("click",cl)}}),0)}

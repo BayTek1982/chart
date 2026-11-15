@@ -1531,7 +1531,14 @@ function tfMenu(btn){let m=$("tfMenu");if(m){m.remove();return}m=document.create
   const tg=()=>{zu=!zu;try{localStorage.setItem("blcBodZu",JSON.stringify(zu))}catch(e){}ap()};ap();
   $("bodZu").onclick=e=>{e.stopPropagation();tg()};let lt=0;
   box.addEventListener("dblclick",e=>{if(e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"&&BOD.axX&&e.offsetX>BOD.axX))return;e.preventDefault();if(Date.now()-lt>700)tg()});
-  let t0=0;box.addEventListener("pointerup",e=>{if(e.pointerType!=="touch"||e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"&&BOD.axX&&e.offsetX>BOD.axX))return;const now=Date.now();if(now-t0<380){t0=0;lt=now;tg()}else t0=now})}
+  // Doppeltipp zum Zuklappen nur bei echten Einzel-Tipps: nicht nach Zwei-Finger-Spreizen, Ziehen oder langem Drücken
+  let t0=0,tp=null,tn=0,tMulti=false,tMove=false,tDown=0,tx=0,ty=0;
+  box.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch")return;tn++;if(tn>1){tMulti=true;t0=0}if(tn===1){tMulti=false;tMove=false;tDown=Date.now();tx=e.clientX;ty=e.clientY}},true);
+  box.addEventListener("pointermove",e=>{if(e.pointerType==="touch"&&tn&&Math.hypot(e.clientX-tx,e.clientY-ty)>12)tMove=true},true);
+  box.addEventListener("pointercancel",e=>{if(e.pointerType==="touch"){tn=Math.max(0,tn-1);tMulti=true;t0=0}},true);
+  box.addEventListener("pointerup",e=>{if(e.pointerType!=="touch")return;tn=Math.max(0,tn-1);if(tn>0){t0=0;return}
+    const bad=tMulti||tMove||Date.now()-tDown>350;if(bad||e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"&&BOD.axX&&e.offsetX>BOD.axX)){t0=0;return}
+    const now=Date.now();if(now-t0<380&&tp&&Math.hypot(e.clientX-tp.x,e.clientY-tp.y)<40){t0=0;lt=now;tg()}else{t0=now;tp={x:e.clientX,y:e.clientY}}})}
 
 // ════════════════════════════════════════════════════════════════
 //  Bayazit Fibonacci Trend V2.4 – Teile ⑫ ⑬ ⑯ ⑰ ⑱ ⑲ ⑳ nach dem Pine-Code

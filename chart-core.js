@@ -384,13 +384,13 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
       line(0,Yr(hiL),pw,Yr(hiL),th.grey,1,[4,3]);line(0,Yr(loL),pw,Yr(loL),th.grey,1,[4,3]);line(0,Yr(50),pw,Yr(50),th.grid,1,[2,3]);
       const rcl=C(cfg.rsi.col);series(I.rsi,rcl,1.4,null,Yr);
       if(cfg.rsi.div&&I.div)I.div.forEach(d=>line(X(d.a),Yr(d.ra),X(d.b),Yr(d.rb),C(d.t===1?cfg.rsi.cDivUp:cfg.rsi.cDivDn),1.5,[2,3]));
-      const rv=I.rsi[last];font(10,1);ctx.textAlign="left";ctx.fillStyle=rcl;ctx.fillText(`RSI ${cfg.rsi.len}  ${rv!=null?nf(rv,1):"–"}`,6,pT+8);
+      const rv=I.rsi[last];font(10,1);ctx.textAlign="left";ctx.fillStyle=rcl;ctx.fillText(`RSI ${cfg.rsi.len}  ${rv!=null?nf(rv,1):"–"}`,6,top+12);
       axQ.push({y:Yr(hiL),t:String(hiL)},{y:Yr(50),t:"50"},{y:Yr(loL),t:String(loL)});if(rv!=null)subTags.push({y:Yr(rv),col:rcl,t:nf(rv,1)})}
     else if(s==="macd"){const m=I.macd;let mx=0;for(let i=i0;i<=i1;i++)[m.m[i],m.sig[i],m.h[i]].forEach(v=>{if(v!=null)mx=Math.max(mx,Math.abs(v))});mx=mx||1;
       const Ym=v=>pT+(mx-v)/(2*mx)*(pB-pT);line(0,Ym(0),pw,Ym(0),th.grid,1);
       for(let i=i0;i<=i1;i++){const v=m.h[i];if(v==null)continue;ctx.fillStyle=v>=0?"rgba(60,207,138,.5)":"rgba(255,107,94,.5)";const y=Ym(v),y0=Ym(0);ctx.fillRect(X(i)-cw*0.35,Math.min(y,y0),Math.max(1,cw*0.7),Math.abs(y-y0))}
       const mc=C(cfg.macd.cM),sc=C(cfg.macd.cS);series(m.m,mc,1.3,null,Ym);series(m.sig,sc,1.3,null,Ym);
-      font(10,1);ctx.textAlign="left";ctx.fillStyle=th.txt;ctx.fillText(`MACD ${cfg.macd.f}/${cfg.macd.s}/${cfg.macd.sig}`,6,pT+8);
+      font(10,1);ctx.textAlign="left";ctx.fillStyle=th.txt;ctx.fillText(`MACD ${cfg.macd.f}/${cfg.macd.s}/${cfg.macd.sig}`,6,top+12);
       axQ.push({y:Ym(0),t:"0"});const mv=m.m[last],sv=m.sig[last];if(mv!=null)subTags.push({y:Ym(mv),col:mc,t:fmt(mv)});if(sv!=null)subTags.push({y:Ym(sv),col:sc,t:fmt(sv)})}
     else if(s==="risk"){const Yk=v=>pT+(1-v)*(pB-pT),r=I.risk;
       [[1,th.red,[4,3]],[0.8,"rgba(255,107,94,.45)",[2,3]],[0.5,th.grey,[4,3]],[0.2,"rgba(60,207,138,.45)",[2,3]],[0,th.green,[4,3]]].forEach(([v,c,d])=>line(0,Yk(v),pw,Yk(v),c,1,d));
@@ -402,7 +402,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
         const head=["Risiko","Preis","Zeit %"];let x=6;ctx.fillStyle=th.txt;ctx.textAlign="left";head.forEach((h,q)=>{ctx.fillText(h,x,pT+rh/2+1);x+=cw2[q]});
         rows.forEach((w,q)=>{const y=pT+rh*(q+1)+rh/2+1;if(w.cur){ctx.fillStyle="rgba(240,163,58,.35)";ctx.fillRect(4,y-rh/2,tw+4,rh)}
           let x=6;ctx.fillStyle=w.cur?th.fg:rkCol(w.r);ctx.fillText((w.cur?"▶ ":"")+nf(w.r,w.cur?3:1),x,y);x+=cw2[0];ctx.fillStyle=th.fg;ctx.fillText(fmt(w.p),x,y);x+=cw2[1];ctx.fillStyle=w.cur?th.gold:th.txt;ctx.fillText(w.cur?"aktuell":nf(w.z,1),x,y)});tx=tw+16}
-      font(10,1);ctx.textAlign="left";ctx.fillStyle=th.fg;ctx.fillText(`Risiko ${rn!=null?nf(rn,3):"–"}`,tx,pT+8);
+      font(10,1);ctx.textAlign="left";ctx.fillStyle=th.fg;ctx.fillText(`Risiko ${rn!=null?nf(rn,3):"–"}`,tx,top+12);
       axQ.push({y:Yk(1),t:"1,0"},{y:Yk(0.5),t:"0,5"},{y:Yk(0),t:"0,0"});if(rn!=null)subTags.push({y:Yk(rn),col:rkCol(rn),t:nf(rn,3)})}
     else if(s==="heat"){const h=I.heat;let lo2=0.8,hi2=1.25;for(let i=i0;i<=i1;i++){const v=h[i];if(v!=null){if(v<lo2)lo2=v;if(v>hi2)hi2=v}}lo2=Math.min(lo2,0.95);const sp=hi2-lo2;lo2-=sp*0.04;hi2+=sp*0.06;
       const Yh=v=>pT+(hi2-v)/(hi2-lo2)*(pB-pT),y1=Yh(1);
@@ -410,7 +410,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
       for(let i=i0;i<=i1;i++){const v=h[i];if(v==null)continue;const y=Yh(v);ctx.fillStyle=heatCol(v,I.heatTh);ctx.fillRect(X(i)-cw*0.38,Math.min(y,y1),Math.max(1,cw*0.76),Math.max(1,Math.abs(y-y1)))}
       line(0,y1,pw,y1,th.fg,1);const hn=I.heatNow!=null?I.heatNow:h[last];
       font(10,1);ctx.textAlign="left";ctx.fillStyle=th.fg;
-      ctx.fillText(`Hitze ${hn!=null?nf(hn,2):"–"}${I.heatAvg?` · ${Math.round(+cfg.heat.len||20)}-Wochen-Schnitt ${fmt(I.heatAvg)}`:""}${hn!=null?" · "+heatTxt(hn,I.heatTh):""}`,6,pT+8);
+      ctx.fillText(`Hitze ${hn!=null?nf(hn,2):"–"}${I.heatAvg?` · ${Math.round(+cfg.heat.len||20)}-Wochen-Schnitt ${fmt(I.heatAvg)}`:""}${hn!=null?" · "+heatTxt(hn,I.heatTh):""}`,6,top+12);
       axQ.push({y:y1,t:"1,00"});lv.forEach(v=>{if(v<hi2)axQ.push({y:Yh(v),t:nf(v,2)})});if(hn!=null)subTags.push({y:Yh(hn),col:heatCol(hn,I.heatTh),t:nf(hn,2)})}
     ctx.restore();top+=subH});
 

@@ -154,7 +154,7 @@ html,body{height:100%;overflow:hidden}
 #tfMenu .it button.st{color:var(--muted);font-size:1rem;padding:9px 8px 9px 2px}#tfMenu .it button.st.on{color:var(--gold)}
 #tfMenu .it.cur{outline:2px solid var(--gold)}
 .ic{display:none}
-.bodbox.zu{flex-basis:28px!important}.bodbox.zu canvas,.bodbox.zu #bodTab,.bodbox.zu #bodSeg,.bodbox.zu #bodInfo{display:none!important}
+.bodbox.hasH{flex-basis:var(--bodH)!important}.bodbox.zu{flex-basis:28px!important}.bodbox.zu .bodRs{display:none}.bodbox.zu canvas,.bodbox.zu #bodTab,.bodbox.zu #bodSeg,.bodbox.zu #bodInfo{display:none!important}
 #bodZu{pointer-events:auto;border:0;background:var(--chip);color:var(--fg);border-radius:6px;font:700 .72rem var(--f-body);padding:2px 7px;cursor:pointer;flex:none}
 @media (max-width:700px){
   .wrap{gap:4px}
@@ -1456,13 +1456,13 @@ function tfMenu(btn){let m=$("tfMenu");if(m){m.remove();return}m=document.create
 {let open;try{open=JSON.parse(localStorage.getItem("blcTools"))}catch(e){}if(open==null)open=innerWidth>700;
   const ap=()=>{$("tools").classList.toggle("zu",!open);$("toolTg").classList.toggle("on",open);$("toolTg").textContent=open?"✕":"✎"};ap();
   $("toolTg").onclick=()=>{open=!open;if(!open&&S.tool){S.tool=null;renderTools()}try{localStorage.setItem("blcTools",JSON.stringify(open))}catch(e){}ap();paint()}}
-// OI & Delta Monitor zuklappen: Knopf ▾ oder Doppeltipp auf die Kopfzeile (im Diagramm setzt Doppeltipp die Skala zurück)
+// OI & Delta Monitor zuklappen: Knopf ▾ oder Doppeltipp ins Fenster (Doppeltipp auf die rechte Skala = Skala automatisch)
 {let zu=false;try{zu=!!JSON.parse(localStorage.getItem("blcBodZu"))}catch(e){}const box=$("bodBox");
   const ap=()=>{box.classList.toggle("zu",zu);$("bodZu").textContent=zu?"▸":"▾";paint()};
   const tg=()=>{zu=!zu;try{localStorage.setItem("blcBodZu",JSON.stringify(zu))}catch(e){}ap()};ap();
   $("bodZu").onclick=e=>{e.stopPropagation();tg()};let lt=0;
-  box.addEventListener("dblclick",e=>{if(e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"))return;e.preventDefault();if(Date.now()-lt>700)tg()});
-  let t0=0;box.addEventListener("pointerup",e=>{if(e.pointerType!=="touch"||e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"))return;const now=Date.now();if(now-t0<380){t0=0;lt=now;tg()}else t0=now})}
+  box.addEventListener("dblclick",e=>{if(e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"&&BOD.axX&&e.offsetX>BOD.axX))return;e.preventDefault();if(Date.now()-lt>700)tg()});
+  let t0=0;box.addEventListener("pointerup",e=>{if(e.pointerType!=="touch"||e.target.closest("button,#bodTab")||(!zu&&e.target.id==="bodCv"&&BOD.axX&&e.offsetX>BOD.axX))return;const now=Date.now();if(now-t0<380){t0=0;lt=now;tg()}else t0=now})}
 
 // ════════════════════════════════════════════════════════════════
 //  Bayazit Fibonacci Trend V2.4 – Teile ⑫ ⑬ ⑯ ⑰ ⑱ ⑲ ⑳ nach dem Pine-Code
@@ -1843,14 +1843,14 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
 
 // OI & Delta: Preisskala ziehen = strecken/stauchen (Doppelklick auf die Skala = automatisch), oberen Rand ziehen = Fenster höher/niedriger
 {const cv2=$("bodCv"),box=$("bodBox"),rs=$("bodRs");let ax=null,rz=null;
-  const hSet=h=>{box.style.flexBasis=Math.round(h)+"px";box.style.setProperty("flex-basis",Math.round(h)+"px","important")};
+  const hSet=h=>{box.style.setProperty("--bodH",Math.round(h)+"px");box.classList.add("hasH")};
   {const h=LS("blcBodH");if(h)hSet(h)}
   // Bedienung wie im Hauptchart: Ziehen = verschieben (Zeit + Werte), Rad/2 Finger = Zeit zoomen, Skala ziehen = strecken, Doppeltipp = automatisch
-  cv2.style.touchAction="none";const bp=new Map();let pz=null,pd=null,lt=0;
+  cv2.style.touchAction="none";const bp=new Map();let pz=null,pd=null,lt=0,axT=0;
   const reset=()=>{BOD.zy=1;BOD.oy=0;paint()};
   cv2.addEventListener("pointerdown",e=>{cv2.setPointerCapture(e.pointerId);bp.set(e.pointerId,{x:e.offsetX,y:e.offsetY});e.preventDefault();
     if(bp.size===2&&S.view){const [a,b]=[...bp.values()];pz={d:Math.hypot(a.x-b.x,a.y-b.y),from:S.view.from,to:S.view.to,cx:(a.x+b.x)/2};pd=ax=null;return}
-    if(BOD.axX&&e.offsetX>BOD.axX){ax={y:e.clientY,z:BOD.zy||1};return}
+    if(BOD.axX&&e.offsetX>BOD.axX){ax={y:e.clientY,z:BOD.zy||1};if(e.pointerType==="touch"){const t=Date.now();if(t-axT<380){axT=0;reset()}else axT=t}return}
     if(S.view)pd={x:e.offsetX,y:e.offsetY,from:S.view.from,to:S.view.to,oy:BOD.oy||0,moved:false,touch:e.pointerType==="touch"}});
   cv2.addEventListener("pointermove",e=>{if(bp.has(e.pointerId))bp.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
     if(ax){const f=Math.exp((e.clientY-ax.y)/120);BOD.zy=Math.max(.1,Math.min(20,ax.z*f));paint();return}
@@ -1863,12 +1863,12 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
     const onAx=BOD.axX&&e.offsetX>BOD.axX;cv2.style.cursor=onAx?"ns-resize":"crosshair";
     if(e.pointerType!=="touch"){S.cross=onAx?null:{x:e.offsetX,y:1e9};BOD.cy=onAx?null:e.offsetY;paint()}});
   const up=e=>{bp.delete(e.pointerId);if(bp.size<2)pz=null;
-    if(pd&&!pd.moved&&pd.touch){const now=Date.now();if(now-lt<380){lt=0;S.cross=null;BOD.cy=null;reset();pd=null;return}lt=now;
+    if(pd&&!pd.moved&&pd.touch){const now=Date.now();if(now-lt<380){lt=0;S.cross=null;BOD.cy=null;pd=null;paint();return}lt=now;
       if(S.cross){S.cross=null;BOD.cy=null}else{S.cross={x:e.offsetX,y:1e9};BOD.cy=e.offsetY}paint()}
     if(!bp.size){pd=null;ax=null;cv2.style.cursor="crosshair"}};
   cv2.addEventListener("pointerup",up);cv2.addEventListener("pointercancel",up);
   cv2.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"&&!pd){S.cross=null;BOD.cy=null;paint()}});
-  cv2.addEventListener("dblclick",reset);
+  cv2.addEventListener("dblclick",e=>{if(BOD.axX&&e.offsetX>BOD.axX)reset()});
   cv2.addEventListener("wheel",e=>{e.preventDefault();if(BOD.axX&&e.offsetX>BOD.axX){BOD.zy=Math.max(.1,Math.min(20,(BOD.zy||1)*(e.deltaY>0?1.1:1/1.1)));paint();return}
     zoom(e.deltaY>0?1.12:1/1.12,e.offsetX)},{passive:false});
   rs.addEventListener("pointerdown",e=>{rz={y:e.clientY,h:box.getBoundingClientRect().height};rs.setPointerCapture(e.pointerId);e.preventDefault()});

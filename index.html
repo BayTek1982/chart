@@ -293,7 +293,7 @@ const savedMain=LS("blc1")||LS("bcb1")||{};
 const saved=SLOT?Object.assign({},savedMain,{sym:SLOTSYM[SLOT]||"BTC"},LS("blc1s"+SLOT)||{}):savedMain;
 const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[],sel:null,pend:null,dwd:null,mag:saved.mag===false||saved.mag===0?0:saved.mag===2?2:1,dwShared:false,mkt:"k",sym:saved.sym||"BTC",tf:saved.tf||"4h",cfg:CC.withDefaults(saved.cfg),profiles:saved.profiles||{},k:[],I:{},view:null,cross:null,src:"",ex:saved.ex==="binance"?"binance":"okx",list:{k:[],a:[]}};
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(SLOT||!h.get("s"))return;
-  S.mkt="k";S.sym=h.get("s").toUpperCase().replace(/[^A-Z0-9.^=\-]/g,"");if(h.get("tf"))S.tf=h.get("tf");
+  S.mkt=h.get("m")==="a"?"a":"k";S.sym=h.get("s").toUpperCase().replace(/[^A-Z0-9.^=\-]/g,"");if(h.get("tf"))S.tf=h.get("tf");if(!TF[S.mkt].includes(S.tf))S.tf="1d";
   if(h.get("i"))try{S.cfg=CC.withDefaults(JSON.parse(decodeURIComponent(escape(atob(h.get("i"))))))}catch(e){}
   if(h.get("d"))try{S.hashDw=JSON.parse(decodeURIComponent(escape(atob(h.get("d")))))}catch(e){}})();
 if(!TF[S.mkt].includes(S.tf))S.tf="1d";

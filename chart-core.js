@@ -488,6 +488,7 @@ function dwHit(d,L,k,tf,x,y){const {X,Y}=dwXY(L,k,tf),p=d.pts,tol=7;
     case"hl":return Math.abs(y-Y(p[0].p))<tol;
     case"ray":return Math.abs(y-Y(p[0].p))<tol&&x>=X(p[0].t)-tol;
     case"vl":return Math.abs(x-X(p[0].t))<tol;
+    case"xl":return Math.abs(x-X(p[0].t))<tol||Math.abs(y-Y(p[0].p))<tol;
     case"text":{return Math.abs(x-X(p[0].t)-30)<40&&Math.abs(y-Y(p[0].p))<10}
     case"tl":{const x1=X(p[0].t),y1=Y(p[0].p);let x2=X(p[1].t),y2=Y(p[1].p);if(d.ext&&x2!==x1){const s=(y2-y1)/(x2-x1);x2=L.pw;y2=y1+s*(x2-x1)}return segDist(x,y,x1,y1,x2,y2)<tol}
     case"chan":{const o=Y(p[0].p+d.off)-Y(p[0].p);return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol||segDist(x,y,X(p[0].t),Y(p[0].p)+o,X(p[1].t),Y(p[1].p)+o)<tol}
@@ -524,6 +525,9 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
       case"hl":{const y=Y(p[0].p);ln(0,y,pw,y,c,w,ds);const t=fmt(p[0].p);ctx.font='600 10px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width;ctx.fillStyle=c;ctx.fillRect(pw-tw-10,y-7,tw+8,14);tx(t,pw-6,y,"#0e131b","right");break}
       case"ray":{const x1=X(p[0].t),y=Y(p[0].p);ln(x1,y,pw,y,c,w,ds);tx(fmt(p[0].p),x1+4,y-8,c);break}
       case"vl":{const x=X(p[0].t);ln(x,0,x,L.mainH,c,w,[6,4]);break}
+      case"xl":{const x=X(p[0].t),y=Y(p[0].p),HH=L.mainH;ln(0,y,pw,y,c,w,ds);ln(x,0,x,HH,c,w,ds);
+        const t=fmt(p[0].p);ctx.font='600 10px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width;ctx.fillStyle=c;ctx.fillRect(pw-tw-10,y-7,tw+8,14);tx(t,pw-6,y,"#0e131b","right");
+        const tl=tlab(p[0].t,tf,true),lw=ctx.measureText(tl).width;ctx.fillStyle=c;ctx.fillRect(x-lw/2-4,HH-15,lw+8,14);tx(tl,x,HH-8,"#0e131b","center");break}
       case"rect":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.fillStyle=ra(c,.15);ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.strokeRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));break}
       case"text":{ctx.font='700 13px Archivo,system-ui,sans-serif';ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillStyle=c;ctx.fillText(d.text||"Text",X(p[0].t),Y(p[0].p));break}
       case"fib":{if(p.length<2)break;const xa=Math.min(X(p[0].t),X(p[1].t)),xb=Math.max(X(p[0].t),X(p[1].t))+40,lv=x=>p[1].p+(p[0].p-p[1].p)*x;

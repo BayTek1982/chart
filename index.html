@@ -426,7 +426,7 @@ async function load(keepView){const id=++loadId;$("loading").hidden=!!keepView;n
     await refreshExt();if(id!==loadId)return;recompute()}
   catch(e){if(id===loadId){notice(e.message);S.k=[];S.I={};paint()}}
   finally{if(id===loadId)$("loading").hidden=true}}
-function resetView(){const n=S.k.length,w=Math.min(n,innerWidth<700?90:160);S.view={from:n-w,to:n+Math.max(8,w*(innerWidth<700?0.36:0.28)),man:false}}
+function resetView(){const n=S.k.length,w=Math.min(n,innerWidth<700?90:160);S.view={from:n-w,to:n+Math.max(8,w*(innerWidth<700?0.36:0.28)),man:false};S._krN=3}
 // Rechter Rand: Beschriftungen nur festhalten, solange die letzte Kerze sichtbar ist (sonst wandern sie mit dem Chart weg wie in TradingView)
 const liveEdge=()=>!!L&&L.X(S.k.length-1)<=L.pw+40;
 function recompute(){S.I=S.k.length?CC.compute(S.k,S.cfg,S.tf,S.ext):{};paint();analysis();legend()}
@@ -476,7 +476,7 @@ function applyTheme(){const h=document.documentElement,bd=baseDark();h.classList
 // Beschriftungen rechts (Namen + Werte): starten S.lblN Kerzen rechts der letzten Kerze und wandern mit; nur wenn kein Platz mehr ist, an den Rand
 S.lblN=(()=>{const v=LS("blcLblN");return v==null||isNaN(+v)?10:+v})();
 S.keepR=LS("blcKeepR")!==false;S.lblW=0;let LWN=0;
-// Platz rechts freihalten: die letzte Kerze bleibt links von der Beschriftungs-Zone (nicht während Finger/Maus ziehen)
+// Platz rechts freihalten: nur beim Laden, Zeitrahmen-/Coinwechsel und „Auto“ – beim Verschieben springt nichts
 function keepRoom(){if(!S.keepR||!S.view||!L||typeof drag==="undefined"||drag||pinch)return;const n=S.k.length;if(!n)return;const v=S.view,last=n-1;if(last<v.from||last>v.to+2)return;
   const cw=L.pw/(v.to-v.from),lw=Math.min(S.lblW||0,L.pw*.38),need=S.lblN+(lw+14)/cw+1;const have=v.to-last;if(have<need){const d=need-have;v.from+=d;v.to+=d}}
 function rLblX(px,w,pad){LWN=Math.max(LWN,w);const lx=L.X(S.k.length-1)+S.lblN*L.cw,mx=L.pw-w-pad;let x=Math.max(px,lx)+5;if(x>mx)x=Math.max(mx,L.X(S.k.length-1)+L.cw*1.2+5);return x}
@@ -507,9 +507,9 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{applyT
 applyTheme();
 function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
-  ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();keepRoom();LWN=0;
+  ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();if(S._krN>0){S._krN--;keepRoom()}LWN=0;
   const th=curTh();L=CC.draw(ctx,r.width,r.height,{lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO});
-  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length&&!S.indHide){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();rkPaint();{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
+  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length&&!S.indHide){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();rkPaint();{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&S._krN>0&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
 function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t,col})};
@@ -585,7 +585,7 @@ cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
 cv.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"){S.cross=null;paint()}});
 cv.addEventListener("wheel",e=>{e.preventDefault();if(onAxis(e.offsetX,e.offsetY)){scaleY(e.deltaY>0?1.1:1/1.1);paint();return}zoom(e.deltaY>0?1.12:1/1.12,e.offsetX)},{passive:false});
 cv.addEventListener("dblclick",e=>{if(Date.now()-tapDbl<700)return;{const q=L&&e.offsetX>L.pw&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h);if(q){delete S.paneZ[q.s];delete S.paneO[q.s];LS("blcPZ",S.paneZ);LS("blcPO",S.paneO);paint();return}}if(dblAt(e.offsetX,e.offsetY))return;if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
-$("autoB").onclick=()=>{if(S.view){S.view.man=false;paint()}};
+$("autoB").onclick=()=>{if(S.view){S.view.man=false;S._krN=3;paint()}};
 addEventListener("resize",paint);matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",paint);
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("box"));
 

@@ -155,6 +155,7 @@ html,body{height:100%;overflow:hidden}
 #colMenu .cp button{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--chip);color:var(--fg);border-radius:9px;padding:7px 9px;font:600 .82rem inherit;font-family:inherit;cursor:pointer}
 #colMenu .cp button.on{outline:2px solid var(--gold)}#colMenu .cp i{width:14px;height:14px;border-radius:4px;border:1px solid rgba(128,128,128,.5);display:inline-block}
 #colMenu .cr{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--muted)}#colMenu .cr input{flex:1;accent-color:var(--gold)}
+#colMenu .ck2{display:flex;gap:8px;align-items:center;font-size:.8rem;margin-top:8px;cursor:pointer}#colMenu .ck2 input{accent-color:var(--gold);width:18px;height:18px}
 #colMenu .cg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 #colMenu .cg label{display:flex;align-items:center;gap:7px;background:var(--chip);border-radius:9px;padding:5px 7px;font-size:.8rem;cursor:pointer;position:relative}
 #colMenu .cg label.set{outline:1px solid var(--gold)}#colMenu .cg input{width:28px;height:24px;border:0;padding:0;background:none;cursor:pointer}
@@ -472,7 +473,11 @@ function applyTheme(){const h=document.documentElement,bd=baseDark();h.classList
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=getComputedStyle(h).getPropertyValue("--bg").trim()||(dark()?"#0e131b":"#f3f5f8")}
 // Beschriftungen rechts (Namen + Werte): starten S.lblN Kerzen rechts der letzten Kerze und wandern mit; nur wenn kein Platz mehr ist, an den Rand
 S.lblN=(()=>{const v=LS("blcLblN");return v==null||isNaN(+v)?10:+v})();
-function rLblX(px,w,pad){const lx=L.X(S.k.length-1)+S.lblN*L.cw,mx=L.pw-w-pad;let x=Math.max(px,lx)+5;if(x>mx)x=Math.max(mx,L.X(S.k.length-1)+L.cw*1.2+5);return x}
+S.keepR=LS("blcKeepR")!==false;S.lblW=0;let LWN=0;
+// Platz rechts freihalten: die letzte Kerze bleibt links von der Beschriftungs-Zone (nicht während Finger/Maus ziehen)
+function keepRoom(){if(!S.keepR||!S.view||!L||typeof drag==="undefined"||drag||pinch)return;const n=S.k.length;if(!n)return;const v=S.view,last=n-1;if(last<v.from||last>v.to+2)return;
+  const cw=L.pw/(v.to-v.from),lw=Math.min(S.lblW||0,L.pw*.38),need=S.lblN+(lw+14)/cw+1;const have=v.to-last;if(have<need){const d=need-have;v.from+=d;v.to+=d}}
+function rLblX(px,w,pad){LWN=Math.max(LWN,w);const lx=L.X(S.k.length-1)+S.lblN*L.cw,mx=L.pw-w-pad;let x=Math.max(px,lx)+5;if(x>mx)x=Math.max(mx,L.X(S.k.length-1)+L.cw*1.2+5);return x}
 function colSave(){LS("blcCol",UCOL);LS("blcTheme",THM);applyTheme();if(typeof paint==="function")paint();if(typeof bodPaint==="function")try{bodPaint()}catch(e){}}
 function colMenu(btn){let m=$("colMenu");if(m){m.remove();return}m=document.createElement("div");m.id="colMenu";document.body.appendChild(m);
   const TH=[["auto","Auto"],["hell","Hell"],["dunkel","Dunkel"],["mitternacht","Mitternacht"],["grau","Grau"],["schwarz","Schwarz"],["sepia","Sepia"]];
@@ -482,6 +487,7 @@ function colMenu(btn){let m=$("colMenu");if(m){m.remove();return}m=document.crea
     <div class="cs">Grundthema</div><div class="cp">${TH.map(([k,t])=>`<button data-th="${k}" class="${THM===k?"on":""}">${PRESETS[k]?`<i style="background:${PRESETS[k].bg}"></i>`:k==="hell"?'<i style="background:#fff"></i>':k==="dunkel"?'<i style="background:#0e131b"></i>':'<i style="background:linear-gradient(90deg,#fff 50%,#0e131b 50%)"></i>'}${t}</button>`).join("")}</div>
     <div class="cs">Helligkeit <b>${UCOL.br>0?"+":""}${UCOL.br}</b></div><div class="cr"><span>dunkler</span><input type="range" min="-60" max="60" step="5" value="${UCOL.br}" data-br="1"><span>heller</span></div>
     <div class="cs">Namen & Werte rechts: Abstand <b class="ln">${S.lblN}</b> Kerzen</div><div class="cr"><span>0</span><input type="range" min="0" max="50" step="1" value="${S.lblN}" data-ln="1"><span>50</span></div>
+    <label class="ck2"><input type="checkbox" data-kr="1" ${S.keepR?"checked":""}> Platz rechts für Namen freihalten (Kerzen laufen nicht hinein)</label>
     <div class="cs">Einzelne Farben</div><div class="cg">${F.map(([k,t])=>`<label class="${UCOL.c[k]?"set":""}"><input type="color" data-c="${k}" value="${val(k)}"><span>${t}</span>${UCOL.c[k]?`<button data-r="${k}" title="Zurück auf Standard">↺</button>`:""}</label>`).join("")}</div>
     <button class="crs" data-reset="1">Alles zurücksetzen</button>`};
   draw();const r=btn.getBoundingClientRect();
@@ -490,7 +496,7 @@ function colMenu(btn){let m=$("colMenu");if(m){m.remove();return}m=document.crea
     if(t.dataset.x){m.remove();return}if(t.dataset.th){THM=t.dataset.th;colSave();draw();return}
     if(t.dataset.r){e.preventDefault();delete UCOL.c[t.dataset.r];colSave();draw();return}
     if(t.dataset.reset){THM="auto";UCOL={c:{},br:0};colSave();draw();return}});
-  m.addEventListener("input",e=>{const t=e.target;if(t.dataset.ln){S.lblN=+t.value;LS("blcLblN",S.lblN);m.querySelector(".ln").textContent=S.lblN;paint();return}if(t.dataset.br){UCOL.br=+t.value;colSave();m.querySelector(".cs b").textContent=(UCOL.br>0?"+":"")+UCOL.br;return}
+  m.addEventListener("input",e=>{const t=e.target;if(t.dataset.kr){S.keepR=t.checked;LS("blcKeepR",S.keepR);paint();return}if(t.dataset.ln){S.lblN=+t.value;LS("blcLblN",S.lblN);m.querySelector(".ln").textContent=S.lblN;paint();return}if(t.dataset.br){UCOL.br=+t.value;colSave();m.querySelector(".cs b").textContent=(UCOL.br>0?"+":"")+UCOL.br;return}
     if(t.dataset.c){UCOL.c[t.dataset.c]=t.value;colSave();t.closest("label").classList.add("set")}});
   m.addEventListener("change",e=>{if(e.target.dataset.c)draw()});
   setTimeout(()=>document.addEventListener("pointerdown",function cl(e){if(!m.isConnected){document.removeEventListener("pointerdown",cl);return}if(!m.contains(e.target)&&!e.target.closest('[data-tool="theme"]')){m.remove();document.removeEventListener("pointerdown",cl)}}),0)}
@@ -498,9 +504,9 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{applyT
 applyTheme();
 function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
-  ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
+  ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();keepRoom();LWN=0;
   const th=curTh();L=CC.draw(ctx,r.width,r.height,{lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO});
-  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length&&!S.indHide){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();rkPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
+  if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length&&!S.indHide){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();rkPaint();{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
 function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t,col})};

@@ -262,7 +262,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   const pad=(hi-lo)*0.08||hi*0.01;lo-=pad;hi+=pad;
   if(S.view.man&&S.view.hi>S.view.lo){lo=S.view.lo;hi=S.view.hi}
   const mT=6,mB=mainH-6,Y=p=>mT+(hi-p)/(hi-lo)*(mB-mT),P=y=>hi-(y-mT)/(mB-mT)*(hi-lo);
-  const tags=[],lbls=[],lbR=[],lightTh=th.bg===THEME.light.bg,C=h=>lightTh&&isLight(h)?th.fg:h;
+  const tags=[],lbls=[],lbR=[],lightTh=isLight(th.bg),C=h=>lightTh&&isLight(h)?th.fg:h;
   const last0=k.length-1,LE=Math.max(0,Math.min(pw-4,(last0-from+0.5+4)*cw));
   const font=(s,b)=>ctx.font=`${b?"600 ":""}${s}px "JetBrains Mono",ui-monospace,monospace`;
   const line=(x1,y1,x2,y2,col,w=1,dash)=>{ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([])};
@@ -398,7 +398,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
       for(let i=i0;i<=i1;i++){const v=r[i];if(v==null){pv=null;continue}if(pv!=null){ctx.beginPath();ctx.strokeStyle=rkCol(v);ctx.moveTo(X(i-1),Yk(pv));ctx.lineTo(X(i),Yk(v));ctx.stroke()}pv=v}
       const rn=I.riskNow!=null?I.riskNow:r[last];
       let tx=6;if(false){const rows=I.riskTab,rh=Math.max(9,Math.min(13,(pB-pT-2)/(rows.length+1))),cw2=[56,78,48],tw=cw2.reduce((a,b)=>a+b,0);
-        ctx.fillStyle=th.bg===THEME.light.bg?"rgba(255,255,255,.92)":"rgba(14,19,27,.88)";ctx.fillRect(4,pT,tw+4,rh*(rows.length+1)+2);font(Math.min(10,rh-2),1);
+        ctx.fillStyle=isLight(th.bg)?"rgba(255,255,255,.92)":"rgba(14,19,27,.88)";ctx.fillRect(4,pT,tw+4,rh*(rows.length+1)+2);font(Math.min(10,rh-2),1);
         const head=["Risiko","Preis","Zeit %"];let x=6;ctx.fillStyle=th.txt;ctx.textAlign="left";head.forEach((h,q)=>{ctx.fillText(h,x,pT+rh/2+1);x+=cw2[q]});
         rows.forEach((w,q)=>{const y=pT+rh*(q+1)+rh/2+1;if(w.cur){ctx.fillStyle="rgba(240,163,58,.35)";ctx.fillRect(4,y-rh/2,tw+4,rh)}
           let x=6;ctx.fillStyle=w.cur?th.fg:rkCol(w.r);ctx.fillText((w.cur?"▶ ":"")+nf(w.r,w.cur?3:1),x,y);x+=cw2[0];ctx.fillStyle=th.fg;ctx.fillText(fmt(w.p),x,y);x+=cw2[1];ctx.fillStyle=w.cur?th.gold:th.txt;ctx.fillText(w.cur?"aktuell":nf(w.z,1),x,y)});tx=tw+16}

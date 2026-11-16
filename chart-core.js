@@ -263,7 +263,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   if(S.view.man&&S.view.hi>S.view.lo){lo=S.view.lo;hi=S.view.hi}
   const mT=6,mB=mainH-6,Y=p=>mT+(hi-p)/(hi-lo)*(mB-mT),P=y=>hi-(y-mT)/(mB-mT)*(hi-lo);
   const tags=[],lbls=[],lbR=[],lightTh=isLight(th.bg),C=h=>lightTh&&isLight(h)?th.fg:h;
-  const last0=k.length-1,LE=Math.max(0,Math.min(pw-4,(last0-from+0.5+4)*cw));
+  const last0=k.length-1,LN=S.lblN??10,LE=Math.max(0,Math.min(pw-4,(last0-from+0.5+LN)*cw));
   const font=(s,b)=>ctx.font=`${b?"600 ":""}${s}px "JetBrains Mono",ui-monospace,monospace`;
   const line=(x1,y1,x2,y2,col,w=1,dash)=>{ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([])};
   const series=(v,col,w=1.4,dash,Yf=Y)=>{ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);let on=false;
@@ -368,7 +368,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
   font(10,1);ctx.textAlign="left";let prevL=-99;
   const edgeVis=(last0-from+0.5)*cw<=pw+40;
   mg.forEach(l=>{if(!edgeVis||l.y<mT-4||l.y>mB+4)return;const t=`${l.n} (${fmt(l.p)})`,w=ctx.measureText(t).width;const y=Math.max(l.y,prevL+12);prevL=y;
-    let x=LE+5;if(x+w>pw-3){x=pw-3-w;ctx.fillStyle=lightTh?"rgba(255,255,255,.82)":"rgba(14,19,27,.78)";ctx.fillRect(x-3,y-6,w+6,12)}
+    let x=LE+5;if(x+w>pw-3){x=Math.max(pw-3-w,(last0-from+0.5)*cw+cw*1.2+5);ctx.fillStyle=lightTh?"rgba(255,255,255,.82)":"rgba(14,19,27,.78)";ctx.fillRect(x-3,y-6,w+6,12)}
     ctx.fillStyle=l.col;ctx.fillText(t,x,y);lbR.push({x:x-3,y:y-7,w:w+6,h:14})});
   ctx.restore();
 

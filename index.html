@@ -290,7 +290,7 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=29"></script>
+<script src="chart-core.js?v=30"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -470,14 +470,18 @@ function applyTheme(){const h=document.documentElement,bd=baseDark();h.classList
   set("--fg",c.fg||p.fg||"");set("--muted",c.txt||p.txt||"");set("--up",c.up||"");set("--down",c.dn&&c.dn!==th.fg?c.dn:"");set("--gold",c.gold||"");set("--accent",c.gold||"");
   h.style.colorScheme=dark()?"dark":"light";
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=getComputedStyle(h).getPropertyValue("--bg").trim()||(dark()?"#0e131b":"#f3f5f8")}
+// Beschriftungen rechts (Namen + Werte): starten S.lblN Kerzen rechts der letzten Kerze und wandern mit; nur wenn kein Platz mehr ist, an den Rand
+S.lblN=(()=>{const v=LS("blcLblN");return v==null||isNaN(+v)?10:+v})();
+function rLblX(px,w,pad){const lx=L.X(S.k.length-1)+S.lblN*L.cw,mx=L.pw-w-pad;let x=Math.max(px,lx)+5;if(x>mx)x=Math.max(mx,L.X(S.k.length-1)+L.cw*1.2+5);return x}
 function colSave(){LS("blcCol",UCOL);LS("blcTheme",THM);applyTheme();if(typeof paint==="function")paint();if(typeof bodPaint==="function")try{bodPaint()}catch(e){}}
 function colMenu(btn){let m=$("colMenu");if(m){m.remove();return}m=document.createElement("div");m.id="colMenu";document.body.appendChild(m);
   const TH=[["auto","Auto"],["hell","Hell"],["dunkel","Dunkel"],["mitternacht","Mitternacht"],["grau","Grau"],["schwarz","Schwarz"],["sepia","Sepia"]];
   const F=[["bg","Hintergrund"],["axis","Skala & Leisten"],["grid","Raster"],["fg","Schrift"],["txt","Schrift blass"],["up","Kerze steigend"],["dn","Kerze fallend"],["cross","Fadenkreuz"],["gold","Akzent"]];
   const draw=()=>{const th=curTh(),val=k=>{const v=UCOL.c[k]||th[k];return /^#[0-9a-f]{6}$/i.test(v)?v:k==="grid"||k==="cross"?(dark()?"#8d99ab":"#5d6878"):"#888888"};
-    m.innerHTML=`<div class="ch">Farben <button data-x="1" title="Schließen">✕</button></div>
+    m.innerHTML=`<div class="ch">Anzeige & Farben <button data-x="1" title="Schließen">✕</button></div>
     <div class="cs">Grundthema</div><div class="cp">${TH.map(([k,t])=>`<button data-th="${k}" class="${THM===k?"on":""}">${PRESETS[k]?`<i style="background:${PRESETS[k].bg}"></i>`:k==="hell"?'<i style="background:#fff"></i>':k==="dunkel"?'<i style="background:#0e131b"></i>':'<i style="background:linear-gradient(90deg,#fff 50%,#0e131b 50%)"></i>'}${t}</button>`).join("")}</div>
     <div class="cs">Helligkeit <b>${UCOL.br>0?"+":""}${UCOL.br}</b></div><div class="cr"><span>dunkler</span><input type="range" min="-60" max="60" step="5" value="${UCOL.br}" data-br="1"><span>heller</span></div>
+    <div class="cs">Namen & Werte rechts: Abstand <b class="ln">${S.lblN}</b> Kerzen</div><div class="cr"><span>0</span><input type="range" min="0" max="50" step="1" value="${S.lblN}" data-ln="1"><span>50</span></div>
     <div class="cs">Einzelne Farben</div><div class="cg">${F.map(([k,t])=>`<label class="${UCOL.c[k]?"set":""}"><input type="color" data-c="${k}" value="${val(k)}"><span>${t}</span>${UCOL.c[k]?`<button data-r="${k}" title="Zurück auf Standard">↺</button>`:""}</label>`).join("")}</div>
     <button class="crs" data-reset="1">Alles zurücksetzen</button>`};
   draw();const r=btn.getBoundingClientRect();
@@ -486,7 +490,7 @@ function colMenu(btn){let m=$("colMenu");if(m){m.remove();return}m=document.crea
     if(t.dataset.x){m.remove();return}if(t.dataset.th){THM=t.dataset.th;colSave();draw();return}
     if(t.dataset.r){e.preventDefault();delete UCOL.c[t.dataset.r];colSave();draw();return}
     if(t.dataset.reset){THM="auto";UCOL={c:{},br:0};colSave();draw();return}});
-  m.addEventListener("input",e=>{const t=e.target;if(t.dataset.br){UCOL.br=+t.value;colSave();m.querySelector(".cs b").textContent=(UCOL.br>0?"+":"")+UCOL.br;return}
+  m.addEventListener("input",e=>{const t=e.target;if(t.dataset.ln){S.lblN=+t.value;LS("blcLblN",S.lblN);m.querySelector(".ln").textContent=S.lblN;paint();return}if(t.dataset.br){UCOL.br=+t.value;colSave();m.querySelector(".cs b").textContent=(UCOL.br>0?"+":"")+UCOL.br;return}
     if(t.dataset.c){UCOL.c[t.dataset.c]=t.value;colSave();t.closest("label").classList.add("set")}});
   m.addEventListener("change",e=>{if(e.target.dataset.c)draw()});
   setTimeout(()=>document.addEventListener("pointerdown",function cl(e){if(!m.isConnected){document.removeEventListener("pointerdown",cl);return}if(!m.contains(e.target)&&!e.target.closest('[data-tool="theme"]')){m.remove();document.removeEventListener("pointerdown",cl)}}),0)}
@@ -495,7 +499,7 @@ applyTheme();
 function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;
   if(cv.width!==Math.round(r.width*d)||cv.height!==Math.round(r.height*d)){cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d)}
   ctx.setTransform(d,0,0,d,0,0);if(!S.view&&S.k.length)resetView();
-  const th=curTh();L=CC.draw(ctx,r.width,r.height,{k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO});
+  const th=curTh();L=CC.draw(ctx,r.width,r.height,{lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO});
   if(L&&S.k.length)CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th);if(L&&S.k.length&&!S.indHide){bsiPaint(th);bftPaint(th);bft2Paint(th);bwiPaint(th);if(window.bpsPaint)bpsPaint(th);bodMain(th);bodPaint(th)}heatPaint();rkPaint();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
@@ -587,7 +591,7 @@ const TOOLS=[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstrati
   ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
   ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
   ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],["-"],
-  ["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Farben: hell/dunkel, Helligkeit, alle Farben einstellen"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
+  ["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
 // Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
 const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6};const TWO=Object.keys(NEED);
 const DCOL={tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff"};
@@ -1445,7 +1449,7 @@ function bwiPaint(th){const c=S.cfg.bwi,R=BW.R,rt=$("bwRt"),tb=$("bwTb"),mt=$("b
     texts.push({x:d.b2,y:d.p2,t:(d.hid?"vDiv ":"Div ")+(d.bull?"▲":"▼"),pos:d.bull?"b":"a",col:cc,tip:(d.hid?"Versteckte ":"")+(d.bull?"bullische":"bärische")+" Divergenz\nKurs: "+CC.fmt(d.p1)+" → "+CC.fmt(d.p2)+"\nRSI: "+d.r1.toFixed(1).replace(".",",")+" → "+d.r2.toFixed(1).replace(".",",")})}
   ctx.setLineDash([]);ctx.textBaseline="middle";
   for(const t of texts){ctx.font=(t.big?"700 12.5px":"600 10.5px")+' "JetBrains Mono",ui-monospace,monospace';const w=ctx.measureText(t.t).width,h=t.big?14:12,px=X(t.x),py=Y(t.y);let x,y;
-    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=Math.min(px+5,L.pw-w-4);y=py}else{x=Math.max(4,px-5-w);y=py}
+    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=rLblX(px,w,4);y=py}else{x=Math.max(4,px-5-w);y=py}
     ctx.textAlign="left";ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t.t,x,y);ctx.fillStyle=col(t.col);ctx.fillText(t.t,x,y);if(t.tip)BW.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
   ctx.restore();
   // Tabellen
@@ -1560,7 +1564,7 @@ function bftPaint(th){const c=S.cfg.bft,R=BF.R;BF.hit=[];if(!c.on||!R||!L)return
   for(const g in G){const a=G[g].map(t=>({...t,py:Y(t.y)})).sort((p,q)=>p.py-q.py),out=[];for(const t of a){const lst=out[out.length-1];
       if(c.lblAvoid!==false&&lst&&t.py-lst.py<12){lst.t+=" · "+t.t;lst.tip+="\n\n"+t.tip;lst.y=(lst.y+t.y)/2;lst.py=Y(lst.y)}else out.push(t)}TT=TT.concat(out)}
   for(const t of TT){const fs={winzig:9.5,klein:10.5,normal:12,gross:14}[t.sz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const w=ctx.measureText(t.t).width,h=fs+2,px=X(t.x),py=Y(t.y);let x,y;
-    if(t.pos==="a"){x=px-w/2;y=py-4-h/2}else if(t.pos==="b"){x=px-w/2;y=py+4+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=Math.min(px+5,L.pw-w-4);y=py}else{x=Math.max(4,px-5-w);y=py}
+    if(t.pos==="a"){x=px-w/2;y=py-4-h/2}else if(t.pos==="b"){x=px-w/2;y=py+4+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=rLblX(px,w,4);y=py}else{x=Math.max(4,px-5-w);y=py}
     if(t.grp||t.pos==="r"&&(t.x>S.k.length+2)){ctx.globalAlpha=.88;ctx.fillStyle=th.bg;ctx.fillRect(x-3,y-h/2-1,w+6,h+2);ctx.globalAlpha=1}
     ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(t.t,x,y);ctx.fillStyle=t.col;ctx.fillText(t.t,x,y);if(t.tip)BF.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
   ctx.restore()}
@@ -1889,7 +1893,7 @@ function bsiPaint(th){try{imPaint()}catch(e){}const c=S.cfg.bsi,R=BS.R,bt=$("bsB
   for(const l of R.Ls){ctx.strokeStyle=l.col;ctx.lineWidth=l.w||1;ctx.setLineDash(l.dash||[]);ctx.beginPath();ctx.moveTo(X(l.x1),Y(l.y1));ctx.lineTo(X(l.x2),Y(l.y2));ctx.stroke()}ctx.setLineDash([]);
   ctx.textBaseline="middle";ctx.textAlign="left";
   for(const t of R.Ts){const fs={winzig:9.5,klein:10.5,normal:12,gross:14}[t.sz||c.lblSz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const lines=String(t.t).split("\n"),w=Math.max(...lines.map(s=>ctx.measureText(s).width)),h=(fs+2)*lines.length,px=X(t.x),py=Y(t.y)+(t.pos==="b"?(t.dy||0):t.pos==="a"?-(t.dy||0):(t.dy||0));let x,y;
-    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=Math.min(px+5,L.pw-w-6);y=py}else{x=Math.max(4,px-6-w);y=py}
+    if(t.pos==="a"){x=px-w/2;y=py-5-h/2}else if(t.pos==="b"){x=px-w/2;y=py+5+h/2}else if(t.pos==="r"){if(px>L.pw&&!liveEdge())continue;x=rLblX(px,w,6);y=py}else{x=Math.max(4,px-6-w);y=py}
     if(t.bg||t.box){ctx.fillStyle=t.box||c.lblBg;ctx.globalAlpha=t.box?.9:.75;ctx.fillRect(x-3,y-h/2-1,w+6,h+2);ctx.globalAlpha=1}
     lines.forEach((s,q)=>{const yy=y-h/2+(fs+2)*(q+.5);if(!t.bg&&!t.box){ctx.lineWidth=3;ctx.strokeStyle=th.bg;ctx.strokeText(s,x,yy)}ctx.fillStyle=t.col;ctx.fillText(s,x,yy)});
     if(t.tip)BS.hit.push({x:x-3,y:y-h/2-3,w:w+6,h:h+6,tip:t.tip})}
@@ -2012,7 +2016,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   rs.addEventListener("pointermove",e=>{if(!rz)return;hSet(Math.max(70,Math.min(innerHeight*.7,rz.h+(rz.y-e.clientY))));paint()});
   const rzUp=()=>{if(rz){rz=null;LS("blcBodH",Math.round(box.getBoundingClientRect().height))}};rs.addEventListener("pointerup",rzUp);rs.addEventListener("pointercancel",rzUp)}
 </script>
-<script src="bps.js?v=6"></script>
+<script src="bps.js?v=7"></script>
 <script src="wl.js?v=6"></script>
 <script src="al.js?v=1"></script>
 <script src="split.js?v=1"></script>

@@ -356,7 +356,7 @@ async function binK(sym,tf,limit,endTime){if(CTF[tf]){const c=CTF[tf];return ctf
   const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=${Math.min(1000,limit)}${endTime?"&endTime="+endTime:""}`,15000);
   return Array.isArray(j)?j.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],b:+r[9]})):[]}
 // Kerzen von derselben Quelle wie der Chart (für höhere Zeitrahmen, ältere Kerzen usw.)
-function kFetch(sym,tf,limit,endTime){return S.src==="OKX Perp"?okxK(sym,tf,Math.min(limit,600),endTime):binK(sym,tf,limit,endTime)}
+function kFetch(sym,tf,limit,endTime){return S.src==="OKX Perp"?okxK(sym,tf,Math.min(limit,1000),endTime):binK(sym,tf,limit,endTime)}
 async function loadList(){
   if(S.ex==="okx")try{const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP");
     S.list.k=(j.data||[]).filter(x=>/-USDT-SWAP$/.test(x.instId)).map(x=>({s:x.instId.slice(0,-10),n:"Perp",ex:"okx",v:+x.volCcy24h*+x.last})).sort((a,b)=>b.v-a.v)}catch(e){}

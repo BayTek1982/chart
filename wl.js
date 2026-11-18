@@ -2,9 +2,13 @@
 (function(){
 const FL=[null,["#f23645","Rot"],["#2962ff","Blau"],["#089981","Grün"],["#ff9800","Orange"],["#9c27b0","Lila"],["#00bcd4","Türkis"],["#e91e63","Rosa"]];
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-const W=ld("blcWl",null)||{cur:0,lists:[{name:"A Krypto OKX",items:["BTC","ETH","SOL","XRP","BNB","DOGE"]}]};
+// Listen und Fähnchen prüfen (aus dem Speicher oder aus einem Übertragungs-Link): nur Text-Symbole, Fähnchen nur 1–7 – sonst kann ein kaputter Link die Seite lahmlegen
+const okLists=a=>(Array.isArray(a)?a:[]).filter(l=>l&&typeof l==="object"&&Array.isArray(l.items)).slice(0,50).map(l=>{const o={name:String(l.name||"Liste").slice(0,60),items:l.items.filter(s=>typeof s==="string"&&s).map(s=>s.startsWith("###")?"###"+s.slice(3,63):s.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,20)).filter(Boolean).slice(0,1000)};
+  if(l.sort&&typeof l.sort==="object"&&typeof l.sort.k==="string")o.sort={k:l.sort.k.replace(/[^a-z]/g,""),d:l.sort.d<0?-1:1};return o});
+const okFlags=f=>{const o={};if(f&&typeof f==="object")for(const s of Object.keys(f)){const v=f[s];if(Number.isInteger(v)&&v>=1&&v<FL.length&&/^[A-Z0-9]{1,20}$/.test(s))o[s]=v}return o};
+const W=ld("blcWl",null)||{cur:0,lists:[]};W.lists=okLists(W.lists);if(!W.lists.length)W.lists=[{name:"A Krypto OKX",items:["BTC","ETH","SOL","XRP","BNB","DOGE"]}];W.cur=W.lists[+W.cur]?+W.cur:0;
 const SORTS=[["eigen","Benutzerdefinierte Reihenfolge"],["sym","Nach Symbol"],["preis","Nach letztem Preis"],["ver","Nach Veränderung"],["verp","Nach Veränderung (%)"],["flag","Nach Fähnchen"],["vol","Nach Volumen"]];
-let impTxt="",impName="",sortOpen=false,FLAG=ld("blcFlag",{}),filt=0,edit=false,imp=false,pop=null,Q={},qT=0,qBusy=false;
+let impTxt="",impName="",sortOpen=false,FLAG=okFlags(ld("blcFlag",{})),filt=0,edit=false,imp=false,pop=null,Q={},qT=0,qBusy=false;
 const saveW=()=>sv("blcWl",W),saveF=()=>sv("blcFlag",FLAG),L=()=>W.lists[W.cur]||W.lists[0];
 // Kurse: OKX = alle Perps in einem Abruf (Änderung seit 0 Uhr UTC wie TradingView), Binance = 24h
 async function quotes(){if(qBusy)return;qBusy=true;try{
@@ -93,7 +97,7 @@ document.addEventListener("click",e=>{const old=document.querySelector(".flPop")
   if(old)old.remove()},true);
 // Übertragungs-Link öffnen (#wl=…)
 (()=>{const m=location.hash.match(/[#&]wl=([^&]+)/);if(!m)return;try{const o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
-  if(o&&Array.isArray(o.l)&&o.l.length&&confirm(`Watchlist übernehmen? (${o.l.length} Liste(n), ${Object.keys(o.f||{}).length} Fähnchen)\nOK = ersetzt die Listen auf diesem Gerät.`)){W.lists=o.l;W.cur=0;FLAG=o.f||{};saveW();saveF();toast("Watchlist übernommen")}}catch(e){toast("Link ungültig")}
+  const nl=o&&okLists(o.l);if(nl&&nl.length&&confirm(`Watchlist übernehmen? (${nl.length} Liste(n), ${Object.keys(okFlags(o.f)).length} Fähnchen)\nOK = ersetzt die Listen auf diesem Gerät.`)){W.lists=nl;W.cur=0;FLAG=okFlags(o.f);saveW();saveF();toast("Watchlist übernommen")}}catch(e){toast("Link ungültig")}
   history.replaceState(null,"",location.pathname+location.search)})();window.wlFlag=s=>FLAG[s]?FL[FLAG[s]][0]:null;
 setup();setInterval(()=>{if(open()&&document.visibilityState==="visible")quotes()},5000);
 })();

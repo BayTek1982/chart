@@ -23,7 +23,7 @@ function dmi(k,len){const n=k.length,tr=trArr(k),pd=new Array(n).fill(0),md=new 
 // Kerzen eines höheren Timeframes aus den Chart-Kerzen bauen (Ersatz, wenn nichts geladen ist)
 function agg(tf){const k=S.k,s=sec(tf)*1e3,key=t=>tf==="1w"?Math.floor((Math.floor(t/864e5)+3)/7):tf==="1M"?(()=>{const d=new Date(t);return d.getUTCFullYear()*12+d.getUTCMonth()})():Math.floor(t/s);
   const o=[];let pk=null;for(const q of k){const kk=key(q.t);if(kk!==pk){o.push({t:tf==="1w"?(kk*7-3)*864e5:kk*s,o:q.o,h:q.h,l:q.l,c:q.c,v:q.v});pk=kk}else{const b=o[o.length-1];b.h=Math.max(b.h,q.h);b.l=Math.min(b.l,q.l);b.c=q.c;b.v+=q.v}}return o}
-function htf(tf,need){if(tf===S.tf)return S.k;const h=typeof bfHK==="function"?bfHK(tf):null;if(h&&h.length)return h;if(SRCOK())need.push(tf);return sec(tf)>sec(S.tf)?agg(tf):null}
+function htf(tf,need){if(tf===S.tf)return S.k;const h=typeof bfHK==="function"?bfHK(tf):null;if(SRCOK())need.push(tf);if(h&&h.length)return h;return sec(tf)>sec(S.tf)?agg(tf):null}
 const tIdx=t=>bfIdx(t);
 
 // ---------- Beschriftung (0b) ----------
@@ -306,7 +306,8 @@ function bpsCalc(){const c=S.cfg.bps;BP.R=null;if(!c||!c.on||S.k.length<30)retur
       lv.forEach((L0,i)=>{if(!L0||L0.y==null)return;const x1=tIdx(L0.st),xe=last+(+c.vpExt||0);R.Ls.push({x1,y1:L0.y,x2:xe,y2:L0.y,col:L0.col,w:L0.w,dash:DASH[L0.dash]});
         if(L0.kz){const t=M.gTxt(L0.gm,L0.gp,L0.kz,L0.vz,L0.tf,L0.y);const lb=M.gLabel(t,L0.go,x1,L0.y,L0.go==="r"?xe+L0.k*(+c.vpStep||0):xe,L0.y,L0.col,M.gSz(L0.gs),L0.vz+": "+F(L0.y));if(lb)R.Ts.push(lb)}});
       R.vt=P.rows}}
-  BP.need=[...new Set(need)];if(BP.need.length&&typeof bfHtfLoad==="function")bfHtfLoad(BP.need);
+  // BP.need = alle benötigten höheren Zeitrahmen (werden jede Minute aufgefrischt); sofort laden nur, was noch fehlt
+  BP.need=[...new Set(need)];if(typeof bfHtfLoad==="function"&&BP.need.some(tf=>!BF.htf[S.src+"|"+S.sym+"|"+tf]))bfHtfLoad(BP.need);
   BP.R=R}
 
 // ---------- 16 Volumenprofil-Level ----------
@@ -351,7 +352,7 @@ function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=
   {const cr=cv.getBoundingClientRect();document.querySelectorAll("#box .ov .t,#box .ov .o,#box .ov .lg,#box .bwt:not([hidden]),#heatTab:not([hidden])").forEach(o=>{const r=o.getBoundingClientRect();if(r.width&&r.height)ext.push({x:r.left-cr.left,y:r.top-cr.top,w:r.width,h:r.height})})}
   const hitAt=(x,y,w,h)=>{for(const r of pl.concat(ext))if(x<r.x+r.w&&x+w>r.x&&y-h/2<r.y+r.h&&y+h/2>r.y)return r;return null};
   const items=all.map(t=>{const fs=FS[t.sz]||10.5;ctx.font=`600 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const lines=String(t.t).split("\n"),w=Math.max(...lines.map(s=>ctx.measureText(s).width)),h=(fs+2)*lines.length,px=X(t.x),py=Y(t.y);let x,y,cl=false;
-    if(t.pos==="a"){x=px-w/2;y=py-(t.box?8:5)-h/2}else if(t.pos==="b"){x=px-w/2;y=py+(t.box?8:5)+h/2}else if(t.pos==="r"){x=rLblX(px,w,6);if(x+w>=L.pw-6)cl=truey=py}else if(t.pos==="ar"){x=px-w;y=py-3-h/2}else if(t.pos==="br"){x=px-w;y=py+3+h/2}else{x=px-6-w;y=py}
+    if(t.pos==="a"){x=px-w/2;y=py-(t.box?8:5)-h/2}else if(t.pos==="b"){x=px-w/2;y=py+(t.box?8:5)+h/2}else if(t.pos==="r"){x=rLblX(px,w,6);if(x+w>=L.pw-6)cl=true;y=py}else if(t.pos==="ar"){x=px-w;y=py-3-h/2}else if(t.pos==="br"){x=px-w;y=py+3+h/2}else{x=px-6-w;y=py}
     return{t,fs,lines,w,h,x,y,py,cl}}).sort((a,b)=>(a.t.box?0:1)-(b.t.box?0:1)||a.y-b.y);
   for(const it of items){const{t,fs,lines,w,h,py}=it;let y=it.y;
     let x=it.x;
@@ -366,7 +367,7 @@ function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=
     if(t.tip)BP.hit.push({x:x-4,y:y-h/2-3,w:w+8,h:h+6,tip:t.tip})}
   ctx.restore();
   // Tabellen
-  const cell=(t,col,bg)=>`<span style="color:${col};background:${bg||"rgba(19,23,34,.9)"};padding:1px 5px">${esc(t)}</span>`,hb="#1f3a5f",F=v=>CC.fmt(v),C=S.k[last].c,pct=v=>(v>=C?"+":"")+((v-C)/C*100).toFixed(1).replace(".",",")+" %";
+  const cell=(t,col,bg)=>`<span style="color:${/^#[0-9a-f]{3,8}$/i.test(col)?col:"#b0bec5"};background:${bg||"rgba(19,23,34,.9)"};padding:1px 5px">${esc(t)}</span>`,hb="#1f3a5f",F=v=>CC.fmt(v),C=S.k[last].c,pct=v=>(v>=C?"+":"")+((v-C)/C*100).toFixed(1).replace(".",",")+" %";
   if(R.tbl&&mt){let h=["TF","Unterst.","Abst.","Widerst.","Abst."].map(t=>cell(t,"#fff",hb)).join("");
     for(const r of R.tbl){h+=cell(bwTF(r.tf),"#fff");if(!r.ok){h+=cell("–","#888")+cell("–","#888")+cell("–","#888")+cell("–","#888");continue}
       const cS=r.sv==null?"#888":r.sv<=C?"#26a69a":"#ff9800",cR=r.rv==null?"#888":r.rv>=C?"#ef5350":"#ff9800";

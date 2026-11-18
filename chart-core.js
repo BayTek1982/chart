@@ -101,7 +101,16 @@ const DEF={
     fL:"#4caf50",fSQ:"#ff9800",fS:"#ffeb3b",fLQ:"#e91e63",fKauf:"#4caf50",fVerk:"#f23645"}
 };
 const clone=o=>JSON.parse(JSON.stringify(o));
-function withDefaults(cfg){const out=clone(DEF);if(cfg)for(const k in cfg)if(out[k]&&typeof cfg[k]==="object")Object.assign(out[k],cfg[k]);
+// Einstellungen kommen auch aus Teilen-Links und altem Speicher: nur Werte passender Art übernehmen
+// (Farbe bleibt Farbe, Zahl bleibt Zahl, kein HTML in Texten) – sonst könnte ein Link fremden Code einschleusen oder den Chart lahmlegen
+const HEXC=/^#[0-9a-f]{6}$/i,cfgTxt=v=>v.replace(/[<>"'`&]/g,"").slice(0,300);
+function cfgVal(def,v){const td=typeof def,tv=typeof v;if(v==null||tv==="object"||tv==="function")return def;
+  if(td==="boolean")return tv==="boolean"?v:!!v;
+  if(td==="number")return(tv==="number"||(tv==="string"&&v.trim()!==""))&&isFinite(+v)?v:def;
+  if(td==="string"&&HEXC.test(def))return HEXC.test(String(v))?String(v):def;
+  return tv==="string"?cfgTxt(v):tv==="number"&&isFinite(v)?v:tv==="boolean"?v:def}
+function withDefaults(cfg){const out=clone(DEF);if(cfg)for(const k in cfg)if(out[k]&&cfg[k]&&typeof cfg[k]==="object")for(const p of Object.keys(cfg[k])){const v=cfg[k][p];
+    if(p in DEF[k])out[k][p]=cfgVal(DEF[k][p],v);else if(v!=null&&typeof v!=="object"&&typeof v!=="function")out[k][p]=typeof v==="string"?cfgTxt(v):v}
   // Pattern Scanner ersetzt die alten automatischen Trendlinien/Zonen
   if(cfg&&!cfg.bps)out.bps.on=!!(cfg.tl&&cfg.tl.on!==false||cfg.sr&&cfg.sr.on);out.tl.on=false;out.sr.on=false;return out}
 
@@ -157,7 +166,7 @@ function tlines(k,pv,n){const last=k.length-1,out=[];
         if(ok&&a.p+sl*(last-a.i)>0){if(!res.some(r=>r.a.i===a.i))res.push({a,b,sl,sup});break}}}
     return res};
   return[...find(pv.pl,true),...find(pv.ph,false)]}
-function vprofile(k,from,to,rows,va){from=Math.max(0,from);to=Math.min(k.length-1,to);let lo=Infinity,hi=-Infinity;
+function vprofile(k,from,to,rows,va){rows=Math.max(5,Math.min(2000,Math.round(+rows)||60));va=Math.max(1,Math.min(100,+va||70));from=Math.max(0,from);to=Math.min(k.length-1,to);let lo=Infinity,hi=-Infinity;
   for(let i=from;i<=to;i++){if(k[i].l<lo)lo=k[i].l;if(k[i].h>hi)hi=k[i].h}
   if(!(hi>lo))return null;const step=(hi-lo)/rows,b=new Array(rows).fill(0);
   for(let i=from;i<=to;i++){const x=k[i],v=x.v||0;if(!v)continue;const r0=Math.max(0,Math.min(rows-1,Math.floor((x.l-lo)/step))),r1=Math.max(0,Math.min(rows-1,Math.floor((x.h-lo)/step)));
@@ -306,7 +315,7 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
 
   // Linien-Indikatoren
   if(cfg.bb.on&&I.bb){const bcl=C(cfg.bb.col);series(I.bb.up,ra(bcl,.7),1);series(I.bb.dn,ra(bcl,.7),1);series(I.bb.mid,ra(bcl,.45),1,[4,3])}
-  (I.ma||[]).forEach(m=>{if(m){m.col=C(m.col);series(m.v,m.col,1.5);const v=m.v[last];if(v!=null)tags.push({y:Y(v),col:m.col,t:fmt(v),off:Y(v)<mT||Y(v)>mB})}});
+  (I.ma||[]).forEach(m=>{if(m){const mc=C(m.col);series(m.v,mc,1.5);const v=m.v[last];if(v!=null)tags.push({y:Y(v),col:mc,t:fmt(v),off:Y(v)<mT||Y(v)>mB})}});
   if(cfg.vwap.on&&I.vwap){const vc=C(cfg.vwap.col);series(I.vwap,vc,1.5);tags.push({y:Y(I.vwap[last]),col:vc,t:fmt(I.vwap[last])})}
 
   // Golden Zone
@@ -456,9 +465,9 @@ function summary(k,I,cfg,tf){const out=[],last=k.length-1,p=k[last].c;if(!I.pv)r
       out.push({t:"SK-System",v:`${sk.dir===1?"Long":"Short"}-Struktur · ${ph}`,c:sk.cat==="entry"?"gold":"",s:sk.phase===1?`Bruch von A bei ${fmt(sk.P.a)} · ungültig ${sk.dir===1?"unter":"über"} B ${fmt(sk.P.b)}`:!sk.goal?`E1 ${fmt(sk.lv[0.5])} · E4 ${fmt(sk.lv[0.667])} · SL ${fmt(sk.lv[0.786])} · Ziel ${fmt(sk.t161)}`:`50 % ${fmt(sk.lv[0.5])} · 61,8 % ${fmt(sk.lv[0.618])} · 78,6 % ${fmt(sk.lv[0.786])}`})}
     else out.push({t:"SK-System",v:"keine gültige Struktur"})}
   if(I.rsi){const r=I.rsi[last];const d=I.div&&I.div.length?I.div[I.div.length-1]:null;
-    out.push({t:"RSI",v:r==null?"–":`${nf(r,1)} ${r>=(+cfg.rsi.hi||70)?"· überkauft":r<=(+cfg.rsi.lo||30)?"· überverkauft":""}`,c:r>=(+cfg.rsi.hi||70)?"down":r<=(+cfg.rsi.lo||30)?"up":"",
+    out.push({t:"RSI",v:r==null?"–":`${nf(r,1)} ${r>=(+cfg.rsi.hi||70)?"· überkauft":r<=(+cfg.rsi.lo||30)?"· überverkauft":""}`,c:r==null?"":r>=(+cfg.rsi.hi||70)?"down":r<=(+cfg.rsi.lo||30)?"up":"",
       s:d&&last-d.b<=20?`${d.t===1?"bullische":"bärische"} Divergenz vor ${last-d.b} Kerzen`:"keine frische Divergenz"})}
-  const mas=(I.ma||[]).filter(Boolean);if(mas.length)out.push({t:"Gleitende Durchschnitte",v:mas.map(m=>`${p>=m.v[last]?"über":"unter"} ${m.lab}`).join(" · "),s:""});
+  const mas=(I.ma||[]).filter(m=>m&&m.v[last]!=null);if(mas.length)out.push({t:"Gleitende Durchschnitte",v:mas.map(m=>`${p>=m.v[last]?"über":"unter"} ${m.lab}`).join(" · "),s:""});
   if(I.tl&&I.tl.length){out.push({t:"Trendlinien",v:I.tl.map(t=>{const v=t.a.p+t.sl*(last-t.a.i);return`${t.sup?"Unterstützung":"Widerstand"} ${fmt(v)} (${pct((v/p-1)*100)})`}).join(" · ")})}
   if(I.sr){const a=I.sr.filter(z=>z.lo>p).sort((x,y)=>x.lo-y.lo)[0],b=I.sr.filter(z=>z.hi<p).sort((x,y)=>y.hi-x.hi)[0];
     out.push({t:"S/R-Zonen",v:`${b?`Unterstützung ${fmt(b.lo)}–${fmt(b.hi)}`:"keine Unterstützung"} · ${a?`Widerstand ${fmt(a.lo)}–${fmt(a.hi)}`:"kein Widerstand"}`})}
@@ -490,7 +499,7 @@ function dwHit(d,L,k,tf,x,y){const {X,Y}=dwXY(L,k,tf),p=d.pts,tol=7;
     case"vl":return Math.abs(x-X(p[0].t))<tol;
     case"xl":return Math.abs(x-X(p[0].t))<tol||Math.abs(y-Y(p[0].p))<tol;
     case"text":{return Math.abs(x-X(p[0].t)-30)<40&&Math.abs(y-Y(p[0].p))<10}
-    case"tl":{const x1=X(p[0].t),y1=Y(p[0].p);let x2=X(p[1].t),y2=Y(p[1].p);if(d.ext&&x2!==x1){const s=(y2-y1)/(x2-x1);x2=L.pw;y2=y1+s*(x2-x1)}return segDist(x,y,x1,y1,x2,y2)<tol}
+    case"tl":{const x1=X(p[0].t),y1=Y(p[0].p);let x2=X(p[1].t),y2=Y(p[1].p);if(d.ext&&x2!==x1){const s=(y2-y1)/(x2-x1),xe=x2>x1?L.pw:0;y2=y1+s*(xe-x1);x2=xe}return segDist(x,y,x1,y1,x2,y2)<tol}
     case"chan":{const o=Y(p[0].p+d.off)-Y(p[0].p);return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol||segDist(x,y,X(p[0].t),Y(p[0].p)+o,X(p[1].t),Y(p[1].p)+o)<tol}
     case"arrow":return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol;
     case"brush":case"abc":case"w5":{for(let i=1;i<p.length;i++)if(segDist(x,y,X(p[i-1].t),Y(p[i-1].p),X(p[i].t),Y(p[i].p))<tol)return true;return false}

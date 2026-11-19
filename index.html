@@ -182,6 +182,20 @@ html,body{height:100%;overflow:hidden}
 /* Obere Leiste: immer eine Zeile; was nicht passt, wandert von selbst ins Menü ⋯ (siehe fitBar) */
 .top{flex-wrap:nowrap!important}.top #tfSeg{flex:1 1 0;min-width:70px}.top #tfSeg button{flex:0 0 auto}.acts{flex:none}
 .ml{display:none}
+/* Seitenleiste rechts wie in TradingView (ab 901 px Breite): Alarme, Layout, Analyse, Teilen, Bild – die obere Leiste bleibt dadurch frei */
+#rail{display:none}
+@media (min-width:901px){
+  .stage{grid-template-columns:minmax(0,1fr) 46px!important}
+  #rail{display:flex;flex-direction:column;gap:6px;align-items:center;padding:6px 3px;background:var(--panel);border:1px solid var(--line);border-radius:12px;min-height:0}
+  #rail .btn{width:38px;height:38px;padding:0!important;display:grid;place-items:center;font-size:1.05rem;background:none;color:var(--fg);border-radius:9px}
+  #rail .btn:hover{background:var(--chip)}#rail .btn.on{background:var(--gold);color:var(--accent-ink)}
+  #rail .lb,#rail .ml{display:none!important}
+}
+@media (min-width:1000px){.stage.open{grid-template-columns:minmax(0,1fr) 390px 46px!important}}
+html.emb #rail,html.split #rail{display:none!important}html.emb .stage,html.split .stage{grid-template-columns:minmax(0,1fr)!important}
+/* Infozeilen links oben (Kurse O/H/L/C und Indikator-Namen) ein- und ausklappbar */
+.ov .t .ovTg{pointer-events:auto;border:0;background:none;color:var(--muted);font-size:.8rem;padding:2px 6px 2px 0;cursor:pointer;vertical-align:1px}
+.ov.zu .o,.ov.zu .lg,.ov.zu .t small{display:none}
 /* Handy: Zeitrahmen so breit wie ihre 4 Knöpfe, die Knöpfe rechts teilen sich den restlichen Platz (breiter, leichter zu treffen) */
 @media (max-width:900px){html .top #tfSeg{flex:0 0 auto!important;min-width:0!important;overflow:visible!important}html .top .acts{flex:1 1 auto!important;min-width:0}html .top .acts>.btn{flex:1 1 0;min-width:42px;padding-left:4px!important;padding-right:4px!important;text-align:center;font-size:1rem}}
 @media (max-width:560px){html .top .sym{flex:0 1 74px!important;min-width:54px!important}html .top #tfSeg button{padding:5px 6px!important;font-size:.78rem!important}html .top .acts>.btn{min-width:38px}}
@@ -314,6 +328,7 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
     <div class="db wl" id="alBody" hidden></div>
     <div class="db ana" id="anaBody" hidden><span class="sub" id="anaSub"></span><div class="rows" id="ana"></div>
       <span class="sub">Automatisch aus den eingeschalteten Indikatoren. Orientierung, keine Anlageberatung.</span></div></aside>
+  <nav id="rail" aria-label="Seitenleiste"></nav>
   </div>
 </div>
 
@@ -581,7 +596,7 @@ function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t
   add(c.sk.on,"SK","#f0a33a");add(c.gz.on,"Golden Zone","#f0a33a");add(c.fib.on,"Fibonacci","#26c6da");add(c.dfib.on,"Dyn. Fib (BSI)","#ff9800");add(c.ms.on,"Struktur","#8d99ab");
   add(c.tl.on,"Trendlinien","#ffeb3b");add(c.sr.on,"S/R","#8d99ab");add(c.vp.on,"Volumenprofil","#ba68c8");add(c.liq.on,"Liquidität","#2979ff");add(c.fvg.on,"FVG","#3ccf8a");
   add(c.ob.on,"OB","#3ccf8a");add(c.rsic.on,"RSI-Kerzen","#ffeb3b");add(c.lsob.on,"LSOB","#2979ff");add(c.rsi.on,"RSI","#b388ff");add(c.macd.on,"MACD","#5b9bff");add(c.risk.on,"Risiko","#e6d200");add(c.heat.on,"Hitze","#18c7e6");return l}
-function legend(){$("ovL").innerHTML=S.indHide?`<span style="opacity:.7">Indikatoren verborgen (👁)</span>`:legendItems().map(x=>`<span style="color:${x.col}">${esc(x.t)}</span>`).join("");$("ovT").innerHTML=`${window.wlFlagBtn?wlFlagBtn():""}${esc(S.mkt==="k"?S.sym+"/USDT":S.sym)}<small>${TFLAB[S.tf]} · ${esc(S.src)} · ${esc(curText())}</small><a class="tvl" href="${tvUrl()}" target="_blank" rel="noopener" title="In TradingView öffnen">↗ TV</a>`;
+function legend(){$("ovL").innerHTML=S.indHide?`<span style="opacity:.7">Indikatoren verborgen (👁)</span>`:legendItems().map(x=>`<span style="color:${x.col}">${esc(x.t)}</span>`).join("");$("ovT").innerHTML=`<button class="ovTg" id="ovTg" title="Infozeilen ein-/ausklappen">${S.ovZu?"▸":"▾"}</button>${window.wlFlagBtn?wlFlagBtn():""}${esc(S.mkt==="k"?S.sym+"/USDT":S.sym)}<small>${TFLAB[S.tf]} · ${esc(S.src)} · ${esc(curText())}</small><a class="tvl" href="${tvUrl()}" target="_blank" rel="noopener" title="In TradingView öffnen">↗ TV</a>`;
   document.querySelectorAll("#curSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cur===S.cur));
   document.title=`${S.sym} ${TFLAB[S.tf]} · Live-Chart`}
 function analysis(){const rows=S.k.length?CC.summary(S.k,S.I,S.cfg,S.tf):[];
@@ -679,6 +694,8 @@ const TOOLS=[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstrati
 // Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
 const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6};const TWO=Object.keys(NEED);
 const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff"};
+S.ovZu=LS("blcOvZu")===true;document.querySelector(".ov").classList.toggle("zu",S.ovZu);
+$("ovT").addEventListener("click",e=>{if(!e.target.closest("#ovTg"))return;S.ovZu=!S.ovZu;LS("blcOvZu",S.ovZu);document.querySelector(".ov").classList.toggle("zu",S.ovZu);legend()});
 S.dwHide=LS("blcDwHide")===true;S.posHide=LS("blcPosHide")===true;S.indHide=LS("blcIndHide")===true;
 // Auge: wie TradingView – Zeichnungen / Indikatoren / Positionen getrennt oder alles ausblenden
 function hideCfg(){const o={};for(const k in S.cfg){const v=S.cfg[k];o[k]=v&&typeof v==="object"&&"on" in v?Object.assign({},v,{on:false}):v}return o}
@@ -1082,7 +1099,7 @@ function renderDlg(){const c=S.cfg,Q=normQ($("indSrch").value);let h=Q?"":`<div 
 let GOPEN=LS("blcGrpOpen")||{};
 $("indSrch").addEventListener("input",()=>renderDlg());
 $("dlgBody").addEventListener("click",e=>{const b=e.target.closest("[data-gt]");if(!b)return;const k=b.dataset.gt;GOPEN[k]=!GOPEN[k];LS("blcGrpOpen",GOPEN);renderDlg()});
-function sideOpen(o){$("side").hidden=!o;$("stage").classList.toggle("open",o);if(o)renderDlg();paint()}
+function sideOpen(o){$("side").hidden=!o;$("stage").classList.toggle("open",o);["wl","al","ana"].forEach(m=>$(m+"Btn").classList.toggle("on",o&&typeof sideM!=="undefined"&&sideM===m));if(o)renderDlg();paint()}
 $("indBtn").onclick=()=>sideOpen($("side").hidden);$("sideX").onclick=()=>sideOpen(false);
 $("dlgBody").addEventListener("change",e=>{const t=e.target;
   if(t.dataset.grp){const g=SCHEMA[+t.dataset.grp],ks=g.items.filter(it=>!it.always).map(it=>it.k);
@@ -1130,10 +1147,13 @@ const BARPRI=["pngBtn","shareBtn","curSeg","anaBtn","layBtn","alBtn","thBtn","re
 const BARHOME=BARPRI.map(id=>{const el=$(id),ph=document.createComment(id);el.parentNode.insertBefore(ph,el);return{el,ph}});
 function fitBar(){const top=$("barTop"),tf=$("tfSeg"),dyn=$("moreDyn");if(!top||!tf)return;
   BARHOME.forEach(o=>o.ph.parentNode.insertBefore(o.el,o.ph.nextSibling));
+  // Breite Bildschirme: diese Knöpfe stehen in der Seitenleiste rechts statt oben
+  const rail=$("rail"),inRail=innerWidth>900&&!SLOT&&!document.documentElement.classList.contains("split")?["alBtn","layBtn","anaBtn","shareBtn","pngBtn"]:[];
+  inRail.forEach(id=>rail.appendChild($(id)));
   const fits=()=>{const need=innerWidth<=900?0:Math.min(tf.scrollWidth,Math.max(150,top.clientWidth*.4));return top.scrollWidth<=top.clientWidth+1&&tf.clientWidth>=need-2};
   // Handy: außen bleiben nur Watchlist, Indikatoren, Neu laden und Hell/Dunkel (dafür breiter) – alles andere steht im Menü ⋯
   const phone=innerWidth<=900,keep=["wlBtn","refresh","thBtn"];
-  for(const o of BARHOME){const force=phone&&!keep.includes(o.el.id);if(!force&&fits())break;if(getComputedStyle(o.el).display==="none")continue;dyn.appendChild(o.el)}}
+  for(const o of BARHOME){if(inRail.includes(o.el.id))continue;const force=phone&&!keep.includes(o.el.id);if(!force&&fits())break;if(getComputedStyle(o.el).display==="none")continue;dyn.appendChild(o.el)}}
 function moreClose(){$("moreMenu").hidden=true}
 $("moreBtn").onclick=e=>{e.stopPropagation();const m=$("moreMenu");if(!m.hidden){moreClose();return}m.hidden=false;const r=$("moreBtn").getBoundingClientRect(),w=m.offsetWidth;m.style.top=(r.bottom+6)+"px";m.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+"px"};
 $("moreMenu").addEventListener("click",e=>{if(e.target.closest("#curSeg"))return;if(e.target.closest(".btn"))setTimeout(moreClose,0)});

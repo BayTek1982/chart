@@ -143,7 +143,7 @@ html,body{height:100%;overflow:hidden}
 .tools{top:72px!important;bottom:auto!important;left:6px!important;transform:none!important;flex-direction:column!important;flex-wrap:nowrap!important;max-width:none!important;max-height:calc(100% - 140px);overflow-y:auto;scrollbar-width:none}
 .tools::-webkit-scrollbar{display:none}.tools hr{display:block!important}
 .tools.zu{display:none!important}
-.tools{display:grid!important;grid-template-columns:repeat(2,42px);gap:4px;padding:5px;max-height:calc(100% - 110px)!important}
+.tools{display:grid!important;grid-template-columns:repeat(2,42px);gap:4px;padding:5px;max-height:calc(100% - 146px)!important}
 .tools button{width:42px;height:40px;font-size:1.1rem;border-radius:9px;white-space:nowrap;letter-spacing:-.04em}.tools hr{grid-column:1/-1;margin:2px 0}.tools .magN{font-size:.6rem}
 @media (pointer:coarse){.tools{grid-template-columns:repeat(2,46px)}.tools button{width:46px;height:44px;font-size:1.15rem}}
 #toolTg{position:absolute;left:6px;bottom:30px;z-index:7;width:40px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:700 1rem var(--f-body);cursor:pointer;opacity:.95}
@@ -232,7 +232,7 @@ html.split body>.wrap{display:none!important}
 .layMenu{position:fixed;z-index:70;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:8px;display:grid;grid-template-columns:repeat(3,auto);gap:6px}
 .layMenu button{background:var(--chip);border:1px solid var(--line);color:inherit;border-radius:9px;padding:8px 10px;cursor:pointer;font:600 .8rem var(--f-body);display:grid;justify-items:center;gap:4px}
 .layMenu button.on{border-color:var(--accent);color:var(--accent)}.layMenu svg{width:34px;height:24px}
-html.emb .logo,html.emb #alBtn,html.emb #layBtn,html.emb #shareBtn,html.emb #pngBtn,html.emb #refresh,html.emb .curseg{display:none!important}
+html.emb #bakSave,html.emb #bakLoad,html.emb .logo,html.emb #alBtn,html.emb #layBtn,html.emb #shareBtn,html.emb #pngBtn,html.emb #refresh,html.emb .curseg{display:none!important}
 html.emb .wrap{padding:4px!important;gap:4px!important}html.emb .top{flex-wrap:nowrap!important}html.emb .lb{display:none}html.emb .ic{display:inline}
 html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overflow-x:auto}html.emb #bodBox{display:none}
 .wl{padding:10px 12px;font-size:.86rem}
@@ -281,6 +281,8 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
     </div>
     <div id="moreMenu" hidden><div id="moreDyn"></div>
       <button class="btn ghost" id="colBtn">🎨<span class="ml"> Farben &amp; Anzeige …</span></button>
+      <button class="btn ghost" id="bakSave">💾<span class="ml"> Sicherung speichern</span></button>
+      <button class="btn ghost" id="bakLoad">📂<span class="ml"> Sicherung einspielen</span></button>
       <a class="btn ghost" href="https://scanner.kompassapps.de/">✦<span class="ml"> Zum Coin-Scanner</span></a></div>
     <div id="mktSeg" hidden></div>
   </div>
@@ -663,7 +665,7 @@ const TOOLS=[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstrati
   ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
   ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
   ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],["-"],
-  ["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
+  ["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
 // Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
 const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6};const TWO=Object.keys(NEED);
 const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff"};
@@ -686,6 +688,8 @@ $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");
   if(t==="mag"){S.mag=((+S.mag||0)+1)%3;save();toast(["Magnet aus","Magnet schwach (rastet in der Nähe ein)","Magnet stark (rastet immer an Hoch/Tief/Open/Close ein)"][S.mag])}
   else if(t==="theme"){colMenu(b);return}
   else if(t==="hide"){eyeMenu(b);return}
+  else if(t==="undo"){dwUndo(-1);return}
+  else if(t==="redo"){dwUndo(1);return}
   else if(t==="clear"){if(S.dw.length&&confirm(`Alle ${S.dw.length} Zeichnungen für ${S.sym} löschen?`)){S.dw=[];S.sel=null;saveDw()}}
   else{S.tool=t==="sel"?null:t;S.pend=null;S.sel=null}
   renderTools();paint()});
@@ -694,9 +698,15 @@ const dwKey=()=>`bcbD:${S.mkt}:${S.sym}`;
 function dwClean(a){const col=/^#[0-9a-f]{6}$/i,num=v=>typeof v==="number"&&isFinite(v);if(!Array.isArray(a))return[];
   return a.filter(d=>d&&typeof d==="object"&&typeof d.type==="string"&&/^[a-z0-9]{1,10}$/.test(d.type)&&Array.isArray(d.pts)&&d.pts.length&&d.pts.length<=700&&d.pts.every(q=>q&&num(q.t)&&num(q.p))&&(d.type!=="pos"||(num(d.tp)&&num(d.sl)&&num(d.t2)))).slice(0,300).map(d=>{
     const o={id:String(d.id||"").replace(/[^a-z0-9]/gi,"").slice(0,12)||nid(),type:d.type,col:col.test(d.col)?d.col:"#f0a33a",w:Math.max(1,Math.min(4,Math.round(+d.w)||2)),pts:d.pts.map(q=>({t:q.t,p:q.p}))};
-    for(const k of["tp","sl","t2","off"])if(num(d[k]))o[k]=d[k];if(typeof d.text==="string")o.text=d.text.slice(0,80);if(/^[sdp]$/.test(d.ds))o.ds=d.ds;if(d.ext===true)o.ext=true;if(d.lock===true)o.lock=true;return o})}
-function loadDw(){if(S.hashDw){S.dw=dwClean(S.hashDw);S.hashDw=null;S.dwShared=true}else{S.dw=LS(dwKey())||[];S.dwShared=false}S.sel=null;S.pend=null}
-function saveDw(){S.dwShared=false;LS(dwKey(),S.dw)}
+    for(const k of["tp","sl","t2","off"])if(num(d[k]))o[k]=d[k];if(typeof d.text==="string")o.text=d.text.slice(0,80);if(/^[sdp]$/.test(d.ds))o.ds=d.ds;for(const k of["ext","lock","alarm","alarmOnce"])if(d[k]===true)o[k]=true;return o})}
+// Rückgängig / Wiederholen für Zeichnungen: jeder gespeicherte Stand kommt auf einen Stapel (je Coin, bis 60 Schritte, gilt bis zum Coin-Wechsel oder Neuladen)
+const UNDO={key:"",st:[],i:-1};
+function undoPush(){const j=JSON.stringify(S.dw),k=dwKey();if(UNDO.key!==k){UNDO.key=k;UNDO.st=[j];UNDO.i=0;return}if(UNDO.st[UNDO.i]===j)return;
+  UNDO.st=UNDO.st.slice(0,UNDO.i+1);UNDO.st.push(j);if(UNDO.st.length>60)UNDO.st.shift();UNDO.i=UNDO.st.length-1}
+function dwUndo(dir){if(S.pend||S.dwd)return;const n=UNDO.i+dir;if(UNDO.key!==dwKey()||n<0||n>=UNDO.st.length){toast(dir<0?"Nichts mehr rückgängig zu machen":"Nichts zu wiederholen");return}
+  UNDO.i=n;S.dw=JSON.parse(UNDO.st[n]);S.sel=null;S.dwShared=false;LS(dwKey(),S.dw);if($("ebar"))$("ebar").dataset.id="";paint();toast(dir<0?"Rückgängig":"Wiederholt")}
+function loadDw(){if(S.hashDw){S.dw=dwClean(S.hashDw);S.hashDw=null;S.dwShared=true}else{S.dw=dwClean(LS(dwKey())||[]);S.dwShared=false}S.sel=null;S.pend=null;UNDO.key="";undoPush()}
+function saveDw(){S.dwShared=false;LS(dwKey(),S.dw);undoPush()}
 const nid=()=>Math.random().toString(36).slice(2,9);
 // gespeichert wird in Originalwährung, angezeigt in der aktuellen
 function dispDw(){const F=S.F;if(S.dwHide&&S.posHide)return[];const src=S.dwHide?S.dw.filter(d=>d.type==="pos"):S.posHide?S.dw.filter(d=>d.type!=="pos"):S.dw;if(F===1)return src;return src.map(d=>({...d,pts:d.pts.map(q=>({t:q.t,p:q.p*F})),tp:d.tp!=null?d.tp*F:d.tp,sl:d.sl!=null?d.sl*F:d.sl,off:d.off!=null?d.off*F:d.off}))}
@@ -751,6 +761,7 @@ addEventListener("keydown",e=>{if(e.target.matches("input,select,textarea"))retu
   if(S.sel&&["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)&&!e.target.closest("input,textarea,select")){const d=S.dw.find(z=>z.id===S.sel);
     if(d&&!d.lock&&L&&S.k.length>1){e.preventDefault();const f=e.shiftKey?10:1,st=S.k[S.k.length-1].t-S.k[S.k.length-2].t,dt=e.key==="ArrowLeft"?-st*f:e.key==="ArrowRight"?st*f:0,dp=e.key==="ArrowUp"||e.key==="ArrowDown"?(e.key==="ArrowUp"?1:-1)*(L.hi-L.lo)*.004*f/S.F:0;
       d.pts=d.pts.map(q=>({t:q.t+dt,p:q.p+dp}));if(d.t2!=null)d.t2+=dt;if(d.tp!=null)d.tp+=dp;if(d.sl!=null)d.sl+=dp;saveDw();paint();return}}
+  if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.key.toLowerCase()==="z"||e.key.toLowerCase()==="y")){e.preventDefault();dwUndo(e.key.toLowerCase()==="y"||e.shiftKey?1:-1);return}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"&&S.sel){e.preventDefault();const b=$("ebar").querySelector('[data-e="copy"]');if(b)b.click();return}
   if((e.key==="Delete"||e.key==="Backspace")&&S.sel){S.dw=S.dw.filter(z=>z.id!==S.sel);S.sel=null;saveDw();paint()}
   if(e.key==="Escape"){if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;S.sel=null;renderTools();paint()}});
@@ -1109,6 +1120,21 @@ function moreClose(){$("moreMenu").hidden=true}
 $("moreBtn").onclick=e=>{e.stopPropagation();const m=$("moreMenu");if(!m.hidden){moreClose();return}m.hidden=false;const r=$("moreBtn").getBoundingClientRect(),w=m.offsetWidth;m.style.top=(r.bottom+6)+"px";m.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+"px"};
 $("moreMenu").addEventListener("click",e=>{if(e.target.closest("#curSeg"))return;if(e.target.closest(".btn"))setTimeout(moreClose,0)});
 document.addEventListener("pointerdown",e=>{if(!$("moreMenu").hidden&&!e.target.closest("#moreMenu,#moreBtn"))moreClose()});
+// ---------- Sicherung: alle Einstellungen dieses Geräts als Datei (Watchlists, Fähnchen, Zeichnungen, Alarme, Indikatoren, Farben, Layout) ----------
+const bakKey=k=>/^(blc|bcb)/.test(k);
+$("bakSave").onclick=()=>{const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(bakKey(k))data[k]=localStorage.getItem(k)}
+  const now=new Date(),p=n=>String(n).padStart(2,"0"),name=`bayazit-chart-sicherung-${now.getFullYear()}${p(now.getMonth()+1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}.json`;
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({app:"bayazit-live-chart",v:1,t:Date.now(),data})],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  toast(`Sicherung gespeichert (${Object.keys(data).length} Einträge) – Datei liegt bei den Downloads`)};
+const bakIn=document.createElement("input");bakIn.type="file";bakIn.accept=".json,application/json";bakIn.style.display="none";document.body.appendChild(bakIn);
+$("bakLoad").onclick=()=>{bakIn.value="";bakIn.click()};
+bakIn.onchange=async()=>{const f=bakIn.files[0];if(!f)return;try{if(f.size>8e6)throw 0;const o=JSON.parse(await f.text());if(!o||o.app!=="bayazit-live-chart"||!o.data||typeof o.data!=="object")throw 0;
+    const ks=Object.keys(o.data).filter(k=>bakKey(k)&&typeof o.data[k]==="string");if(!ks.length)throw 0;for(const k of ks)JSON.parse(o.data[k]);
+    const dt=o.t?new Date(o.t).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"unbekannt";
+    if(!confirm(`Sicherung vom ${dt} einspielen? (${ks.length} Einträge)\n\nOK = ersetzt ALLE Einstellungen auf diesem Gerät: Watchlists, Fähnchen, Zeichnungen, Alarme, Indikatoren, Farben.`))return;
+    for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(bakKey(k))localStorage.removeItem(k)}for(const k of ks)localStorage.setItem(k,o.data[k]);
+    location.reload()}
+  catch(e){toast("Das ist keine gültige Sicherungsdatei")}};
 $("thBtn").onclick=()=>themeToggle();$("colBtn").onclick=()=>colMenu($("moreBtn"));
 {const rb0=renderBar;renderBar=function(){rb0();fitBar()};addEventListener("resize",()=>{moreClose();fitBar()});if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitBar);thIcon();fitBar()}
 // ---------- Seitenleiste: Indikatoren oder Analyse ----------

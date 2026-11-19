@@ -13,6 +13,9 @@ try{FLX=okFlx(JSON.parse(localStorage.getItem("blcFlagX")))}catch(e){}mkFL();
 const W=ld("blcWl",null)||{cur:0,lists:[]};W.lists=okLists(W.lists);if(!W.lists.length)W.lists=[{name:"A Krypto OKX",items:["BTC","ETH","SOL","XRP","BNB","DOGE"]}];W.cur=W.lists[+W.cur]?+W.cur:0;
 const SORTS=[["eigen","Benutzerdefinierte Reihenfolge"],["sym","Nach Symbol"],["preis","Nach letztem Preis"],["ver","Nach Veränderung"],["verp","Nach Veränderung (%)"],["flag","Nach Fähnchen"],["vol","Nach Volumen"]];
 let impTxt="",impName="",sortOpen=false,FLAG=okFlags(ld("blcFlag",{})),filt=+ld("blcWlFilt",0)||0,edit=false,imp=false,pop=null,Q={},qT=0,qBusy=false;
+// Notiz je Coin (z. B. „wartet auf 0,618“): steht klein unter dem Symbol
+const okNotes=n=>{const o={};if(n&&typeof n==="object")for(const s of Object.keys(n))if(/^[A-Z0-9]{1,20}$/.test(s)&&typeof n[s]==="string"&&n[s].trim())o[s]=n[s].trim().slice(0,80);return o};
+let NOTE=okNotes(ld("blcNote",{}));
 const saveW=()=>sv("blcWl",W),saveF=()=>sv("blcFlag",FLAG),L=()=>W.lists[W.cur]||W.lists[0];
 if(!FL[filt])filt=0; // gewählter Fähnchen-Filter bleibt über den Neustart erhalten
 const setFilt=f=>{filt=FL[f]?f:0;sv("blcWlFilt",filt)};
@@ -53,9 +56,9 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   rows.forEach((s,i)=>{if(s.startsWith("###")){if(!filt)h+=`<div class="wlSec" data-i="${i}">${esc(s.slice(3))}${edit?`<button data-rm="${i}" title="Entfernen">✕</button>`:""}</div>`;return}
     const f=FLAG[s]||0;if(filt&&f!==filt)return;n++;const q=Q[s]||{};
     h+=`<div class="wlRow${s===cur?" cur":""}" data-s="${esc(s)}" data-i="${filt||sorted?-1:l.items.indexOf(s)}" ${edit&&!filt&&!sorted?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>
-      <span class="sy">${esc(s)}<small>${S.ex==="okx"?".P":""}</small></span><span class="px">${q.p?CC.fmt(q.p):"–"}</span><span class="ch ab ${q.ch>0?"up":q.ch<0?"dn":""}">${q.d==null||!isFinite(q.d)?"–":(q.d>=0?"+":"−")+CC.fmt(Math.abs(q.d))}</span><span class="ch ${q.ch>0?"up":q.ch<0?"dn":""}">${pct(q.ch)}</span>
+      <span class="sy">${esc(s)}<small>${S.ex==="okx"?".P":""}</small>${NOTE[s]?`<span class="nt">${esc(NOTE[s])}</span>`:""}</span><span class="px">${q.p?CC.fmt(q.p):"–"}</span><span class="ch ab ${q.ch>0?"up":q.ch<0?"dn":""}">${q.d==null||!isFinite(q.d)?"–":(q.d>=0?"+":"−")+CC.fmt(Math.abs(q.d))}</span><span class="ch ${q.ch>0?"up":q.ch<0?"dn":""}">${pct(q.ch)}</span>
       ${edit&&!filt&&!sorted?`<span class="ed"><button data-mv="${i}" data-d="-1" title="Nach oben">▲</button><button data-mv="${i}" data-d="1" title="Nach unten">▼</button><button data-rm="${i}" title="Entfernen">✕</button></span>`:""}</div>`;
-    if(pop===s)h+=`<div class="wlPop">${FL.map((x,k)=>k&&!x?"":`<button data-setf="${k}" data-s="${esc(s)}" class="dot" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("")}</div>`});
+    if(pop===s)h+=`<div class="wlPop">${FL.map((x,k)=>k&&!x?"":`<button data-setf="${k}" data-s="${esc(s)}" class="dot" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("")}<button class="ntB" data-note="${esc(s)}">✎ Notiz</button></div>`});
   h+=`</div>`;if(!n)h+=`<p class="wlE">${filt?"Keine Symbole mit diesem Fähnchen.":"Noch leer – oben mit ＋ das aktuelle Symbol hinzufügen oder unter ⋯ importieren."}</p>`;
   h+=`<p class="wlE">Tipp: Antippen öffnet den Chart · Punkt links = Fähnchen · ↑/↓ wechselt das Symbol (Tastatur) · Änderung ${S.ex==="okx"?"seit 0 Uhr UTC":"24 Std."}</p>`;
   b.innerHTML=h;
@@ -76,7 +79,7 @@ function act(a){const l=L();
   if(a==="imp"||a==="impAdd"){const it=parse(impTxt||($("wlTxt")||{}).value||"");if(!it.length){toast("Nichts zum Importieren gefunden");return}
     if(a==="imp"){W.lists.push({name:impName||"Import "+new Date().toLocaleDateString("de-DE"),items:it});W.cur=W.lists.length-1}else it.forEach(s=>{if(!l.items.includes(s))l.items.push(s)});
     saveW();imp=false;impTxt="";impName="";toast(it.filter(s=>!s.startsWith("###")).length+" Symbole importiert");quotes()}
-  if(a==="sync"){const pl=btoa(unescape(encodeURIComponent(JSON.stringify({l:W.lists,f:FLAG,x:FLX})))),url=location.origin+location.pathname+"#wl="+pl;
+  if(a==="sync"){const pl=btoa(unescape(encodeURIComponent(JSON.stringify({l:W.lists,f:FLAG,x:FLX,n:NOTE})))),url=location.origin+location.pathname+"#wl="+pl;
     if(navigator.share)navigator.share({title:"Meine Watchlist",url}).catch(()=>{});else(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast("Link kopiert – auf dem anderen Gerät öffnen")).catch(()=>prompt("Diesen Link auf dem anderen Gerät öffnen:",url))}
   if(a==="exp"){const t=l.items.map(s=>s.startsWith("###")?s:(S.ex==="okx"?"OKX:"+s+"USDT.P":"BINANCE:"+s+"USDT")).join(",");
     (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Liste kopiert – in TradingView unter „Liste importieren“ einfügen")).catch(()=>prompt("Zum Kopieren:",t))}
@@ -91,6 +94,7 @@ function setup(){const b=$("wlBody");
       if(edit&&f>=FL0.length){const n=Object.values(FLAG).filter(v=>v===f).length;if(confirm(`Dieses eigene Fähnchen löschen?${n?` Es ist bei ${n} Symbol(en) gesetzt und wird dort entfernt.`:""}`)){FLX[f-FL0.length]=null;while(FLX.length&&FLX[FLX.length-1]==null)FLX.pop();sv("blcFlagX",FLX);mkFL();for(const s of Object.keys(FLAG))if(FLAG[s]===f)delete FLAG[s];saveF();if(filt===f)setFilt(0);if(typeof legend==="function")legend()}return draw()}
       setFilt(f);return draw()}
     if(d.fl!=null){e.stopPropagation();pop=pop===d.fl?null:d.fl;return draw()}
+    if(d.note!=null){const s=d.note,t=prompt(`Notiz zu ${s} (leer = löschen):`,NOTE[s]||"");if(t!=null){if(t.trim())NOTE[s]=t.trim().slice(0,80);else delete NOTE[s];sv("blcNote",NOTE);pop=null}return draw()}
     if(d.setf!=null){const k=+d.setf;if(k)FLAG[d.s]=k;else delete FLAG[d.s];saveF();pop=null;return draw()}
     if(d.rm!=null){L().items.splice(+d.rm,1);saveW();return draw()}
     if(d.mv!=null){const it=L().items,i=+d.mv,j=i+ +d.d;if(j>=0&&j<it.length){[it[i],it[j]]=[it[j],it[i]];saveW()}return draw()}
@@ -112,7 +116,7 @@ document.addEventListener("click",e=>{const old=document.querySelector(".flPop")
   if(old)old.remove()},true);
 // Übertragungs-Link öffnen (#wl=…)
 (()=>{const m=location.hash.match(/[#&]wl=([^&]+)/);if(!m)return;try{const o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
-  const nl=o&&okLists(o.l);if(nl&&nl.length&&confirm(`Watchlist übernehmen? (${nl.length} Liste(n), ${Object.keys(okFlags(o.f)).length} Fähnchen)\nOK = ersetzt die Listen auf diesem Gerät.`)){W.lists=nl;W.cur=0;FLX=okFlx(o.x);while(FLX.length&&FLX[FLX.length-1]==null)FLX.pop();sv("blcFlagX",FLX);mkFL();FLAG=okFlags(o.f);setFilt(0);saveW();saveF();toast("Watchlist übernommen")}}catch(e){toast("Link ungültig")}
+  const nl=o&&okLists(o.l);if(nl&&nl.length&&confirm(`Watchlist übernehmen? (${nl.length} Liste(n), ${Object.keys(okFlags(o.f)).length} Fähnchen)\nOK = ersetzt die Listen auf diesem Gerät.`)){W.lists=nl;W.cur=0;FLX=okFlx(o.x);while(FLX.length&&FLX[FLX.length-1]==null)FLX.pop();sv("blcFlagX",FLX);mkFL();FLAG=okFlags(o.f);if(o.n){NOTE=okNotes(o.n);sv("blcNote",NOTE)}setFilt(0);saveW();saveF();toast("Watchlist übernommen")}}catch(e){toast("Link ungültig")}
   history.replaceState(null,"",location.pathname+location.search)})();window.wlFlag=s=>FLAG[s]?FL[FLAG[s]][0]:null;
 setup();setInterval(()=>{if(open()&&document.visibilityState==="visible")quotes()},5000);
 })();

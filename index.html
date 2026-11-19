@@ -69,7 +69,7 @@ canvas{display:block;width:100%;height:100%;cursor:crosshair}
 .tools{position:absolute;left:6px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:3px;z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:4px;opacity:.92}
 .tools button{width:30px;height:28px;border:0;border-radius:6px;background:none;color:var(--fg);cursor:pointer;font:700 .8rem var(--f-num);display:grid;place-items:center}
 .tools button:hover{background:var(--chip)}.tools button.on{background:var(--gold);color:var(--accent-ink)}.tools hr{border:0;border-top:1px solid var(--line);margin:2px 0}
-.ebar{position:absolute;top:8px;right:84px;z-index:7;display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:5px 9px;font-size:.78rem;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.ebar{position:absolute;top:8px;right:84px;z-index:7;display:flex;flex-wrap:wrap;max-width:calc(100% - 92px);box-sizing:border-box;gap:6px 8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:5px 9px;font-size:.78rem;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .ebar input[type=color]{width:30px;height:24px;border:0;background:none;padding:0}.ebar select,.ebar button{font:600 .76rem var(--f-body);background:var(--chip);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:3px 7px;cursor:pointer}
 .curseg button{padding:7px 10px}
 @media (max-width:700px){.tools{top:auto;bottom:34px;transform:none;flex-direction:row;flex-wrap:wrap;max-width:calc(100% - 90px)}.tools hr{display:none}}
@@ -253,7 +253,17 @@ html.split body>.wrap{display:none!important}
 .layMenu button.on{border-color:var(--accent);color:var(--accent)}.layMenu svg{width:34px;height:24px}
 html.emb #bakSave,html.emb #bakLoad,html.emb .logo,html.emb #alBtn,html.emb #layBtn,html.emb #shareBtn,html.emb #pngBtn,html.emb #refresh,html.emb .curseg{display:none!important}
 html.emb .wrap{padding:4px!important;gap:4px!important}html.emb .top{flex-wrap:nowrap!important}html.emb .lb{display:none}html.emb .ic{display:inline}
-html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overflow-x:auto}html.emb #bodBox{display:none}
+html.emb .top #tfSeg{order:0!important;flex:0 0 auto!important;min-width:0!important;overflow:visible!important}
+/* Geteilte Ansicht: jedes Fenster ist klein – Leiste, Werkzeuge und Zeichnungs-Einstellungen kompakter */
+html.emb #thBtn{display:none!important}
+html.emb .top .sym{flex:0 1 96px!important;min-width:54px!important}html.emb .top .sym input{padding:5px 7px!important;font-size:.86rem!important}
+html.emb .top #tfSeg button{padding:5px 7px!important;font-size:.78rem!important}html.emb .live{font-size:.76rem}
+html.emb .top .acts{flex:1 1 auto!important;min-width:0}html.emb .top .acts>.btn{flex:1 1 0;min-width:34px;padding:6px 4px!important;text-align:center}
+html.emb .tools{grid-template-columns:repeat(2,30px)!important;gap:2px!important;padding:3px!important;top:56px!important;max-height:calc(100% - 112px)!important}
+html.emb .tools button{width:30px!important;height:27px!important;font-size:.82rem!important;border-radius:6px!important}
+html.emb #toolTg{width:32px;height:28px;font-size:.85rem;bottom:26px}
+html.emb .ebar{top:4px;right:78px;max-width:calc(100% - 84px);padding:3px 6px;gap:4px 6px;font-size:.7rem}html.emb .ebar select,html.emb .ebar button{font-size:.68rem;padding:2px 5px}html.emb .ebar input[type=color]{width:24px;height:20px}
+html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66rem}html.emb #bodBox{display:none}
 .wl{padding:10px 12px;font-size:.86rem}
 .wlTop{display:flex;gap:6px;align-items:center}.wlTop select{flex:1;min-width:0;background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:6px}
 .wlTop .btn{padding:6px 9px;font-size:.8rem}.wlTop .btn.on{border-color:var(--acc,#f0a030)}
@@ -802,7 +812,9 @@ let FAV;try{FAV=JSON.parse(localStorage.getItem("blcFav"))}catch(e){}if(!Array.i
 function renderBar(){document.querySelectorAll("#mktSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===S.mkt));
   const ord=(a,b)=>TF[S.mkt].indexOf(a)-TF[S.mkt].indexOf(b),fav=TF[S.mkt].filter(t=>FAV.includes(t));let list=fav.includes(S.tf)?fav:fav.concat(S.tf).sort(ord);
   // Handy: nur 4 Zeitrahmen in der Leiste (die ersten 4 Favoriten, der aktive ist immer dabei) – alle anderen über ▾
-  if(innerWidth<=900&&list.length>4){const l4=list.slice(0,4);if(!l4.includes(S.tf))l4[3]=S.tf;list=l4.sort(ord)}
+  // Geteilte Ansicht: je nach Fensterbreite nur 2–4
+  const nTf=SLOT?(innerWidth<430?2:innerWidth<680?3:4):4;
+  if((innerWidth<=900||SLOT)&&list.length>nTf){const l4=list.slice(0,nTf);if(!l4.includes(S.tf))l4[nTf-1]=S.tf;list=l4.sort(ord)}
   $("tfSeg").innerHTML=list.map(t=>`<button data-tf="${t}" aria-pressed="${t===S.tf}">${TFLAB[t]}</button>`).join("")+`<button class="tfMore" data-more="1" title="Alle Zeitrahmen und Favoriten">▾</button>`;$("sym").value=S.sym}
 $("mktSeg").onclick=e=>{const b=e.target.closest("[data-k]");if(!b||b.dataset.k===S.mkt)return;S.mkt=b.dataset.k;S.sym=S.mkt==="k"?"BTC":"^GDAXI";if(!TF[S.mkt].includes(S.tf))S.tf="1d";save();renderBar();load()};
 $("tfSeg").onclick=e=>{if(e.target.closest("[data-more]")){tfMenu(e.target.closest("[data-more]"));return}const b=e.target.closest("[data-tf]");if(!b)return;S.tf=b.dataset.tf;save();renderBar();load()};
@@ -1150,7 +1162,7 @@ function fitBar(){const top=$("barTop"),tf=$("tfSeg"),dyn=$("moreDyn");if(!top||
   // Breite Bildschirme: diese Knöpfe stehen in der Seitenleiste rechts statt oben
   const rail=$("rail"),inRail=innerWidth>900&&!SLOT&&!document.documentElement.classList.contains("split")?["alBtn","layBtn","anaBtn","shareBtn","pngBtn"]:[];
   inRail.forEach(id=>rail.appendChild($(id)));
-  const fits=()=>{const need=innerWidth<=900?0:Math.min(tf.scrollWidth,Math.max(150,top.clientWidth*.4));return top.scrollWidth<=top.clientWidth+1&&tf.clientWidth>=need-2};
+  const fits=()=>{const need=innerWidth<=900||SLOT?0:Math.min(tf.scrollWidth,Math.max(150,top.clientWidth*.4));return top.scrollWidth<=top.clientWidth+1&&tf.clientWidth>=need-2};
   // Handy: außen bleiben nur Watchlist, Indikatoren, Neu laden und Hell/Dunkel (dafür breiter) – alles andere steht im Menü ⋯
   const phone=innerWidth<=900,keep=["wlBtn","refresh","thBtn"];
   for(const o of BARHOME){if(inRail.includes(o.el.id))continue;const force=phone&&!keep.includes(o.el.id);if(!force&&fits())break;if(getComputedStyle(o.el).display==="none")continue;dyn.appendChild(o.el)}}
@@ -1761,9 +1773,10 @@ function tfMenu(btn){let m=$("tfMenu");if(m){m.remove();return}m=document.create
     if(p){S.tf=p.dataset.pick;m.remove();save();renderBar();load()}};
   setTimeout(()=>document.addEventListener("click",function cl(e){if(!m.contains(e.target)){m.remove();document.removeEventListener("click",cl)}}),0)}
 // Werkzeugleiste ein-/ausblenden (am Handy standardmäßig zu)
-{let open;try{open=JSON.parse(localStorage.getItem("blcTools"))}catch(e){}if(open==null)open=innerWidth>700;
+// In der geteilten Ansicht merken sich die Fenster das getrennt (Standard: zu, damit der Chart frei bleibt)
+{const TK=SLOT?"blcToolsE":"blcTools";let open;try{open=JSON.parse(localStorage.getItem(TK))}catch(e){}if(open==null)open=!SLOT&&innerWidth>700;
   const ap=()=>{$("tools").classList.toggle("zu",!open);$("toolTg").classList.toggle("on",open);$("toolTg").textContent=open?"✕":"✎"};ap();
-  $("toolTg").onclick=()=>{open=!open;if(!open&&S.tool){S.tool=null;renderTools()}try{localStorage.setItem("blcTools",JSON.stringify(open))}catch(e){}ap();paint()}}
+  $("toolTg").onclick=()=>{open=!open;if(!open&&S.tool){S.tool=null;renderTools()}try{localStorage.setItem(TK,JSON.stringify(open))}catch(e){}ap();paint()}}
 // OI & Delta Monitor zuklappen: Knopf ▾ oder Doppeltipp ins Fenster (Doppeltipp auf die rechte Skala = Skala automatisch)
 {let zu=false;try{zu=!!JSON.parse(localStorage.getItem("blcBodZu"))}catch(e){}const box=$("bodBox");
   const ap=()=>{box.classList.toggle("zu",zu);$("bodZu").textContent=zu?"▸":"▾";paint()};

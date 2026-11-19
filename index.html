@@ -176,6 +176,16 @@ html,body{height:100%;overflow:hidden}
 #tfMenu .it button.st{color:var(--muted);font-size:1rem;padding:9px 8px 9px 2px}#tfMenu .it button.st.on{color:var(--gold)}
 #tfMenu .it.cur{outline:2px solid var(--gold)}#tfMenu .it.add{grid-column:1/-1;background:none;border:1px dashed var(--line)}
 .ic{display:none}
+/* Obere Leiste: immer eine Zeile; was nicht passt, wandert von selbst ins Menü ⋯ (siehe fitBar) */
+.top{flex-wrap:nowrap!important}.top #tfSeg{flex:1 1 0;min-width:70px}.top #tfSeg button{flex:0 0 auto}.acts{flex:none}
+.ml{display:none}
+#moreMenu{position:fixed;z-index:62;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.45);padding:6px;min-width:230px;max-width:calc(100vw - 16px);max-height:calc(100vh - 70px);overflow:auto}
+#moreMenu[hidden]{display:none}
+#moreMenu .btn{display:flex;align-items:center;gap:6px;width:100%;box-sizing:border-box;text-align:left;background:none;color:var(--fg);padding:12px 12px;font-size:.95rem;border-radius:9px;text-decoration:none;white-space:nowrap}
+#moreMenu .btn:hover{background:var(--chip)}
+#moreMenu .lb,#moreMenu .ml{display:inline!important}
+#moreMenu .curseg{display:flex;align-items:center;margin:6px 8px;gap:4px}#moreMenu .curseg::before{content:"Kurse in";font-size:.85rem;color:var(--muted);margin:0 8px 0 4px}#moreMenu .curseg button{flex:1;padding:8px 10px!important}
+#moreDyn:not(:empty){border-bottom:1px solid var(--line);margin-bottom:4px;padding-bottom:4px}
 .bodbox.hasH{flex-basis:var(--bodH)!important}.bodbox.zu{flex-basis:28px!important}.bodbox.zu .bodRs{display:none}.bodbox.zu canvas,.bodbox.zu #bodTab,.bodbox.zu #bodSeg,.bodbox.zu #bodInfo{display:none!important}
 #bodZu{pointer-events:auto;border:0;background:var(--chip);color:var(--fg);border-radius:6px;font:700 .72rem var(--f-body);padding:2px 7px;cursor:pointer;flex:none}
 @media (max-width:700px){
@@ -188,7 +198,6 @@ html,body{height:100%;overflow:hidden}
   .top #tfSeg{order:10;flex:1 1 100%;flex-wrap:nowrap;padding:2px}.top #tfSeg button{padding:5px 8px;font-size:.8rem;flex:1 0 auto}
   .acts{gap:4px;margin-left:0}.acts .btn{padding:7px 9px;font-size:.84rem}
   .lb{display:none}.ic{display:inline}
-  #shareBtn,#pngBtn,#refresh{display:none}
   .bodbox{flex-basis:clamp(110px,22%,190px)!important}
   .tools button{width:34px;height:32px}
   #bodTab{font-size:9.5px!important;max-height:calc(100% - 28px);overflow-y:auto}
@@ -202,7 +211,6 @@ html,body{height:100%;overflow:hidden}
   .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:70px;overflow-x:auto}
   .top #tfSeg button{flex:0 0 auto!important}
   .acts{margin-left:0;flex:none;gap:4px}.acts .btn{padding:7px 9px}
-  #pngBtn,#refresh{display:none}
 }
 @media (max-width:560px){
   .top .logo{display:none}
@@ -250,22 +258,27 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
 <body>
 <div id="split" hidden></div><div id="layMenu" class="layMenu" hidden></div>
 <div class="wrap">
-  <div class="bar top">
+  <div class="bar top" id="barTop">
     <a class="logo" href="https://scanner.kompassapps.de/" title="Zum Coin-Scanner">✦</a>
     <div class="sym"><input id="sym" autocomplete="off" spellcheck="false" placeholder="z. B. BTC" aria-label="Coin"><div class="sug" id="sug" hidden></div></div>
     <span class="live" id="live" title="Live-Verbindung zu Binance"><i></i><span id="liveT">verbinde …</span></span>
     <div class="seg" id="tfSeg"></div>
     <div class="seg curseg" id="curSeg" title="Währung der Kurse"><button data-cur="orig">$</button><button data-cur="eur">€</button></div>
-    <div class="acts">
+    <div class="acts" id="acts">
       <button class="btn ghost" id="layBtn" title="Mehrere Charts (geteilte Ansicht)">▦<span class="lb"> Layout</span></button>
       <button class="btn ghost" id="alBtn" title="Alarme">🔔<span class="lb"> Alarme</span></button>
       <button class="btn ghost" id="wlBtn" title="Watchlist">☆<span class="lb"> Watchlist</span></button>
       <button class="btn" id="indBtn">ƒ<span class="lb"> Indikatoren</span></button>
-      <button class="btn ghost" id="anaBtn"><span class="lb">Analyse</span><span class="ic">≡</span></button>
-      <button class="btn ghost" id="shareBtn" title="Link mit Coin, Zeitrahmen und Indikatoren kopieren">🔗</button>
-      <button class="btn ghost" id="pngBtn" title="Chart als Bild speichern">🖼</button>
-      <button class="btn ghost" id="refresh" title="Neu laden">⟳</button>
+      <button class="btn ghost" id="anaBtn">≡<span class="lb"> Analyse</span></button>
+      <button class="btn ghost" id="thBtn" title="Hell / Dunkel umschalten"><span id="thIc">☾</span><span class="ml"> Hell / Dunkel</span></button>
+      <button class="btn ghost" id="shareBtn" title="Link mit Coin, Zeitrahmen und Indikatoren kopieren">🔗<span class="ml"> Link teilen</span></button>
+      <button class="btn ghost" id="pngBtn" title="Chart als Bild speichern">🖼<span class="ml"> Als Bild speichern</span></button>
+      <button class="btn ghost" id="refresh" title="Neu laden">⟳<span class="ml"> Neu laden</span></button>
+      <button class="btn ghost" id="moreBtn" title="Mehr: alles, was in der Leiste keinen Platz hat" aria-haspopup="true">⋯</button>
     </div>
+    <div id="moreMenu" hidden><div id="moreDyn"></div>
+      <button class="btn ghost" id="colBtn">🎨<span class="ml"> Farben &amp; Anzeige …</span></button>
+      <a class="btn ghost" href="https://scanner.kompassapps.de/">✦<span class="ml"> Zum Coin-Scanner</span></a></div>
     <div id="mktSeg" hidden></div>
   </div>
   <p class="notice" id="notice" hidden></p>
@@ -294,7 +307,7 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=32"></script>
+<script src="chart-core.js?v=33"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -465,7 +478,15 @@ const PRESETS={
   mitternacht:{dark:1,bg:"#0a1230",axis:"#101a3e",panel:"#111b40",line:"#22305e",chip:"#18234d",fg:"#e3e9ff",txt:"#8f9cc8"},
   grau:{dark:1,bg:"#1c1d20",axis:"#232428",panel:"#26282c",line:"#36383d",chip:"#2e3035",fg:"#e9e9ea",txt:"#9a9ca3"},
   schwarz:{dark:1,bg:"#000000",axis:"#0b0b0d",panel:"#0f0f12",line:"#222228",chip:"#18181c",fg:"#f2f2f2",txt:"#8c8c94"},
-  sepia:{dark:0,bg:"#f5eedf",axis:"#ece3d0",panel:"#fbf6ea",line:"#ddd2bb",chip:"#e9dfc9",fg:"#2b2418",txt:"#6f6450"}};
+  sepia:{dark:0,bg:"#f5eedf",axis:"#ece3d0",panel:"#fbf6ea",line:"#ddd2bb",chip:"#e9dfc9",fg:"#2b2418",txt:"#6f6450"},
+  nord:{dark:1,bg:"#2e3440",axis:"#353c4a",panel:"#3b4252",line:"#4c566a",chip:"#434c5e",fg:"#eceff4",txt:"#a7b1c2"},
+  ozean:{dark:1,bg:"#06202b",axis:"#0a2a37",panel:"#0c303f",line:"#1b4a5c",chip:"#123a4a",fg:"#e0f4f7",txt:"#86b3bf"},
+  wald:{dark:1,bg:"#0e1a14",axis:"#13231b",panel:"#16291f",line:"#274234",chip:"#1c3327",fg:"#e6f2ea",txt:"#8fb09c"},
+  aubergine:{dark:1,bg:"#1a1024",axis:"#22162e",panel:"#271a35",line:"#3d2b50",chip:"#2f2040",fg:"#f0e8f7",txt:"#a996bd"},
+  kaffee:{dark:1,bg:"#1c1612",axis:"#241d18",panel:"#2a221c",line:"#42362c",chip:"#332a22",fg:"#f1e9df",txt:"#b09f8c"},
+  papier:{dark:0,bg:"#fbfaf7",axis:"#f1efe9",panel:"#ffffff",line:"#e2ded4",chip:"#ebe8df",fg:"#22201b",txt:"#6d685c"},
+  eis:{dark:0,bg:"#eef4fb",axis:"#e2ebf6",panel:"#f8fbff",line:"#cfdcec",chip:"#dde7f3",fg:"#16233a",txt:"#5a6b85"},
+  mint:{dark:0,bg:"#eef7f1",axis:"#e1efe6",panel:"#f8fcf9",line:"#cde0d4",chip:"#dbeadf",fg:"#15291e",txt:"#58705f"}};
 let UCOL=LS("blcCol");if(!UCOL||typeof UCOL!=="object")UCOL={};UCOL.c=UCOL.c||{};UCOL.br=+UCOL.br||0;
 const hx=h=>{const m=/^#?([0-9a-f]{6})$/i.exec(h||"");if(!m)return null;const n=parseInt(m[1],16);return[n>>16&255,n>>8&255,n&255]};
 const toHx=a=>"#"+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("");
@@ -496,9 +517,14 @@ S.keepR=LS("blcKeepR")!==false;S.lblW=0;let LWN=0;
 function keepRoom(){if(!S.keepR||!S.view||!L||typeof drag==="undefined"||drag||pinch)return;const n=S.k.length;if(!n)return;const v=S.view,last=n-1;if(last<v.from||last>v.to+2)return;
   const cw=L.pw/(v.to-v.from),lw=Math.min(S.lblW||0,L.pw*.38),need=S.lblN+(lw+14)/cw+1;const have=v.to-last;if(have<need){const d=need-have;v.from+=d;v.to+=d}}
 function rLblX(px,w,pad){LWN=Math.max(LWN,w);const lx=L.X(S.k.length-1)+S.lblN*L.cw,mx=L.pw-w-pad;let x=Math.max(px,lx)+5;if(x>mx)x=Math.max(mx,L.X(S.k.length-1)+L.cw*1.2+5);return x}
-function colSave(){LS("blcCol",UCOL);LS("blcTheme",THM);applyTheme();if(typeof paint==="function")paint();if(typeof bodPaint==="function")try{bodPaint()}catch(e){}}
+// Hell/Dunkel-Knopf: wechselt zwischen dem zuletzt benutzten hellen und dunklen Thema (z. B. Ozean ↔ Papier)
+const thIsDark=t=>t==="dunkel"||!!(PRESETS[t]&&PRESETS[t].dark),thIsLight=t=>t==="hell"||!!(PRESETS[t]&&!PRESETS[t].dark);
+function thIcon(){const i=document.getElementById("thIc");if(i)i.textContent=dark()?"☀":"☾"}
+function themeToggle(){const d=dark();if(THM!=="auto")LS(d?"blcThD":"blcThL",THM);let n=LS(d?"blcThL":"blcThD");if(!(d?thIsLight(n):thIsDark(n)))n=d?"hell":"dunkel";THM=n;colSave();
+  if(UCOL.c.bg)toast("Eigene Hintergrundfarbe ist aktiv – unter 🎨 Farben zurücksetzen, damit das Thema ganz wirkt")}
+function colSave(){LS("blcCol",UCOL);LS("blcTheme",THM);if(THM!=="auto")LS(baseDark()?"blcThD":"blcThL",THM);applyTheme();thIcon();if(typeof paint==="function")paint();if(typeof bodPaint==="function")try{bodPaint()}catch(e){}}
 function colMenu(btn){let m=$("colMenu");if(m){m.remove();return}m=document.createElement("div");m.id="colMenu";document.body.appendChild(m);
-  const TH=[["auto","Auto"],["hell","Hell"],["dunkel","Dunkel"],["mitternacht","Mitternacht"],["grau","Grau"],["schwarz","Schwarz"],["sepia","Sepia"]];
+  const TH=[["auto","Auto"],["hell","Hell"],["dunkel","Dunkel"],["mitternacht","Mitternacht"],["grau","Grau"],["schwarz","Schwarz"],["nord","Nord"],["ozean","Ozean"],["wald","Wald"],["aubergine","Aubergine"],["kaffee","Kaffee"],["sepia","Sepia"],["papier","Papier"],["eis","Eis"],["mint","Mint"]];
   const F=[["bg","Hintergrund"],["axis","Skala & Leisten"],["grid","Raster"],["fg","Schrift"],["txt","Schrift blass"],["up","Kerze steigend"],["dn","Kerze fallend"],["cross","Fadenkreuz"],["gold","Akzent"]];
   const draw=()=>{const th=curTh(),val=k=>{const v=UCOL.c[k]||th[k];return /^#[0-9a-f]{6}$/i.test(v)?v:k==="grid"||k==="cross"?(dark()?"#8d99ab":"#5d6878"):"#888888"};
     m.innerHTML=`<div class="ch">Anzeige & Farben <button data-x="1" title="Schließen">✕</button></div>
@@ -510,7 +536,7 @@ function colMenu(btn){let m=$("colMenu");if(m){m.remove();return}m=document.crea
     <div class="cs">Einzelne Farben</div><div class="cg">${F.map(([k,t])=>`<label class="${UCOL.c[k]?"set":""}"><input type="color" data-c="${k}" value="${val(k)}"><span>${t}</span>${UCOL.c[k]?`<button data-r="${k}" title="Zurück auf Standard">↺</button>`:""}</label>`).join("")}</div>
     <button class="crs" data-reset="1">Alles zurücksetzen</button>`};
   draw();const r=btn.getBoundingClientRect();
-  if(innerWidth<600){m.style.left="8px";m.style.right="8px";m.style.bottom="8px"}else{m.style.left=(r.right+8)+"px";m.style.top=Math.max(8,Math.min(r.top-200,innerHeight-m.offsetHeight-8))+"px"}
+  if(innerWidth<600){m.style.left="8px";m.style.right="8px";m.style.bottom="8px"}else{m.style.left=Math.max(8,Math.min(r.right+8,innerWidth-m.offsetWidth-8))+"px";m.style.top=Math.max(8,Math.min(r.top-200,innerHeight-m.offsetHeight-8))+"px"}
   m.addEventListener("click",e=>{e.stopPropagation();const t=e.target.closest("button");if(!t)return;
     if(t.dataset.x){m.remove();return}if(t.dataset.th){THM=t.dataset.th;colSave();draw();return}
     if(t.dataset.r){e.preventDefault();delete UCOL.c[t.dataset.r];colSave();draw();return}
@@ -527,8 +553,14 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   const th=curTh();
   // Fehler in einem Teil dürfen nicht den ganzen Chart anhalten: Canvas-Zustand zurücksetzen und weiterzeichnen
   const safe=f=>{try{f()}catch(e){console.error(e);cv.width=cv.width;ctx.setTransform(d,0,0,d,0,0)}};
-  safe(()=>{L=CC.draw(ctx,r.width,r.height,{lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO})});
+  safe(()=>{L=CC.draw(ctx,r.width,r.height,{cd:cdText(),lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO})});
   if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));if(L&&S.k.length&&!S.indHide){safe(()=>bsiPaint(th));safe(()=>bftPaint(th));safe(()=>bft2Paint(th));safe(()=>bwiPaint(th));if(window.bpsPaint)safe(()=>bpsPaint(th));safe(()=>bodMain(th));safe(()=>bodPaint(th))}safe(heatPaint);safe(rkPaint);{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&S._krN>0&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man)})}
+// Restzeit bis zum Schluss der laufenden Kerze (unter dem Kurs in der Preisskala)
+function cdText(){if(S.mkt!=="k"||!SRCOK()||!S.kO.length||S.kSym!==S.sym)return"";const t0=S.kO[S.kO.length-1].t,st=KSTEP[S.tf]||0;let end=t0+st;
+  if(S.tf==="1M"){const d=new Date(t0);end=Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1)}
+  let s=Math.floor((end-Date.now())/1000);if(!st||s<-st/1000)return"";if(s<0)s=0;
+  const p=n=>String(n).padStart(2,"0"),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?`${d}T ${p(h)}h`:h?`${p(h)}:${p(m)}:${p(s%60)}`:`${p(m)}:${p(s%60)}`}
+setInterval(()=>{if(document.visibilityState==="visible"&&S.k.length&&!document.documentElement.classList.contains("split")&&typeof drag!=="undefined"&&!drag&&!pinch)paint()},1000);
 function ohlc(){const k=S.k;if(!k.length){$("ovO").innerHTML="";return}const i=L&&L.ci!=null?L.ci:k.length-1,x=k[i],p=i>0?k[i-1].c:x.o,ch=(x.c/p-1)*100;
   $("ovO").innerHTML=`O <b>${CC.fmt(x.o)}</b> H <b>${CC.fmt(x.h)}</b> L <b>${CC.fmt(x.l)}</b> C <b style="color:${ch>=0?"var(--up)":"var(--down)"}">${CC.fmt(x.c)} (${ch>=0?"+":""}${ch.toFixed(2).replace(".",",")} %)</b>`}
 function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t,col})};
@@ -1061,6 +1093,21 @@ renderBar();renderTools();loadList().then(()=>{if(S.mkt==="a"){applyCur().then((
 // Geteilte Ansicht / zweiter Tab: geänderte Indikator-Einstellungen sofort übernehmen (sonst überschreibt das letzte Fenster die anderen)
 addEventListener("storage",e=>{if(e.key!=="blc1"||!e.newValue)return;try{const m=JSON.parse(e.newValue);if(!m||!m.cfg||JSON.stringify(m.cfg)===JSON.stringify(S.cfg))return;
   S.cfg=CC.withDefaults(m.cfg);if(m.profiles)S.profiles=m.profiles;recompute();if(!$("side").hidden&&sideM==="ind"&&!document.activeElement.closest("#dlgBody"))renderDlg()}catch(_){}});
+// ---------- Obere Leiste: passt sich der Breite an ----------
+// Was nicht in eine Zeile passt, wandert von selbst ins Menü ⋯ (dort mit ausgeschriebenem Namen) – zuerst das Unwichtigste.
+// Neue Knöpfe einfach in BARPRI eintragen; die Leiste wird dadurch nie enger.
+const BARPRI=["refresh","pngBtn","shareBtn","curSeg","anaBtn","layBtn","thBtn","alBtn","wlBtn"];
+const BARHOME=BARPRI.map(id=>{const el=$(id),ph=document.createComment(id);el.parentNode.insertBefore(ph,el);return{el,ph}});
+function fitBar(){const top=$("barTop"),tf=$("tfSeg"),dyn=$("moreDyn");if(!top||!tf)return;
+  BARHOME.forEach(o=>o.ph.parentNode.insertBefore(o.el,o.ph.nextSibling));
+  const fits=()=>{const need=Math.min(tf.scrollWidth,Math.max(150,top.clientWidth*.4));return top.scrollWidth<=top.clientWidth+1&&tf.clientWidth>=need-2};
+  for(const o of BARHOME){if(fits())break;if(getComputedStyle(o.el).display==="none")continue;dyn.appendChild(o.el)}}
+function moreClose(){$("moreMenu").hidden=true}
+$("moreBtn").onclick=e=>{e.stopPropagation();const m=$("moreMenu");if(!m.hidden){moreClose();return}m.hidden=false;const r=$("moreBtn").getBoundingClientRect(),w=m.offsetWidth;m.style.top=(r.bottom+6)+"px";m.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+"px"};
+$("moreMenu").addEventListener("click",e=>{if(e.target.closest("#curSeg"))return;if(e.target.closest(".btn"))setTimeout(moreClose,0)});
+document.addEventListener("pointerdown",e=>{if(!$("moreMenu").hidden&&!e.target.closest("#moreMenu,#moreBtn"))moreClose()});
+$("thBtn").onclick=()=>themeToggle();$("colBtn").onclick=()=>colMenu($("moreBtn"));
+{const rb0=renderBar;renderBar=function(){rb0();fitBar()};addEventListener("resize",()=>{moreClose();fitBar()});if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitBar);thIcon();fitBar()}
 // ---------- Seitenleiste: Indikatoren oder Analyse ----------
 let sideM="ind";
 function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("indSrchW").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("alBody").hidden=m!=="al";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":m==="al"?"Alarme":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow();if(m==="al"&&window.alShow)alShow()}

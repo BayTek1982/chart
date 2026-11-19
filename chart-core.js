@@ -435,7 +435,9 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
     const txt=((TFMS[tf]||0)<864e5&&day!==lastDay)?tlab(k[i].t,"1d"):tlab(k[i].t,tf);lastDay=day;ctx.fillText(txt,X(i),H-TA/2)}
   // Preis-Schilder
   tags.push({y:Y(price),col:price>=k[last].o?th.up:th.red,t:fmt(price),main:1});
-  tags.filter(t=>!t.off||t.main).sort((a,b)=>a.y-b.y).reduce((prev,t)=>{const y=Math.max(t.y,prev+15);tagDraw(ctx,pw,y,t.col,t.t,AX,th,t.main);return y},-99);
+  tags.filter(t=>!t.off||t.main).sort((a,b)=>a.y-b.y).reduce((prev,t)=>{const y=Math.max(t.y,prev+15);tagDraw(ctx,pw,y,t.col,t.t,AX,th,t.main);
+    // Restzeit der laufenden Kerze direkt unter dem Kurs (wie in TradingView)
+    if(t.main&&S.cd){tagDraw(ctx,pw,y+14,t.col,S.cd,AX,th,true);return y+14}return y},-99);
   subTags.forEach(t=>tagDraw(ctx,pw,t.y,t.col,t.t,AX,th,true));
   if(Y(price)>=mT&&Y(price)<=mB)line(0,Y(price),pw,Y(price),price>=k[last].o?th.up:th.red,1,[1,3]);
 

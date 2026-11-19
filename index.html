@@ -242,7 +242,10 @@ html.emb .top #tfSeg{order:0!important;flex:1 1 0!important;min-width:60px;overf
 .wlEx button.on{border-color:#f0a030;color:#f0a030}.wlSrc{margin-left:auto;opacity:.6}
 .wlFl{display:flex;gap:6px;align-items:center;margin:6px 0}.wlFl button{background:none;border:1px solid var(--line);color:inherit;border-radius:7px;padding:2px 8px;cursor:pointer;font-size:.76rem}.wlFl button.on{border-color:#f0a030}
 .wl .dot{width:18px;height:18px;padding:0!important;border-radius:50%!important;background:var(--c)!important;border:2px solid var(--line)}.wl .dot.on{border-color:#fff!important}
-.wlHd,.wlRow{display:grid;grid-template-columns:18px minmax(0,1fr) auto 74px auto;gap:6px;align-items:center}.wlHd{grid-template-columns:minmax(0,1fr) auto 74px;padding:4px 4px 4px 28px;font-size:.72rem;opacity:.6;border-bottom:1px solid var(--line)}
+.wlHd,.wlRow{display:grid;grid-template-columns:18px minmax(0,1fr) 92px 78px 74px auto;gap:6px;align-items:center}.wlHd{grid-template-columns:minmax(0,1fr) 92px 78px 74px;padding:2px 4px 2px 28px;border-bottom:1px solid var(--line)}
+.wlHd button{background:none;border:0;color:var(--muted);font:600 .76rem inherit;font-family:inherit;padding:7px 0;cursor:pointer;text-align:right;white-space:nowrap}.wlHd button:first-child{text-align:left}.wlHd button.on{color:var(--gold)}
+.wlFl{flex-wrap:wrap}.wlFl .flAdd{width:22px;height:22px;padding:0!important;border-radius:50%!important;border-style:dashed!important;line-height:1}.wl .dot.del{color:#fff;font-size:10px;line-height:14px;text-shadow:0 0 2px #000}
+@media (max-width:430px){.wlHd,.wlRow{grid-template-columns:18px minmax(0,1fr) 84px 68px auto}.wlHd{grid-template-columns:minmax(0,1fr) 84px 68px}.wlRow .ab,.wlHd [data-hs="ver"]{display:none}}
 .wlRow{padding:7px 4px;border-bottom:1px solid rgba(128,128,128,.12);cursor:pointer;font-family:var(--f-num)}.wlRow:hover{background:rgba(128,128,128,.08)}.wlRow.cur{background:rgba(240,160,48,.12)}
 .wlRow .fl{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(128,128,128,.5);background:var(--c);padding:0;cursor:pointer}.wlRow .fl.set{border-color:var(--c)}
 .wlRow .sy{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlRow .sy small{opacity:.5;font-weight:400}.wlRow .px{text-align:right}.wlRow .ch{text-align:right}.wlRow .ch.up{color:#26a69a}.wlRow .ch.dn{color:#ef5350}
@@ -2125,7 +2128,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   const rzUp=()=>{if(rz){rz=null;LS("blcBodH",Math.round(box.getBoundingClientRect().height))}};rs.addEventListener("pointerup",rzUp);rs.addEventListener("pointercancel",rzUp)}
 </script>
 <script src="bps.js?v=8"></script>
-<script src="wl.js?v=7"></script>
+<script src="wl.js?v=8"></script>
 <script src="al.js?v=2"></script>
 <script src="split.js?v=1"></script>
 </body>

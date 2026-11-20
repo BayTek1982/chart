@@ -182,6 +182,25 @@ html,body{height:100%;overflow:hidden}
 /* Obere Leiste: immer eine Zeile; was nicht passt, wandert von selbst ins Menü ⋯ (siehe fitBar) */
 .top{flex-wrap:nowrap!important}.top #tfSeg{flex:1 1 0;min-width:70px}.top #tfSeg button{flex:0 0 auto}.acts{flex:none}
 .ml{display:none}
+/* Werkzeugleiste: bei wenig Höhe drei statt zwei Spalten, damit alle Werkzeuge ohne Scrollen sichtbar sind */
+@media (max-height:1000px){html .tools{grid-template-columns:repeat(3,42px)!important}}
+@media (max-height:1000px) and (pointer:coarse){html .tools{grid-template-columns:repeat(3,46px)!important}}
+html.emb .tools{grid-template-columns:repeat(3,30px)!important}
+/* Einstellfenster für Zeichnungen (Stil / Koordinaten / Sichtbarkeit / Vorlage) */
+#dwDlg{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(0,0,0,.35)}#dwDlg[hidden]{display:none}
+#dwDlg .dd{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.5);width:430px;max-width:calc(100vw - 16px);max-height:calc(100vh - 24px);display:flex;flex-direction:column}
+#dwDlg .dhd{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px;font-weight:800;font-size:1.05rem}#dwDlg .dhd button{border:0;background:var(--chip);color:var(--fg);border-radius:8px;width:32px;height:32px;cursor:pointer}
+#dwDlg .dtab{display:flex;gap:4px;padding:0 12px;border-bottom:1px solid var(--line)}#dwDlg .dtab button{border:0;background:none;color:var(--muted);font:700 .9rem inherit;font-family:inherit;padding:8px 8px;cursor:pointer;border-bottom:3px solid transparent}#dwDlg .dtab button.on{color:var(--fg);border-bottom-color:var(--gold)}
+#dwDlg .dbd{padding:12px 14px;overflow:auto;display:grid;gap:9px}
+#dwDlg .rw{display:grid;grid-template-columns:130px 1fr;gap:8px;align-items:center;font-size:.86rem}#dwDlg .rw>span{color:var(--muted)}
+#dwDlg input[type=text],#dwDlg input[type=number],#dwDlg input[type=datetime-local],#dwDlg select{font:600 .86rem var(--f-num);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:7px 8px;min-width:0;width:100%;box-sizing:border-box}
+#dwDlg input[type=color]{width:38px;height:30px;border:1px solid var(--line);border-radius:7px;background:none;padding:1px;cursor:pointer}
+#dwDlg input[type=checkbox]{width:18px;height:18px;accent-color:var(--gold)}#dwDlg .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}#dwDlg .ck{display:flex;align-items:center;gap:8px;font-size:.86rem;cursor:pointer}
+#dwDlg .lvg{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}#dwDlg .lvr{display:grid;grid-template-columns:20px 1fr 38px;gap:6px;align-items:center}#dwDlg .lvr.off input[type=number]{opacity:.45}
+#dwDlg .vsr{display:grid;grid-template-columns:20px 84px 1fr 16px 1fr;gap:6px;align-items:center;font-size:.86rem}#dwDlg .vsr.off input[type=number]{opacity:.45}
+#dwDlg .dft{display:flex;gap:8px;align-items:center;padding:10px 14px 12px;border-top:1px solid var(--line)}#dwDlg .dft select{width:auto;flex:0 1 190px}#dwDlg .dft .sp{flex:1}
+#dwDlg .hint{font-size:.76rem;color:var(--muted);line-height:1.35}
+@media (max-width:480px){#dwDlg .rw{grid-template-columns:104px 1fr}#dwDlg .lvg{grid-template-columns:1fr}}
 /* Seitenleiste rechts wie in TradingView (ab 901 px Breite): Alarme, Layout, Analyse, Teilen, Bild – die obere Leiste bleibt dadurch frei */
 #rail{display:none}
 @media (min-width:901px){
@@ -259,7 +278,7 @@ html.emb #thBtn{display:none!important}
 html.emb .top .sym{flex:0 1 96px!important;min-width:54px!important}html.emb .top .sym input{padding:5px 7px!important;font-size:.86rem!important}
 html.emb .top #tfSeg button{padding:5px 7px!important;font-size:.78rem!important}html.emb .live{font-size:.76rem}
 html.emb .top .acts{flex:1 1 auto!important;min-width:0}html.emb .top .acts>.btn{flex:1 1 0;min-width:34px;padding:6px 4px!important;text-align:center}
-html.emb .tools{grid-template-columns:repeat(2,30px)!important;gap:2px!important;padding:3px!important;top:56px!important;max-height:calc(100% - 112px)!important}
+html.emb .tools{grid-template-columns:repeat(3,30px)!important;gap:2px!important;padding:3px!important;top:56px!important;max-height:calc(100% - 112px)!important}
 html.emb .tools button{width:30px!important;height:27px!important;font-size:.82rem!important;border-radius:6px!important}
 html.emb #toolTg{width:32px;height:28px;font-size:.85rem;bottom:26px}
 html.emb .ebar{top:4px;right:78px;max-width:calc(100% - 84px);padding:3px 6px;gap:4px 6px;font-size:.7rem}html.emb .ebar select,html.emb .ebar button{font-size:.68rem;padding:2px 5px}html.emb .ebar input[type=color]{width:24px;height:20px}
@@ -288,6 +307,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 </style>
 </head>
 <body>
+<div id="dwDlg" hidden></div>
 <div id="split" hidden></div><div id="layMenu" class="layMenu" hidden></div>
 <div class="wrap">
   <div class="bar top" id="barTop">
@@ -343,7 +363,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=35"></script>
+<script src="chart-core.js?v=36"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -677,7 +697,9 @@ cv.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"&&!(e.relatedTa
 $("axAl").addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"&&e.relatedTarget!==cv){S.cross=null;paint()}});
 $("axAl").onclick=()=>{if(!L||!S.cross||!window.alNew)return;const p=L.P(S.cross.y)/S.F;if(!(p>0))return;S.xLock=false;S.cross=null;paint();alNew(p)};
 cv.addEventListener("wheel",e=>{e.preventDefault();if(onAxis(e.offsetX,e.offsetY)){scaleY(e.deltaY>0?1.1:1/1.1);paint();return}zoom(e.deltaY>0?1.12:1/1.12,e.offsetX)},{passive:false});
-cv.addEventListener("dblclick",e=>{if(Date.now()-tapDbl<700)return;{const q=L&&e.offsetX>L.pw&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h);if(q){delete S.paneZ[q.s];delete S.paneO[q.s];LS("blcPZ",S.paneZ);LS("blcPO",S.paneO);paint();return}}if(dblAt(e.offsetX,e.offsetY))return;if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
+cv.addEventListener("dblclick",e=>{if(Date.now()-tapDbl<700)return;
+  // Doppelklick auf eine Zeichnung = Einstellfenster
+  {const h=L&&S.k.length&&!S.tool&&!S.pend&&e.offsetX<=L.pw&&e.offsetY<=L.mainH&&hitDw(e.offsetX,e.offsetY);if(h&&h.d&&window.dwDlgOpen){S.dwd=null;S.sel=h.d.id;paint();dwDlgOpen(h.d);return}}{const q=L&&e.offsetX>L.pw&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h);if(q){delete S.paneZ[q.s];delete S.paneO[q.s];LS("blcPZ",S.paneZ);LS("blcPO",S.paneO);paint();return}}if(dblAt(e.offsetX,e.offsetY))return;if(onAxis(e.offsetX,e.offsetY)){S.view.man=false}else resetView();paint()});
 $("autoB").onclick=()=>{if(S.view){S.view.man=false;S._krN=3;paint()}};
 addEventListener("resize",paint);matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",paint);
 if(window.ResizeObserver)new ResizeObserver(()=>paint()).observe($("box"));
@@ -701,11 +723,12 @@ function demoLoop(){if(DEMO.raf)return;const step=()=>{const c=demoCv(),r=cv.get
 const TOOLS=[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstration (Laserpointer: zeichnen, verblasst von selbst)"],["tl","╱","Trendlinie"],["hl","─","Horizontale Linie"],["xl","┼","Kreuzlinie (waagerecht + senkrecht, in alle 4 Richtungen verlängert)"],["ray","⟶","Horizontaler Strahl"],["vl","│","Vertikale Linie"],["rect","▭","Rechteck / Zone"],["text","T","Text"],
   ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
   ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
-  ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],["-"],
+  ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],
+  ["xline","⤡","Verlängerte Linie (in beide Richtungen endlos)"],["info","ℹ","Info-Linie (Abstand in Preis, Prozent, Kerzen und Zeit)"],["note","💬","Sprechblase (Notiz mit Zeiger auf eine Kerze)"],["vpr","▥","Volumenprofil für einen Bereich (POC, VAH, VAL)"],["-"],
   ["mag","🧲","Magnet in 5 Stufen (rastet an Hoch/Tief/Open/Close ein) – weiterklicken = stärker"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
 // Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
-const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6};const TWO=Object.keys(NEED);
-const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff"};
+const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6,xline:2,info:2,note:2,vpr:2};const TWO=Object.keys(NEED);
+const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff",info:"#26c6da",note:"#f0a33a",vpr:"#64b5f6"};
 S.ovZu=LS("blcOvZu")===true;document.querySelector(".ov").classList.toggle("zu",S.ovZu);
 $("ovT").addEventListener("click",e=>{if(!e.target.closest("#ovTg"))return;S.ovZu=!S.ovZu;LS("blcOvZu",S.ovZu);document.querySelector(".ov").classList.toggle("zu",S.ovZu);legend()});
 S.dwHide=LS("blcDwHide")===true;S.posHide=LS("blcPosHide")===true;S.indHide=LS("blcIndHide")===true;
@@ -734,13 +757,24 @@ $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");
   renderTools();paint()});
 const dwKey=()=>`bcbD:${S.mkt}:${S.sym}`;
 // Zeichnungs-Vorlagen: zuletzt gewählte Farbe, Stärke und Linienart je Werkzeug merken und bei der nächsten Zeichnung wieder nehmen
-const DWT=(()=>{const o={},a=LS("blcDwT");if(a&&typeof a==="object")for(const k of Object.keys(a)){const v=a[k];if(!/^[a-z0-9]{1,10}$/.test(k)||!v||typeof v!=="object")continue;const t={};if(/^#[0-9a-f]{6}$/i.test(v.col))t.col=v.col;if(v.w>=1&&v.w<=4)t.w=Math.round(v.w);if(/^[sdp]$/.test(v.ds))t.ds=v.ds;o[k]=t}return o})();
+// Stil-Eigenschaften einer Zeichnung prüfen und übernehmen (für gespeicherte Zeichnungen, Vorlagen, Sicherungen und Teilen-Links): nur bekannte Felder mit gültigen Werten
+function dwStyle(d){const o={},hex=/^#[0-9a-f]{6}$/i,n=(v,a,b)=>typeof v==="number"&&isFinite(v)&&v>=a&&v<=b;if(!d||typeof d!=="object")return o;
+  for(const k of["col","fill","cTp","cSl"])if(hex.test(d[k]))o[k]=d[k];
+  if(n(+d.w,1,4))o.w=Math.round(+d.w);if(/^[sdp]$/.test(d.ds))o.ds=d.ds;
+  for(const k of["extL","extR","lbl","bg","nolab"])if(d[k]===true)o[k]=true;
+  for(const k of["fpx","ftl"])if(d[k]===false)o[k]=false;
+  if(/^[lrb]$/.test(d.fext))o.fext=d.fext;
+  if(n(d.fop,0,100))o.fop=d.fop;if(n(d.amt,0,1e12)&&d.amt>0)o.amt=d.amt;if(n(d.lev,1,500))o.lev=d.lev;if(n(d.fs,8,40))o.fs=d.fs;if(n(d.vr,10,300))o.vr=Math.round(d.vr);if(n(d.vva,10,100))o.vva=d.vva;
+  if(Array.isArray(d.lv)){const lv=d.lv.filter(l=>l&&n(l.v,-20,50)).slice(0,40).map(l=>{const q={v:l.v,on:l.on!==false};if(hex.test(l.c))q.c=l.c;return q});if(lv.length)o.lv=lv}
+  if(d.vis&&typeof d.vis==="object"){const v={};for(const u of["m","h","d","w","M"]){const r=d.vis[u];if(Array.isArray(r)&&n(r[0],1,1e4)&&n(r[1],1,1e4))v[u]=[r[0],r[1]]}o.vis=v}
+  return o}
+const DWT=(()=>{const o={},a=LS("blcDwT");if(a&&typeof a==="object")for(const k of Object.keys(a)){const v=a[k];if(!/^[a-z0-9]{1,10}$/.test(k)||!v||typeof v!=="object")continue;o[k]=dwStyle(v)}return o})();
 function dwtSet(d,k){if(d.type==="pos")return;const t=DWT[d.type]||(DWT[d.type]={});t[k]=d[k];LS("blcDwT",DWT)}
 // Zeichnungen aus einem Teilen-Link nur geprüft übernehmen (Typ, Zahlen, Farbe) – nichts Fremdes gelangt in die Seite
 function dwClean(a){const col=/^#[0-9a-f]{6}$/i,num=v=>typeof v==="number"&&isFinite(v);if(!Array.isArray(a))return[];
   return a.filter(d=>d&&typeof d==="object"&&typeof d.type==="string"&&/^[a-z0-9]{1,10}$/.test(d.type)&&Array.isArray(d.pts)&&d.pts.length&&d.pts.length<=700&&d.pts.every(q=>q&&num(q.t)&&num(q.p))&&(d.type!=="pos"||(num(d.tp)&&num(d.sl)&&num(d.t2)))).slice(0,300).map(d=>{
     const o={id:String(d.id||"").replace(/[^a-z0-9]/gi,"").slice(0,12)||nid(),type:d.type,col:col.test(d.col)?d.col:"#f0a33a",w:Math.max(1,Math.min(4,Math.round(+d.w)||2)),pts:d.pts.map(q=>({t:q.t,p:q.p}))};
-    for(const k of["tp","sl","t2","off"])if(num(d[k]))o[k]=d[k];if(typeof d.text==="string")o.text=d.text.slice(0,80);if(/^[sdp]$/.test(d.ds))o.ds=d.ds;for(const k of["ext","lock","alarm","alarmOnce"])if(d[k]===true)o[k]=true;return o})}
+    Object.assign(o,dwStyle(d));for(const k of["tp","sl","t2","off"])if(num(d[k]))o[k]=d[k];if(typeof d.text==="string")o.text=d.text.slice(0,80);for(const k of["ext","lock","alarm","alarmOnce"])if(d[k]===true)o[k]=true;return o})}
 // Rückgängig / Wiederholen für Zeichnungen: jeder gespeicherte Stand kommt auf einen Stapel (je Coin, bis 60 Schritte, gilt bis zum Coin-Wechsel oder Neuladen)
 const UNDO={key:"",st:[],i:-1};
 function undoPush(){const j=JSON.stringify(S.dw),k=dwKey();if(UNDO.key!==k){UNDO.key=k;UNDO.st=[j];UNDO.i=0;return}if(UNDO.st[UNDO.i]===j)return;
@@ -751,7 +785,7 @@ function loadDw(){if(S.hashDw){S.dw=dwClean(S.hashDw);S.hashDw=null;S.dwShared=t
 function saveDw(){S.dwShared=false;LS(dwKey(),S.dw);undoPush()}
 const nid=()=>Math.random().toString(36).slice(2,9);
 // gespeichert wird in Originalwährung, angezeigt in der aktuellen
-function dispDw(){const F=S.F;if(S.dwHide&&S.posHide)return[];const src=S.dwHide?S.dw.filter(d=>d.type==="pos"):S.posHide?S.dw.filter(d=>d.type!=="pos"):S.dw;if(F===1)return src;return src.map(d=>({...d,pts:d.pts.map(q=>({t:q.t,p:q.p*F})),tp:d.tp!=null?d.tp*F:d.tp,sl:d.sl!=null?d.sl*F:d.sl,off:d.off!=null?d.off*F:d.off}))}
+function dispDw(){const F=S.F;if(S.dwHide&&S.posHide)return[];let src=S.dwHide?S.dw.filter(d=>d.type==="pos"):S.posHide?S.dw.filter(d=>d.type!=="pos"):S.dw;if(window.dwVis)src=src.filter(d=>dwVis(d)||d===S.pend);if(F===1)return src;return src.map(d=>({...d,pts:d.pts.map(q=>({t:q.t,p:q.p*F})),tp:d.tp!=null?d.tp*F:d.tp,sl:d.sl!=null?d.sl*F:d.sl,off:d.off!=null?d.off*F:d.off}))}
 function toPt(x,y){const k=S.k,i=Math.round(S.view.from+x/L.cw-0.5);let t=CC.idxT(k,S.view.from+x/L.cw-0.5,S.tf),p=L.P(y);
   if(S.mag&&i>=0&&i<k.length){const lim=[0,10,20,36,60,1e9][+S.mag]||36;let best=null;[k[i].o,k[i].h,k[i].l,k[i].c].forEach(v=>{const d=Math.abs(L.Y(v)-y);if(d<lim&&(!best||d<best.d))best={d,v}});if(best){p=best.v;t=k[i].t}}
   return{t,p:p/S.F}}
@@ -761,9 +795,9 @@ function hitDw(x,y){const list=dispDw();for(let j=list.length-1;j>=0;j--){const 
 function dwDown(x,y,ptype){if(S.tool==="demo"&&L&&x<=L.pw){demoStart(x,y);return true}
   if(!L||!S.k.length||x>L.pw||y>L.mainH)return false;const pt=toPt(x,y);
   if(S.pend){const d=S.pend;d.pts[d.pts.length-1]=pt;if(d.pts.length<NEED[d.type]){d.pts.push({...pt});paint();return true}S.pend=null;S.tool=null;S.sel=d.id;saveDw();renderTools();paint();return true}
-  if(S.tool){const t=S.tool,d={id:nid(),type:t,col:DCOL[t]||"#f0a33a",w:2,pts:[pt]};{const T=DWT[t];if(T){if(T.col)d.col=T.col;if(T.w)d.w=T.w;if(T.ds)d.ds=T.ds}}const ps=t==="long"||t==="short";if(S.dwHide&&!ps){S.dwHide=false;LS("blcDwHide",false)}if(S.posHide&&ps){S.posHide=false;LS("blcPosHide",false)}
+  if(S.tool){const t=S.tool,d={id:nid(),type:t,col:DCOL[t]||"#f0a33a",w:2,pts:[pt]};{const T=DWT[t==="xline"?"tl":t==="long"||t==="short"?"pos":t];if(T)Object.assign(d,JSON.parse(JSON.stringify(T)))}if(t==="xline"){d.type="tl";d.extL=d.extR=true}const ps=t==="long"||t==="short";if(S.dwHide&&!ps){S.dwHide=false;LS("blcDwHide",false)}if(S.posHide&&ps){S.posHide=false;LS("blcPosHide",false)}
     if(t==="brush"){S.dw.push(d);S.dwd={mode:"brush",d,x,y};paint();return true}
-    if(t==="text"){const tx=prompt("Text:","");if(!tx){return true}d.text=tx.slice(0,80)}
+    if(t==="text"||t==="note"){const tx=prompt(t==="note"?"Notiz:":"Text:","");if(!tx){return true}d.text=tx.slice(0,80)}
     if(t==="long"||t==="short"){const lg=t==="long";d.type="pos";
       // Startgröße nach dem sichtbaren Ausschnitt (nicht feste Prozent): Ziel 16 %, Stop 8 % der Charthöhe, Breite gut ein Fünftel der sichtbaren Kerzen
       const rng=(L.hi-L.lo)/S.F,up=Math.min(rng*.16,pt.p*.9),dn=Math.min(rng*.08,pt.p*.45);d.tp=pt.p+(lg?up:-up);d.sl=pt.p-(lg?dn:-dn);
@@ -794,11 +828,12 @@ function dwUp(x,y){if(DEMO.on){DEMO.on=false;return true}if(S.dwd&&S.dwd.mode===
   if(S.dwd){const g=S.dwd;S.dwd=null;if(g.moved)saveDw();return true}return false}
 function renderEbar(){const b=$("ebar"),d=S.dw.find(z=>z.id===S.sel);if(!d){b.hidden=true;return}b.hidden=false;
   if(b.dataset.id===d.id&&b.dataset.t===d.type)return;b.dataset.id=d.id;b.dataset.t=d.type;
-  const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5"};
-  const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","fib","vl"].includes(d.type);
-  b.innerHTML=`<b>${names[d.type]||""}</b>${!noCol?`<input type="color" data-e="col" value="${/^#[0-9a-f]{6}$/i.test(d.col)?d.col:"#f0a33a"}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${["tl","hl","ray"].includes(d.type)?`<label title="Meldung, wenn der Kurs die Linie kreuzt"><input type="checkbox" data-e="alarm" ${d.alarm?"checked":""}> 🔔 Alarm</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}${DWT[d.type]?`<button data-e="tpl0" title="Gemerkte Farbe/Stärke/Linienart für dieses Werkzeug vergessen (wieder Standard)">↺ Vorlage</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
+  const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5",info:"Info-Linie",note:"Sprechblase",vpr:"Volumenprofil"};
+  const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","vl","note","vpr"].includes(d.type);
+  b.innerHTML=`<b>${names[d.type]||""}</b><button data-e="cfg" title="Alle Einstellungen: Stil, Koordinaten, Sichtbarkeit, Vorlage (auch per Doppelklick auf die Zeichnung)">⚙</button>${!noCol?`<input type="color" data-e="col" value="${/^#[0-9a-f]{6}$/i.test(d.col)?d.col:"#f0a33a"}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${["tl","hl","ray"].includes(d.type)?`<label title="Meldung, wenn der Kurs die Linie kreuzt"><input type="checkbox" data-e="alarm" ${d.alarm?"checked":""}> 🔔 Alarm</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}${DWT[d.type]?`<button data-e="tpl0" title="Gemerkte Farbe/Stärke/Linienart für dieses Werkzeug vergessen (wieder Standard)">↺ Vorlage</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
 $("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col"){d.col=e.target.value;dwtSet(d,"col")}if(k==="w"){d.w=+e.target.value;dwtSet(d,"w")}if(k==="ext")d.ext=e.target.checked;if(k==="alarm"){d.alarm=e.target.checked;if(d.alarm&&window.alPerm)alPerm();toast(d.alarm?"🔔 Alarm aktiv – meldet, wenn der Kurs die Linie kreuzt":"Alarm aus")}if(k==="ds"){d.ds=e.target.value;dwtSet(d,"ds")}if(k==="lock")d.lock=e.target.checked;saveDw();paint()});
 $("ebar").addEventListener("click",e=>{const k=e.target.dataset&&e.target.dataset.e,d=S.dw.find(z=>z.id===S.sel);if(!d)return;
+  if(k==="cfg"){if(window.dwDlgOpen)dwDlgOpen(d);return}
   if(k==="tpl0"){delete DWT[d.type];LS("blcDwT",DWT);$("ebar").dataset.id="";paint();toast("Vorlage zurückgesetzt – neue Zeichnungen wieder im Standard");return}
   if(k==="del"){S.dw=S.dw.filter(z=>z.id!==d.id);S.sel=null;saveDw();paint()}
   if(k==="copy"){const n=JSON.parse(JSON.stringify(d)),dt=5*(CC.tIdx?((S.k[1]&&S.k[0])?S.k[1].t-S.k[0].t:0):0),dp=(L?(L.hi-L.lo)*.04:0)/S.F;n.id=nid();n.lock=false;n.pts=n.pts.map(q=>({t:q.t+dt,p:q.p-dp}));if(n.t2)n.t2+=dt;if(n.tp!=null)n.tp-=dp;if(n.sl!=null)n.sl-=dp;S.dw.push(n);S.sel=n.id;saveDw();renderEbar();paint();toast("Kopie angelegt – zum Verschieben antippen und ziehen")}if(k==="txt"){const t=prompt("Text:",d.text||"");if(t!=null){d.text=t.slice(0,80);saveDw();paint()}}});
@@ -2210,6 +2245,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   const rzUp=()=>{if(rz){rz=null;LS("blcBodH",Math.round(box.getBoundingClientRect().height))}};rs.addEventListener("pointerup",rzUp);rs.addEventListener("pointercancel",rzUp)}
 </script>
 <script src="bps.js?v=8"></script>
+<script src="dw.js?v=1"></script>
 <script src="wl.js?v=9"></script>
 <script src="al.js?v=2"></script>
 <script src="split.js?v=1"></script>

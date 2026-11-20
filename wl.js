@@ -14,9 +14,15 @@ const W=ld("blcWl",null)||{cur:0,lists:[]};W.lists=okLists(W.lists);if(!W.lists.
 const SORTS=[["eigen","Benutzerdefinierte Reihenfolge"],["sym","Nach Symbol"],["preis","Nach letztem Preis"],["ver","Nach Veränderung"],["verp","Nach Veränderung (%)"],["flag","Nach Fähnchen"],["vol","Nach Volumen"]];
 // Ansicht (Menü ⋯): Tabellenansicht, Gruppierung, Spalten, Logo, Symbol oder Name – je Gerät gespeichert
 const COLS=[{k:"last",t:"Kurs",w:92,s:"preis"},{k:"chg",t:"Änd",w:78,s:"ver"},{k:"chgp",t:"Änd %",w:74,s:"verp"},{k:"vol",t:"Volumen",w:76,s:"vol"},{k:"hl",t:"24h H/T",w:92},{k:"ald",t:"Alarm",w:66,s:"ald"}];
-const V=(()=>{const a=ld("blcWlView",{})||{},c=a.cols&&typeof a.cols==="object"?a.cols:{},o={tab:a.tab!==false,grp:["none","sec","flag"].includes(a.grp)?a.grp:"sec",logo:a.logo===true,nm:a.nm==="name"?"name":"sym",cols:{}};
+const V=(()=>{const a=ld("blcWlView",{})||{},c=a.cols&&typeof a.cols==="object"?a.cols:{},o={tab:a.tab!==false,grp:["none","sec","flag"].includes(a.grp)?a.grp:"sec",logo:a.logo2!==false,nm:a.nm==="name"?"name":"sym",cols:{}};
   const def={last:1,chg:innerWidth>430?1:0,chgp:1,vol:0,hl:0,ald:0};COLS.forEach(x=>o.cols[x.k]=c[x.k]==null?!!def[x.k]:!!c[x.k]);return o})();
-const saveV=()=>sv("blcWlView",V);
+const saveV=()=>sv("blcWlView",{...V,logo2:V.logo});
+// Logos: Bild-Adressen der 500 größten Coins von CoinGecko (dieselbe Quelle wie die Namenssuche), einmal am Tag geholt und gespeichert
+let LG=(()=>{const a=ld("blcLogo",null);return a&&a.m&&typeof a.m==="object"?a:{t:0,m:{}}})(),lgBusy=false;
+const lgUrl=s=>{const u=LG.m[s.replace(/^\d+/,"")]||LG.m[s];return typeof u==="string"&&/^https:\/\/[a-z0-9.-]+\//i.test(u)?u:""};
+async function lgLoad(){if(lgBusy||Date.now()-LG.t<864e5)return;lgBusy=true;try{const m={};for(const pg of[1,2]){const j=await getJSON(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=${pg}&sparkline=false`,15000);
+      for(const c of Array.isArray(j)?j:[]){const sy=String(c.symbol||"").toUpperCase();if(/^[A-Z0-9]{1,20}$/.test(sy)&&!m[sy]&&typeof c.image==="string"&&c.image.startsWith("https://"))m[sy]=c.image.replace("/large/","/small/")}}
+    if(Object.keys(m).length){LG={t:Date.now(),m};sv("blcLogo",LG);BADLG.clear();if(open()&&!menu)draw()}}catch(e){LG.t=Date.now()-864e5+6e5}finally{lgBusy=false}}
 const BADLG=new Set(); // Coins ohne ladbares Logo (dann bleibt der Buchstaben-Kreis)
 const fmtVol=v=>!(v>0)?"–":v>=1e9?(v/1e9).toFixed(v>=1e10?1:2).replace(".",",")+" Mrd":v>=1e6?(v/1e6).toFixed(v>=1e8?0:1).replace(".",",")+" Mio":v>=1e3?Math.round(v/1e3)+" Tsd":String(Math.round(v));
 const hue=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h};
@@ -66,9 +72,12 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
     <textarea id="wlTxt" rows="3" placeholder="OKX:BTCUSDT.P, OKX:ETHUSDT.P …">${esc(impTxt)}</textarea><div class="row"><input type="file" id="wlFile" accept=".txt,.csv,text/plain,text/csv"><button class="btn" data-a="imp">In neue Liste importieren</button><button class="btn ghost" data-a="impAdd">Zur aktuellen Liste</button></div>
     <div class="row"><button class="btn ghost" data-a="imp0">Schließen</button></div></div>`;
   const so=l.sort||{k:"eigen",d:1},sorted=so.k!=="eigen";
-  const C=V.tab?COLS.filter(c=>V.cols[c.k]):COLS.filter(c=>c.k==="chgp"),gw=C.map(c=>c.w+"px").join(" "),AD=C.some(c=>c.k==="ald")||so.k==="ald"?alarmDist():{};
+  const C=V.tab?COLS.filter(c=>V.cols[c.k]):COLS.filter(c=>c.k==="chgp"),sumW=C.reduce((a,c)=>a+c.w,0),gaps=6*(C.length+2)+18+8;
+  // Kein seitliches Scrollen: am PC wird das Panel so breit wie nötig (höchstens 55 % des Fensters); reicht der Platz trotzdem nicht (Handy), werden die Spalten schmaler
+  if(innerWidth>=1000)document.documentElement.style.setProperty("--sideW",Math.max(390,Math.min(Math.round(innerWidth*.55),sumW+gaps+96+30))+"px");
+  const fW=Math.max(.5,Math.min(1,(b.clientWidth-gaps-(C.length>3?84:100))/Math.max(1,sumW))),gw=C.map(c=>Math.floor(c.w*fW)+"px").join(" "),AD=C.some(c=>c.k==="ald")||so.k==="ald"?alarmDist():{};
   // Kopfzeile wie in TradingView: Spalte antippen = sortieren, noch einmal = umdrehen, drittes Mal = eigene Reihenfolge
-  h+=`<div class="wlTbl"><div style="min-width:${150+C.reduce((a,c)=>a+c.w+6,0)}px"><div class="wlHd" style="grid-template-columns:minmax(0,1fr) ${gw}">${[{s:"sym",t:"Symbol"}].concat(C).map(c=>c.s?`<button data-hs="${c.s}" class="${so.k===c.s?"on":""}" title="Nach ${c.t} sortieren">${c.t}${so.k===c.s?(so.d>0?" ▲":" ▼"):""}</button>`:`<span>${c.t}</span>`).join("")}</div><div class="wlRows">`;let n=0;
+  h+=`<div class="wlTbl${fW<1?" eng":""}"><div style="min-width:${fW<=.5?Math.round(84+sumW*.5+gaps):0}px"><div class="wlHd" style="grid-template-columns:minmax(0,1fr) ${gw}">${[{s:"sym",t:"Symbol"}].concat(C).map(c=>c.s?`<button data-hs="${c.s}" class="${so.k===c.s?"on":""}" title="Nach ${c.t} sortieren">${c.t}${so.k===c.s?(so.d>0?" ▲":" ▼"):""}</button>`:`<span>${c.t}</span>`).join("")}</div><div class="wlRows">`;let n=0;
   const val=s=>{const q=Q[s]||{};return so.k==="sym"?s:so.k==="preis"?q.p:so.k==="ver"?q.d:so.k==="verp"?q.ch:so.k==="flag"?(FLAG[s]||99):so.k==="vol"?q.v:so.k==="ald"?(AD[s]==null?null:Math.abs(AD[s])):0};
   const srt=a=>sorted?a.slice().sort((a,b)=>{const x=val(a),y=val(b);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return-1;return(typeof x==="string"?x.localeCompare(y):x-y)*so.d}):a;
   const isS=s=>s.startsWith("###"),canEd=edit&&!filt&&!sorted&&V.grp==="sec";
@@ -79,7 +88,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   else rows=l.items.map((s,i)=>isS(s)?{t:s.slice(3),i}:s);
   rows.forEach(s=>{if(typeof s!=="string"){h+=`<div class="wlSec"${s.i!=null?` data-i="${s.i}"`:""}>${s.c?`<i class="sd" style="--c:${s.c}"></i>`:""}${esc(s.t)}${canEd&&s.i!=null?`<button data-rm="${s.i}" title="Entfernen">✕</button>`:""}</div>`;return}
     const f=FLAG[s]||0,i=l.items.indexOf(s);n++;const q=Q[s]||{},up=q.ch>0?"up":q.ch<0?"dn":"",nm=V.nm==="name"?coinName(s):"";
-    const lg=V.logo?`<i class="lgo" style="--h:${hue(s)}">${esc(s.replace(/^\d+/,"")[0]||s[0])}${BADLG.has(s)?"":`<img loading="lazy" alt="" data-lg="${esc(s)}" src="https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png">`}</i>`:"";
+    const lg=V.logo?`<i class="lgo" style="--h:${hue(s)}">${esc(s.replace(/^\d+/,"")[0]||s[0])}${BADLG.has(s)?"":`<img loading="lazy" alt="" data-lg="${esc(s)}"${lgUrl(s)?"":' data-t2="1"'} src="${esc(lgUrl(s)||`https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png`)}">`}</i>`:"";
     const cell=c=>c.k==="last"?`<span class="px">${q.p?CC.fmt(q.p):"–"}</span>`:c.k==="chg"?`<span class="ch ${up}">${q.d==null||!isFinite(q.d)?"–":(q.d>=0?"+":"−")+CC.fmt(Math.abs(q.d))}</span>`:c.k==="chgp"?`<span class="ch ${up}">${pct(q.ch)}</span>`
       :c.k==="vol"?`<span class="px vo">${fmtVol(q.v)}</span>`:c.k==="hl"?`<span class="px hl">${q.h?CC.fmt(q.h):"–"}<br>${q.l?CC.fmt(q.l):"–"}</span>`:`<span class="px vo">${AD[s]==null?"–":(AD[s]>=0?"+":"")+AD[s].toFixed(1).replace(".",",")+" %"}</span>`;
     h+=`<div class="wlRow${s===cur?" cur":""}" style="grid-template-columns:18px minmax(0,1fr) ${gw} auto" data-s="${esc(s)}" data-i="${canEd?i:-1}" ${canEd?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>
@@ -122,7 +131,7 @@ function setup(){const b=$("wlBody");
     if(d.a)return act(d.a);
     if(d.ls!=null){W.cur=+d.ls;L().used=Date.now();menu=null;saveW();return draw()}
     if(d.fav!=null){const x=W.lists[+d.fav];if(x){if(x.fav)delete x.fav;else x.fav=true;saveW()}return draw()}
-    if(d.v){V[d.v]=!V[d.v];saveV();return draw()}
+    if(d.v){V[d.v]=!V[d.v];saveV();if(V.logo)lgLoad();return draw()}
     if(d.vg){V.grp=d.vg;saveV();return draw()}
     if(d.vc){V.cols[d.vc]=!V.cols[d.vc];saveV();return draw()}
     if(d.vn){V.nm=d.vn;saveV();return draw()}
@@ -139,7 +148,7 @@ function setup(){const b=$("wlBody");
     if(d.mv!=null){const it=L().items,i=+d.mv,j=i+ +d.d;if(j>=0&&j<it.length){[it[i],it[j]]=[it[j],it[i]];saveW()}return draw()}
     if(d.s&&!edit&&t.classList.contains("wlRow")){pick(d.s,"k");setTimeout(draw,50)}});
   // Logo nicht ladbar: zweite Quelle versuchen, sonst bleibt der Buchstaben-Kreis
-  b.addEventListener("error",e=>{const im=e.target;if(!im||im.tagName!=="IMG"||!im.dataset.lg)return;const s=im.dataset.lg;if(!im.dataset.t2){im.dataset.t2="1";im.src=`https://static.okx.com/cdn/oksupport/asset/currency/icon/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}.png`}else{BADLG.add(s);im.remove()}},true);
+  b.addEventListener("error",e=>{const im=e.target;if(!im||im.tagName!=="IMG"||!im.dataset.lg)return;const s=im.dataset.lg;if(!im.dataset.t2){im.dataset.t2="1";im.src=`https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png`}else{BADLG.add(s);im.remove()}},true);
   // Umschalt+W öffnet das Listen-Menü
   document.addEventListener("keydown",e=>{if(e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key.toLowerCase()==="w"&&open()&&!e.target.closest("input,textarea,select")){e.preventDefault();menu=menu==="list"?null:"list";draw()}});
   // Ziehen zum Sortieren (Maus, im Bearbeiten-Modus)
@@ -150,7 +159,7 @@ function setup(){const b=$("wlBody");
   document.addEventListener("keydown",e=>{if(e.defaultPrevented||S.sel||!open()||e.target.closest("input,textarea,select"))return;if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
     const it=[...document.querySelectorAll("#wlBody .wlRow")].map(r=>r.dataset.s);if(!it.length)return;e.preventDefault();
     let i=it.indexOf(S.sym);i=i<0?0:(i+(e.key==="ArrowDown"?1:-1)+it.length)%it.length;pick(it[i],"k");setTimeout(draw,50)})}
-window.wlShow=()=>{draw();quotes()};window.wlLists=()=>W.lists;
+window.wlShow=()=>{draw();quotes();if(V.logo)lgLoad()};window.wlLists=()=>W.lists;
 window.wlFlagBtn=()=>{if(S.mkt!=="k")return"";const f=FLAG[S.sym]||0;return`<button class="ovFl${f?" set":""}" id="ovFl" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen setzen"></button>`};
 document.addEventListener("click",e=>{const old=document.querySelector(".flPop");
   const b=e.target.closest("#ovFl");if(b){e.stopPropagation();if(old){old.remove();return}const r=b.getBoundingClientRect(),p=document.createElement("div");p.className="flPop";

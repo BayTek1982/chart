@@ -183,8 +183,9 @@ html,body{height:100%;overflow:hidden}
 .top{flex-wrap:nowrap!important}.top #tfSeg{flex:1 1 0;min-width:70px}.top #tfSeg button{flex:0 0 auto}.acts{flex:none}
 .ml{display:none}
 /* Werkzeugleiste: bei wenig Höhe drei statt zwei Spalten, damit alle Werkzeuge ohne Scrollen sichtbar sind */
-@media (max-height:1000px){html .tools{grid-template-columns:repeat(3,42px)!important}}
-@media (max-height:1000px) and (pointer:coarse){html .tools{grid-template-columns:repeat(3,46px)!important}}
+html .tools.c3{grid-template-columns:repeat(3,42px)!important}
+html .tools.c2s button{height:34px}
+@media (pointer:coarse){html .tools.c3{grid-template-columns:repeat(3,46px)!important}}
 html.emb .tools{grid-template-columns:repeat(3,30px)!important}
 /* Einstellfenster für Zeichnungen (Stil / Koordinaten / Sichtbarkeit / Vorlage) */
 #dwDlg{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(0,0,0,.35)}#dwDlg[hidden]{display:none}
@@ -210,7 +211,7 @@ html.emb .tools{grid-template-columns:repeat(3,30px)!important}
   #rail .btn:hover{background:var(--chip)}#rail .btn.on{background:var(--gold);color:var(--accent-ink)}
   #rail .lb,#rail .ml{display:none!important}
 }
-@media (min-width:1000px){.stage.open{grid-template-columns:minmax(0,1fr) 390px 46px!important}}
+@media (min-width:1000px){.stage.open{grid-template-columns:minmax(0,1fr) var(--sideW,390px) 46px!important}}
 html.emb #rail,html.split #rail{display:none!important}html.emb .stage,html.split .stage{grid-template-columns:minmax(0,1fr)!important}
 /* Infozeilen links oben (Kurse O/H/L/C und Indikator-Namen) ein- und ausklappbar */
 .ov .t .ovTg{pointer-events:auto;border:0;background:none;color:var(--muted);font-size:.8rem;padding:2px 6px 2px 0;cursor:pointer;vertical-align:1px}
@@ -293,7 +294,8 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 .wlHd,.wlRow{display:grid;grid-template-columns:18px minmax(0,1fr) 92px 78px 74px auto;gap:6px;align-items:center}.wlHd{grid-template-columns:minmax(0,1fr) 92px 78px 74px;padding:2px 4px 2px 28px;border-bottom:1px solid var(--line)}
 .wlHd button{background:none;border:0;color:var(--muted);font:600 .76rem inherit;font-family:inherit;padding:7px 0;cursor:pointer;text-align:right;white-space:nowrap}.wlHd button:first-child{text-align:left}.wlHd button.on{color:var(--gold)}
 .wlFl{flex-wrap:wrap}.wlFl .flAdd{width:22px;height:22px;padding:0!important;border-radius:50%!important;border-style:dashed!important;line-height:1}.wl .dot.del{color:#fff;font-size:10px;line-height:14px;text-shadow:0 0 2px #000}
-.wlTbl{overflow-x:auto}
+.wlTbl{overflow-x:auto}.wlTbl.eng .wlRow{font-size:.8rem}.wlTbl.eng .wlRow .px,.wlTbl.eng .wlRow .ch{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlTbl.eng .wlRow .hl{white-space:normal}.wlTbl.eng .wlHd button,.wlTbl.eng .wlHd span{font-size:.68rem;overflow:hidden;text-overflow:ellipsis}
+.wlSec{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wlHd span{color:var(--muted);font:600 .76rem inherit;text-align:right;padding:7px 0}
 .wlTop .wlName{flex:1 1 0;min-width:0;display:flex;gap:6px;justify-content:space-between;align-items:center;text-align:left}.wlTop .wlName span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wlMenu{border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:0 10px 26px rgba(0,0,0,.35);padding:5px;margin:6px 0;display:grid}
@@ -1235,9 +1237,15 @@ bakIn.onchange=async()=>{const f=bakIn.files[0];if(!f)return;try{if(f.size>8e6)t
   catch(e){toast("Das ist keine gültige Sicherungsdatei")}};
 $("thBtn").onclick=()=>themeToggle();$("colBtn").onclick=()=>colMenu($("moreBtn"));
 {const rb0=renderBar;renderBar=function(){rb0();fitBar()};addEventListener("resize",()=>{moreClose();renderBar()});if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitBar);thIcon();fitBar()}
+// Werkzeugleiste: zwei Spalten, wenn die Höhe reicht – sonst drei, damit alle Werkzeuge ohne Scrollen sichtbar sind
+function fitTools(){const t=$("tools"),bx=$("box");if(!t||!bx)return;const n=t.querySelectorAll("button").length,hr=t.querySelectorAll("hr").length,bh=matchMedia("(pointer:coarse)").matches?44:40;
+  const av=bx.clientHeight-146,need=h=>Math.ceil(n/2)*(h+4)+hr*9+12,fine=bh===40;
+  // PC: passt die lange Leiste nur knapp nicht, die Knöpfe etwas flacher machen (34 statt 40 Pixel) statt auf drei Spalten zu wechseln
+  const c2s=!SLOT&&fine&&need(40)>av&&need(34)<=av;t.classList.toggle("c2s",c2s);t.classList.toggle("c3",!!SLOT||(!c2s&&need(bh)>av))}
+{const rt0=renderTools;renderTools=function(){rt0();fitTools()};addEventListener("resize",fitTools);if(window.ResizeObserver)new ResizeObserver(fitTools).observe($("box"));fitTools()}
 // ---------- Seitenleiste: Indikatoren oder Analyse ----------
 let sideM="ind";
-function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("indSrchW").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("alBody").hidden=m!=="al";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":m==="al"?"Alarme":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow();if(m==="al"&&window.alShow)alShow()}
+function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;if(m!=="wl")document.documentElement.style.removeProperty("--sideW");$("dlgBody").hidden=m!=="ind";$("indSrchW").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("alBody").hidden=m!=="al";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":m==="al"?"Alarme":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow();if(m==="al"&&window.alShow)alShow()}
 $("wlBtn").onclick=()=>showSide("wl");$("alBtn").onclick=()=>showSide("al");$("indBtn").onclick=()=>showSide("ind");$("anaBtn").onclick=()=>showSide("ana");
 $("refresh").onclick=()=>load();
 
@@ -2254,7 +2262,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
 </script>
 <script src="bps.js?v=8"></script>
 <script src="dw.js?v=1"></script>
-<script src="wl.js?v=10"></script>
+<script src="wl.js?v=12"></script>
 <script src="al.js?v=3"></script>
 <script src="split.js?v=1"></script>
 </body>

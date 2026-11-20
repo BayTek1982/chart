@@ -200,7 +200,7 @@ html.emb .tools{grid-template-columns:repeat(3,30px)!important}
 #dwDlg .lvg{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}#dwDlg .lvr{display:grid;grid-template-columns:20px 1fr 38px;gap:6px;align-items:center}#dwDlg .lvr.off input[type=number]{opacity:.45}
 #dwDlg .vsr{display:grid;grid-template-columns:20px 84px 1fr 16px 1fr;gap:6px;align-items:center;font-size:.86rem}#dwDlg .vsr.off input[type=number]{opacity:.45}
 #dwDlg .dft{display:flex;gap:8px;align-items:center;padding:10px 14px 12px;border-top:1px solid var(--line)}#dwDlg .dft select{width:auto;flex:0 1 190px}#dwDlg .dft .sp{flex:1}
-#dwDlg .hint{font-size:.76rem;color:var(--muted);line-height:1.35}
+#dwDlg .hint{font-size:.76rem;color:var(--muted);line-height:1.35}#dwDlg .dt{font:500 .72rem var(--f-num);color:var(--muted);margin-top:3px}#dwDlg .rw{align-items:start}#dwDlg .rw>span{padding-top:8px}
 @media (max-width:480px){#dwDlg .rw{grid-template-columns:104px 1fr}#dwDlg .lvg{grid-template-columns:1fr}}
 /* Seitenleiste rechts wie in TradingView (ab 901 px Breite): Alarme, Layout, Analyse, Teilen, Bild – die obere Leiste bleibt dadurch frei */
 #rail{display:none}
@@ -472,15 +472,23 @@ async function longData(){const key=S.mkt+":"+S.sym;if(LONG[key])return LONG[key
     const R=RIDX&&RIDX.coins&&RIDX.coins[S.sym];
     if(R&&R.last_day>=dayOf(Date.now())-5){R.M={L:RIDX.model.L,a:RIDX.model.a||0};out.R=R;
       try{const j=await getJSON(`https://scanner.kompassapps.de/data/risk/${encodeURIComponent(S.sym)}.json?t=${HB()}`);out.e=j.d.map(x=>({d:x[0],p:x[1],r:x[2]}))}catch(e){}}
-    if(!out.e.length){try{const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${S.sym}USDT&interval=1d&limit=1000`);out.e=j.map(r=>({d:dayOf(+r[0]),p:+r[4],r:null}))}catch(e){}}
+    if(!out.e.length){try{const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${S.sym}USDT&interval=1d&limit=1000`);out.e=j.map(r=>({d:dayOf(+r[0]),p:+r[4],r:null}))}catch(e){}
+      // dritte Quelle: Tageskerzen des OKX-Perpetuals selbst (z. B. Aktien-Perps, die es bei Binance Spot nicht gibt) – die längere Historie gewinnt
+      if(S.ex==="okx")try{const k=await okxK(S.sym,"1d",1000);if(k.length>out.e.length)out.e=k.map(r=>({d:dayOf(r.t),p:r.c,r:null}))}catch(e){}}
     // Hitze aus Tageskursen: Kurs ÷ ((19 abgeschlossene Wochen-Schlusskurse + Kurs) / 20)
     const W=new Map();out.e.forEach(x=>W.set(wkDay(x.d),x.p));const wks=[...W.keys()].sort((a,b)=>a-b);out.wc=wks.map(w=>[w,W.get(w)]);
     let wi=0;const closes=[];out.e.forEach(x=>{const w=wkDay(x.d);while(wi<wks.length&&wks[wi]<w){closes.push(W.get(wks[wi]));wi++}
-      if(closes.length>=19){const s=closes.slice(-19).reduce((a,b)=>a+b,0);x.h=x.p/((s+x.p)/20)}else x.h=null})}
-  else{if(SRIDX===null)SRIDX=await getJSON("https://scanner.kompassapps.de/data/srisk.json?t="+HB()).catch(()=>false);
-    const R=SRIDX&&SRIDX.s&&SRIDX.s[S.sym];if(R){if(R.s!=null&&R.ld>=dayOf(Date.now())-8){R.M={L:SRIDX.model.L,a:0};out.R=R}out.th=R.th||null;out.wc=R.wc||null}
-    try{const j=await getJSON(`https://scanner.kompassapps.de/data/srisk/${encodeURIComponent(S.sym.replace(/[^A-Za-z0-9.\-]/g,"_"))}.json?t=${HB()}`);out.e=j.d.map(x=>({d:x[0],p:x[1],r:x[2],h:x[3]}))}catch(e){}}
+      if(closes.length>=19){const s=closes.slice(-19).reduce((a,b)=>a+b,0);x.h=x.p/((s+x.p)/20)}else x.h=null});
+    // Reicht die Historie nicht für die Hitze (unter 20 Wochen, z. B. junge Aktien-Perps): Daten der echten Aktie / des echten Index aus dem Coin-Scanner nehmen, falls dort vorhanden
+    out.wkN=out.wc.filter(w=>w[0]<wkDay(dayOf(Date.now()))).length;
+    if(out.wkN<19&&!out.R){const st=await stockLong(S.sym);if(st.e.length){st.stock=true;st.wkN=(st.wc||[]).length;out=st}}}
+  else out=await stockLong(S.sym);
   return LONG[key]=out}
+// Lange Historie einer Aktie / eines Index aus dem Coin-Scanner (Risiko, Hitze, Wochen-Schlusskurse)
+async function stockLong(sym){const out={e:[],R:null,th:null,wc:null};if(SRIDX===null)SRIDX=await getJSON("https://scanner.kompassapps.de/data/srisk.json?t="+HB()).catch(()=>false);
+  const R=SRIDX&&SRIDX.s&&SRIDX.s[sym];if(!R&&S.mkt==="k")return out;if(R){if(R.s!=null&&R.ld>=dayOf(Date.now())-8){R.M={L:SRIDX.model.L,a:0};out.R=R}out.th=R.th||null;out.wc=R.wc||null}
+  try{const j=await getJSON(`https://scanner.kompassapps.de/data/srisk/${encodeURIComponent(sym.replace(/[^A-Za-z0-9.\-]/g,"_"))}.json?t=${HB()}`);out.e=j.d.map(x=>({d:x[0],p:x[1],r:x[2],h:x[3]}))}catch(e){}
+  return out}
 function buildExt(L){const k=S.k,n=k.length;if(!n||!L.e.length)return null;const e=L.e;
   const at=d=>{let a=0,b=e.length-1,r=-1;while(a<=b){const m=(a+b)>>1;if(e[m].d<=d){r=m;a=m+1}else b=m-1}return r};
   const risk=new Array(n).fill(null),heat=new Array(n).fill(null);
@@ -496,7 +504,11 @@ function buildExt(L){const k=S.k,n=k.length;if(!n||!L.e.length)return null;const
     if(!done)rows.push({r:cur,p:p*F,cur:true});ext.riskTab=rows;ext.riskStep=st}
   return ext}
 async function refreshExt(){if(!(S.cfg.risk.on||S.cfg.heat.on)||!S.k.length){S.ext=null;return}
-  try{S.ext=buildExt(await longData())}catch(e){S.ext=null}}
+  try{const L=await longData();S.ext=buildExt(L);S.longInfo={wk:L.wkN,stock:!!L.stock};
+    // Hinweis (einmal je Coin), wenn die Hitze mangels Historie nicht geht oder aus den Daten der echten Aktie kommt
+    const k=S.mkt+":"+S.sym;if(S.cfg.heat.on&&S.mkt==="k"&&!HEATHINT[k]){HEATHINT[k]=1;if(L.stock)toast(`Hitze für ${S.sym}: aus den Kursen der echten Aktie (Perp-Historie zu kurz)`);else if(!(S.ext&&S.ext.heat))toast(`Hitze für ${S.sym}: erst ${L.wkN||0} von 20 Wochen Historie vorhanden`)}}
+  catch(e){S.ext=null}}
+const HEATHINT={};
 // ---------- Währung ----------
 const CCY={"$":"USD","€":"EUR","HK$":"HKD","¥":"JPY","₩":"KRW","£":"GBP","CHF":"CHF","":"USD"};
 const SFX={DE:"€",PA:"€",AS:"€",BR:"€",MI:"€",MC:"€",HE:"€",HK:"HK$",T:"¥",KS:"₩",L:"£",SW:"CHF"};
@@ -643,7 +655,7 @@ function legend(){$("ovL").innerHTML=S.indHide?`<span style="opacity:.7">Indikat
 function setTitle(t){if(SLOT){if(SLOT===1)try{parent.document.title=t}catch(e){}return}if(!document.documentElement.classList.contains("split"))document.title=t}
 function analysis(){const rows=S.k.length?CC.summary(S.k,S.I,S.cfg,S.tf):[];
   if(S.k.length&&S.cfg.risk.on&&!S.I.risk)rows.push({t:"Risiko",v:"keine Daten",s:S.mkt==="k"?"Risiko gibt es für die Coins mit langer Kurs-Historie (wie im Coin-Scanner).":"Für diese Aktie liegen keine Risiko-Daten vor."});
-  if(S.k.length&&S.cfg.heat.on&&!S.I.heat)rows.push({t:"Hitze",v:"keine Daten",s:"zu wenig Wochen-Historie"});
+  if(S.k.length&&S.cfg.heat.on&&!S.I.heat)rows.push({t:"Hitze",v:"keine Daten",s:S.longInfo&&S.longInfo.wk!=null?`erst ${S.longInfo.wk} von 20 Wochen Historie vorhanden`:"zu wenig Wochen-Historie"});
   $("ana").innerHTML=rows.map(r=>`<div class="r ${r.c||""}"><span class="k">${esc(r.t)}</span><span class="v">${esc(r.v)}</span>${r.s?`<span class="s">${esc(r.s)}</span>`:""}</div>`).join("");
   $("anaSub").textContent=S.k.length?`${S.sym} · ${TFLAB[S.tf]} · ${curText()} · Pivot ${S.I.L||"–"} · Stand ${new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})} Uhr`:""}
 
@@ -2261,7 +2273,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   const rzUp=()=>{if(rz){rz=null;LS("blcBodH",Math.round(box.getBoundingClientRect().height))}};rs.addEventListener("pointerup",rzUp);rs.addEventListener("pointercancel",rzUp)}
 </script>
 <script src="bps.js?v=8"></script>
-<script src="dw.js?v=1"></script>
+<script src="dw.js?v=2"></script>
 <script src="wl.js?v=12"></script>
 <script src="al.js?v=3"></script>
 <script src="split.js?v=1"></script>

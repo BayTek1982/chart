@@ -487,6 +487,12 @@ function summary(k,I,cfg,tf){const out=[],last=k.length-1,p=k[last].c;if(!I.pv)r
 // ---------- Zeichnungen (Werkzeuge) ----------
 const DFIB=[0,0.5,0.559,0.618,0.667,0.786,0.886,1];
 const FIBX=[0,0.618,1,1.272,1.618,2,2.618];
+// Trendlinie: Enden nach „verlängern links/rechts“ (altes „verlängern“ = in Zeichenrichtung)
+function tlEnds(d,x1,y1,x2,y2,pw){let xa=x1,ya=y1,xb=x2,yb=y2;if(xb<xa){xa=x2;ya=y2;xb=x1;yb=y1}if(xb===xa)return[xa,ya,xb,yb];
+  const sl=(yb-ya)/(xb-xa),old=d.ext&&d.extL==null&&d.extR==null,eR=d.extR||(old&&x2>x1),eL=d.extL||(old&&x2<x1);
+  if(eR){yb=yb+sl*(pw-xb);xb=pw}if(eL){ya=ya-sl*xa;xa=0}return[xa,ya,xb,yb]}
+// Fibonacci-Level einer Zeichnung: eigene (d.lv, nur eingeschaltete) oder Standard
+function fibLv(d,def){return d.lv&&d.lv.length?d.lv.filter(l=>l&&l.on!==false&&isFinite(l.v)):def.map(v=>({v}))}
 function dwXY(L,k,tf){const X=t=>(tIdx(k,t,tf)-L.from+0.5)*L.cw;return{X,Y:L.Y,T:x=>idxT(k,L.from+x/L.cw-0.5,tf),P:L.P}}
 function dwHandles(d,L,k,tf){const {X,Y}=dwXY(L,k,tf),p=d.pts;
   if(d.type==="pos")return[{h:"e",x:X(p[0].t),y:Y(p[0].p)},{h:"tp",x:X(p[0].t),y:Y(d.tp)},{h:"sl",x:X(p[0].t),y:Y(d.sl)},{h:"t2",x:X(d.t2),y:Y(p[0].p)}];
@@ -503,11 +509,13 @@ function dwHit(d,L,k,tf,x,y){const {X,Y}=dwXY(L,k,tf),p=d.pts,tol=7;
     case"vl":return Math.abs(x-X(p[0].t))<tol;
     case"xl":return Math.abs(x-X(p[0].t))<tol||Math.abs(y-Y(p[0].p))<tol;
     case"text":{return Math.abs(x-X(p[0].t)-30)<40&&Math.abs(y-Y(p[0].p))<10}
-    case"tl":{const x1=X(p[0].t),y1=Y(p[0].p);let x2=X(p[1].t),y2=Y(p[1].p);if(d.ext&&x2!==x1){const s=(y2-y1)/(x2-x1),xe=x2>x1?L.pw:0;y2=y1+s*(xe-x1);x2=xe}return segDist(x,y,x1,y1,x2,y2)<tol}
+    case"tl":{const e=tlEnds(d,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p),L.pw);return segDist(x,y,e[0],e[1],e[2],e[3])<tol}
+    case"info":return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol;
+    case"note":{const bx=X(p[1].t),by=Y(p[1].p);return(Math.abs(x-bx)<70&&Math.abs(y-by)<14)||segDist(x,y,X(p[0].t),Y(p[0].p),bx,by)<tol}
     case"chan":{const o=Y(p[0].p+d.off)-Y(p[0].p);return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol||segDist(x,y,X(p[0].t),Y(p[0].p)+o,X(p[1].t),Y(p[1].p)+o)<tol}
     case"arrow":return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol;
     case"brush":case"abc":case"w5":{for(let i=1;i<p.length;i++)if(segDist(x,y,X(p[i-1].t),Y(p[i-1].p),X(p[i].t),Y(p[i].p))<tol)return true;return false}
-    case"fibx":{if(p.length<3)return false;const xs=p.map(q=>X(q.t)),ys=p.map(q=>Y(q.p)),dd=p[1].p-p[0].p,lv=FIBX.map(v=>Y(p[2].p+dd*v));
+    case"fibx":{if(p.length<3)return false;const xs=p.map(q=>X(q.t)),ys=p.map(q=>Y(q.p)),dd=p[1].p-p[0].p,lv=fibLv(d,FIBX).map(l=>Y(p[2].p+dd*l.v));
       return x>=Math.min(...xs)-tol&&x<=Math.max(...xs)+90&&y>=Math.min(...ys,...lv)-tol&&y<=Math.max(...ys,...lv)+tol}
     case"pos":{const x1=X(p[0].t),x2=X(d.t2),ys=[Y(d.tp),Y(d.sl)];return x>=Math.min(x1,x2)&&x<=Math.max(x1,x2)&&y>=Math.min(...ys)&&y<=Math.max(...ys)}
     default:{const xs=[X(p[0].t),X(p[1].t)],ys=[Y(p[0].p),Y(p[1].p)];return x>=Math.min(...xs)-tol&&x<=Math.max(...xs)+tol&&y>=Math.min(...ys)-tol&&y<=Math.max(...ys)+tol}}}
@@ -517,10 +525,26 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
   const tx=(t,x,y,c,al,bold)=>{ctx.font=`${bold?"700 ":"600 "}11px "JetBrains Mono",ui-monospace,monospace`;ctx.textAlign=al||"left";ctx.textBaseline="middle";ctx.fillStyle=c;ctx.fillText(t,x,y)};
   list.forEach(d=>{const p=d.pts,c=d.col||"#f0a33a",w=+d.w||2,ds={d:[7,5],p:[2,4]}[d.ds]||[];if(!p||!p.length)return;
     switch(d.type){
-      case"tl":{const x1=X(p[0].t),y1=Y(p[0].p);let x2=X(p[1].t),y2=Y(p[1].p);if(d.ext&&x2!==x1){const s=(y2-y1)/(x2-x1);const xe=x2>x1?pw:0;y2=y1+s*(xe-x1);x2=xe}ln(x1,y1,x2,y2,c,w,ds);break}
+      case"tl":{const e=tlEnds(d,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p),pw);ln(e[0],e[1],e[2],e[3],c,w,ds);
+        if(d.lbl){const xe=Math.min(e[2],pw-4);tx(fmt(L.P(e[3])),xe-4,e[3]-9,c,"right")}
+        if(d.text)tx(d.text,(X(p[0].t)+X(p[1].t))/2,(Y(p[0].p)+Y(p[1].p))/2-10,c,"center",1);break}
+      case"info":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ln(x1,y1,x2,y2,c,w,ds);
+        const pc=(p[1].p/p[0].p-1)*100,bars=Math.round(tIdx(k,p[1].t,tf)-tIdx(k,p[0].t,tf)),ms=Math.abs(p[1].t-p[0].t),dd=Math.floor(ms/864e5),hh=Math.floor(ms%864e5/36e5),mm=Math.round(ms%36e5/6e4);
+        const t1=`${fmt(p[1].p-p[0].p)} (${pc>=0?"+":""}${nf(pc,2)} %)`,t2=`${Math.abs(bars)} Kerzen · ${dd?dd+" T ":""}${hh?hh+" Std ":""}${!dd&&mm?mm+" Min":""}`.trim();
+        ctx.font='700 11px "JetBrains Mono",monospace';const tw=Math.max(ctx.measureText(t1).width,ctx.measureText(t2).width),bx=x2+10,by=y2-17;
+        ctx.fillStyle=th.bg;ctx.globalAlpha=.88;ctx.fillRect(bx,by,tw+12,34);ctx.globalAlpha=1;ctx.strokeStyle=c;ctx.lineWidth=1;ctx.strokeRect(bx+.5,by+.5,tw+12,34);tx(t1,bx+6,by+10,c,null,1);tx(t2,bx+6,by+24,th.txt);break}
+      case"note":{if(p.length<2)break;const ax=X(p[0].t),ay=Y(p[0].p),bx=X(p[1].t),by=Y(p[1].p),fs=+d.fs||12,t=d.text||"Notiz";ctx.font=`700 ${fs}px Archivo,system-ui,sans-serif`;const tw=ctx.measureText(t).width,hh=fs+10;
+        ln(ax,ay,bx,by,c,1.5);ctx.fillStyle=c;ctx.beginPath();ctx.arc(ax,ay,3,0,7);ctx.fill();
+        ctx.fillStyle=th.bg;ctx.fillRect(bx-tw/2-8,by-hh/2,tw+16,hh);ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.strokeRect(bx-tw/2-8,by-hh/2,tw+16,hh);
+        ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle=th.fg;ctx.fillText(t,bx,by+.5);break}
+      case"vpr":{if(p.length<2)break;const i0=Math.max(0,Math.round(Math.min(tIdx(k,p[0].t,tf),tIdx(k,p[1].t,tf)))),i1=Math.min(k.length-1,Math.round(Math.max(tIdx(k,p[0].t,tf),tIdx(k,p[1].t,tf)))),xa=Math.min(X(p[0].t),X(p[1].t)),xb=Math.max(X(p[0].t),X(p[1].t));
+        ctx.strokeStyle=ra(c,.6);ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.strokeRect(xa,0,xb-xa,L.mainH);ctx.setLineDash([]);if(i1<=i0)break;
+        const V=vprofile(k,i0,i1,+d.vr||40,+d.vva||70);if(!V){tx("kein Volumen",xa+6,14,c);break}
+        const wMax=Math.max(30,(xb-xa)*.45);V.b.forEach((v,r)=>{if(!v)return;const ya=Y(V.lo+(r+1)*V.step),yb=Y(V.lo+r*V.step),inVA=r>=V.a&&r<=V.z;ctx.fillStyle=ra(c,r===V.poc?.7:inVA?.38:.18);ctx.fillRect(xa,ya,v/V.max*wMax,Math.max(1,yb-ya-.5))});
+        [[V.pocP,"POC",1.5,[]],[V.vah,"VAH",1,[5,4]],[V.val,"VAL",1,[5,4]]].forEach(([pv,nm,lw,da])=>{const y=Y(pv);ln(xa,y,xb,y,c,lw,da);tx(`${nm} ${fmt(pv)}`,xb+4,y,c)});break}
       case"arrow":{const x1=X(p[0].t),y1=Y(p[0].p),x2=X(p[1].t),y2=Y(p[1].p),a=Math.atan2(y2-y1,x2-x1),hl=8+w*2;ln(x1,y1,x2,y2,c,w,ds);
         ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a-.45),y2-hl*Math.sin(a-.45));ctx.lineTo(x2-hl*Math.cos(a+.45),y2-hl*Math.sin(a+.45));ctx.closePath();ctx.fill();break}
-      case"ell":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.beginPath();ctx.ellipse((x1+x2)/2,(y1+y2)/2,Math.abs(x2-x1)/2||1,Math.abs(y2-y1)/2||1,0,0,7);ctx.fillStyle=ra(c,.13);ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.stroke();ctx.setLineDash([]);break}
+      case"ell":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.beginPath();ctx.ellipse((x1+x2)/2,(y1+y2)/2,Math.abs(x2-x1)/2||1,Math.abs(y2-y1)/2||1,0,0,7);ctx.fillStyle=ra(d.fill||c,(d.fop!=null?+d.fop:13)/100);ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.stroke();ctx.setLineDash([]);break}
       case"brush":{if(p.length<2)break;ctx.beginPath();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineJoin="round";ctx.lineCap="round";ctx.setLineDash(ds);p.forEach((q,i)=>i?ctx.lineTo(X(q.t),Y(q.p)):ctx.moveTo(X(q.t),Y(q.p)));ctx.stroke();ctx.setLineDash([]);break}
       case"prange":case"drange":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p),pr=d.type==="prange",up=pr?p[1].p>=p[0].p:x2>=x1,col=up?"#5b9bff":"#ff6b5e",xa=Math.min(x1,x2),xb=Math.max(x1,x2),ya=Math.min(y1,y2),yb=Math.max(y1,y2);
         ctx.fillStyle=ra(col,.14);ctx.fillRect(xa,ya,xb-xa,yb-ya);ln(xa,y1,xb,y1,col,1);ln(xa,y2,xb,y2,col,1);ln(x1,ya,x1,yb,col,1);ln(x2,ya,x2,yb,col,1);
@@ -529,11 +553,11 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
         let t;if(pr){const pc=(p[1].p/p[0].p-1)*100;t=`${fmt(p[1].p-p[0].p)} (${pc>=0?"+":""}${nf(pc,2)} %)`}else{const bars=Math.round(tIdx(k,p[1].t,tf)-tIdx(k,p[0].t,tf)),ms=Math.abs(p[1].t-p[0].t),dd=Math.floor(ms/864e5),hh=Math.floor(ms%864e5/36e5),mm=Math.round(ms%36e5/6e4);t=`${bars} Kerzen · ${dd?dd+" T ":""}${hh?hh+" Std ":""}${!dd&&mm?mm+" Min":""}`.trim()}
         ctx.font='700 11px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width,lx=mx-tw/2-6,ly=pr?(up?ya-19:yb+4):yb+4;ctx.fillStyle=col;ctx.fillRect(lx,ly,tw+12,15);tx(t,lx+6,ly+7.5,"#fff");break}
       case"fibx":{if(p.length<2)break;ln(X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p),ra(c,.6),1,[4,4]);if(p.length<3)break;ln(X(p[1].t),Y(p[1].p),X(p[2].t),Y(p[2].p),ra(c,.6),1,[4,4]);
-        const dd=p[1].p-p[0].p,xa=X(p[2].t),xb=Math.max(xa+60,X(p[2].t)+Math.abs(X(p[1].t)-X(p[0].t)));
-        FIBX.forEach(v=>{const pv=p[2].p+dd*v,y=Y(pv),main=v===1||v===1.618;ln(xa,y,xb,y,main?c:ra(c,.75),main?1.5:1,v===0?[3,3]:ds);tx(`${nf(v*100,1).replace(",0","")} % (${fmt(pv)})`,xb+4,y,c)});
-        ctx.fillStyle=ra(c,.1);const za=Y(p[2].p+dd*1.272),zb=Y(p[2].p+dd*1.618);ctx.fillRect(xa,Math.min(za,zb),xb-xa,Math.abs(zb-za));break}
+        const dd=p[1].p-p[0].p,eL=d.fext==="l"||d.fext==="b",eR=d.fext==="r"||d.fext==="b",xa=eL?0:X(p[2].t),xb=eR?pw:Math.max(X(p[2].t)+60,X(p[2].t)+Math.abs(X(p[1].t)-X(p[0].t)));
+        fibLv(d,FIBX).forEach(l=>{const v=l.v,pv=p[2].p+dd*v,y=Y(pv),main=v===1||v===1.618,cc=l.c||c,t=`${nf(v*100,1).replace(",0","")} %`+(d.fpx!==false?` (${fmt(pv)})`:"");ln(xa,y,xb,y,main||l.c?cc:ra(cc,.75),main?1.5:1,v===0?[3,3]:ds);if(eR)tx(t,pw-6,y-8,cc,"right");else tx(t,xb+4,y,cc)});
+        if(!d.lv){ctx.fillStyle=ra(c,.1);const za=Y(p[2].p+dd*1.272),zb=Y(p[2].p+dd*1.618);ctx.fillRect(xa,Math.min(za,zb),xb-xa,Math.abs(zb-za))}break}
       case"abc":case"w5":{const lab=d.type==="abc"?["0","A","B","C"]:["0","1","2","3","4","5"];ctx.beginPath();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);p.forEach((q,i)=>i?ctx.lineTo(X(q.t),Y(q.p)):ctx.moveTo(X(q.t),Y(q.p)));ctx.stroke();ctx.setLineDash([]);
-        p.forEach((q,i)=>{const pv=p[i-1]||p[i+1],hi=pv?q.p>=pv.p:true,x=X(q.t),y=Y(q.p)+(hi?-13:13);ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fillStyle=th.bg;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.stroke();
+        if(!d.nolab)p.forEach((q,i)=>{const pv=p[i-1]||p[i+1],hi=pv?q.p>=pv.p:true,x=X(q.t),y=Y(q.p)+(hi?-13:13);ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fillStyle=th.bg;ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.stroke();
           ctx.font='700 10.5px "JetBrains Mono",monospace';ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle=c;ctx.fillText(lab[i]||"",x,y+.5)});break}
       case"hl":{const y=Y(p[0].p);ln(0,y,pw,y,c,w,ds);const t=fmt(p[0].p);ctx.font='600 10px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width;ctx.fillStyle=c;ctx.fillRect(pw-tw-10,y-7,tw+8,14);tx(t,pw-6,y,"#0e131b","right");break}
       case"ray":{const x1=X(p[0].t),y=Y(p[0].p);ln(x1,y,pw,y,c,w,ds);tx(fmt(p[0].p),x1+4,y-8,c);break}
@@ -541,29 +565,33 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
       case"xl":{const x=X(p[0].t),y=Y(p[0].p),HH=L.mainH;ln(0,y,pw,y,c,w,ds);ln(x,0,x,HH,c,w,ds);
         const t=fmt(p[0].p);ctx.font='600 10px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width;ctx.fillStyle=c;ctx.fillRect(pw-tw-10,y-7,tw+8,14);tx(t,pw-6,y,"#0e131b","right");
         const tl=tlab(p[0].t,tf,true),lw=ctx.measureText(tl).width;ctx.fillStyle=c;ctx.fillRect(x-lw/2-4,HH-15,lw+8,14);tx(tl,x,HH-8,"#0e131b","center");break}
-      case"rect":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.fillStyle=ra(c,.15);ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.strokeRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));break}
-      case"text":{ctx.font='700 13px Archivo,system-ui,sans-serif';ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillStyle=c;ctx.fillText(d.text||"Text",X(p[0].t),Y(p[0].p));break}
-      case"fib":{if(p.length<2)break;const xa=Math.min(X(p[0].t),X(p[1].t)),xb=Math.max(X(p[0].t),X(p[1].t))+40,lv=x=>p[1].p+(p[0].p-p[1].p)*x;
-        ctx.fillStyle=ra(c,.13);const za=Y(lv(0.618)),zb=Y(lv(0.667));ctx.fillRect(xa,Math.min(za,zb),xb-xa,Math.abs(zb-za));
-        ln(X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p),ra(c,.5),1,[3,3]);
-        DFIB.forEach(x=>{const y=Y(lv(x));ln(xa,y,xb,y,x===0||x===1?th.txt:c,1);tx(`${nf(x*100,1).replace(",0","")} % (${fmt(lv(x))})`,xb+4,y,x===0||x===1?th.txt:c)});break}
+      case"rect":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.fillStyle=ra(d.fill||c,(d.fop!=null?+d.fop:15)/100);ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.strokeRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ctx.setLineDash([]);break}
+      case"text":{const fs=+d.fs||13,t=d.text||"Text",x=X(p[0].t),y=Y(p[0].p);ctx.font=`700 ${fs}px Archivo,system-ui,sans-serif`;ctx.textAlign="left";ctx.textBaseline="middle";
+        if(d.bg){const tw=ctx.measureText(t).width;ctx.fillStyle=th.bg;ctx.globalAlpha=.85;ctx.fillRect(x-5,y-fs/2-4,tw+10,fs+8);ctx.globalAlpha=1}ctx.fillStyle=c;ctx.fillText(t,x,y);break}
+      case"fib":{if(p.length<2)break;const eL=d.fext==="l"||d.fext==="b",eR=d.fext==="r"||d.fext==="b",xa=eL?0:Math.min(X(p[0].t),X(p[1].t)),xb=eR?pw:Math.max(X(p[0].t),X(p[1].t))+40,lv=x=>p[1].p+(p[0].p-p[1].p)*x,LV=fibLv(d,DFIB);
+        if(LV.some(l=>l.v===0.618)&&LV.some(l=>l.v===0.667)){ctx.fillStyle=ra(c,.13);const za=Y(lv(0.618)),zb=Y(lv(0.667));ctx.fillRect(xa,Math.min(za,zb),xb-xa,Math.abs(zb-za))}
+        if(d.ftl!==false)ln(X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p),ra(c,.5),1,[3,3]);
+        LV.forEach(l=>{const x=l.v,y=Y(lv(x)),cc=l.c||(x===0||x===1?th.txt:c),t=`${nf(x*100,1).replace(",0","")} %`+(d.fpx!==false?` (${fmt(lv(x))})`:"");ln(xa,y,xb,y,cc,1,ds);if(eR)tx(t,pw-6,y-8,cc,"right");else tx(t,xb+4,y,cc)});break}
       case"pos":{const x1=X(p[0].t),x2=X(d.t2),xa=Math.min(x1,x2),xw=Math.abs(x2-x1),e=p[0].p,ye=Y(e),yt=Y(d.tp),ys=Y(d.sl),lg=d.tp>e;
-        ctx.fillStyle="rgba(60,207,138,.18)";ctx.fillRect(xa,Math.min(ye,yt),xw,Math.abs(yt-ye));ctx.fillStyle="rgba(255,107,94,.18)";ctx.fillRect(xa,Math.min(ye,ys),xw,Math.abs(ys-ye));
+        const cT=d.cTp||"#3ccf8a",cS=d.cSl||"#ff6b5e",qty=d.amt>0?d.amt*(+d.lev||1)/e:0;
+        ctx.fillStyle=ra(cT,.18);ctx.fillRect(xa,Math.min(ye,yt),xw,Math.abs(yt-ye));ctx.fillStyle=ra(cS,.18);ctx.fillRect(xa,Math.min(ye,ys),xw,Math.abs(ys-ye));
         ln(xa,ye,xa+xw,ye,th.fg,1.5);const tp=(d.tp/e-1)*100,sl=(d.sl/e-1)*100,crv=Math.abs(d.tp-e)/Math.abs(e-d.sl||1);
-        tx(`${lg?"Long":"Short"} · Ziel ${fmt(d.tp)} (${tp>=0?"+":""}${nf(tp,2)} %) · CRV ${nf(crv,2)}`,xa+4,yt+(lg?9:-9),"#3ccf8a",null,1);
-        tx(`Stop ${fmt(d.sl)} (${sl>=0?"+":""}${nf(sl,2)} %)`,xa+4,ys+(lg?-9:9),"#ff6b5e",null,1);tx(`Einstieg ${fmt(e)}`,xa+4,ye+(lg?9:-9),th.fg);break}
+        // Beschriftung: Ziel und Stop außen an der Box, Einstieg rechts neben der Linie – mit Mindestabstand, damit sich bei flacher Box nichts überdeckt
+        const sg=lg?-1:1,yT=lg?Math.min(yt-9,ye-15):Math.max(yt+9,ye+15),yS=lg?Math.max(ys+9,ye+15):Math.min(ys-9,ye-15);
+        tx(`${lg?"Long":"Short"} · Ziel ${fmt(d.tp)} (${tp>=0?"+":""}${nf(tp,2)} %) · CRV ${nf(crv,2)}${qty?` · Gewinn +${fmt(Math.abs(d.tp-e)*qty)}`:""}`,xa+4,yT,cT,null,1);
+        tx(`Stop ${fmt(d.sl)} (${sl>=0?"+":""}${nf(sl,2)} %)${qty?` · Verlust −${fmt(Math.abs(e-d.sl)*qty)}`:""}`,xa+4,yS,cS,null,1);tx(`Einstieg ${fmt(e)}${qty?` · ${d.lev>1?d.lev+"x · ":""}Einsatz ${fmt(+d.amt)}`:""}`,xa+xw+6,ye,th.fg);break}
       case"measure":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p),up=p[1].p>=p[0].p,col=up?"#5b9bff":"#ff6b5e";
         ctx.fillStyle=ra(col,.14);ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ln(x1,y1,x2,y2,col,1.5);
         const pc=(p[1].p/p[0].p-1)*100,bars=Math.round(tIdx(k,p[1].t,tf)-tIdx(k,p[0].t,tf));
         const t=`${pc>=0?"+":""}${nf(pc,2)} % · ${fmt(p[1].p-p[0].p)} · ${Math.abs(bars)} Kerzen`;ctx.font='700 11px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width;
         const lx=(x1+x2)/2-tw/2-6,ly=up?Math.min(y1,y2)-18:Math.max(y1,y2)+4;ctx.fillStyle=col;ctx.fillRect(lx,ly,tw+12,15);tx(t,lx+6,ly+7.5,"#fff");break}
       case"chan":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p),o=Y(p[0].p+(d.off||0))-y1;
-        ctx.fillStyle=ra(c,.08);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x2,y2+o);ctx.lineTo(x1,y1+o);ctx.closePath();ctx.fill();
+        ctx.fillStyle=ra(d.fill||c,(d.fop!=null?+d.fop:8)/100);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x2,y2+o);ctx.lineTo(x1,y1+o);ctx.closePath();ctx.fill();
         ln(x1,y1,x2,y2,c,w,ds);ln(x1,y1+o,x2,y2+o,c,w,ds);ln(x1,y1+o/2,x2,y2+o/2,ra(c,.5),1,[4,4]);break}}
     if(d.lock&&sel===d.id){ctx.font="12px system-ui";ctx.textAlign="left";ctx.fillStyle=c;ctx.fillText("🔒",X(p[0].t)+6,Y(p[0].p)-12)}
     if(sel===d.id&&!d.lock){dwHandles(d,L,k,tf).forEach(h=>{ctx.fillStyle=th.bg;ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,5,0,7);ctx.fill();ctx.stroke()})}});
   ctx.restore()}
 
-return{addTf:(k,ms,base)=>{TFMS[k]=ms;PIV[k]=PIV[base]||10},heatPal:t=>{PALTV=!!t},dfLevels,DEF,PIV,THEME,withDefaults,compute,draw,summary,fmt,tlab,vprofile,rkCol,heatCol,heatTxt,tIdx,idxT,drawDrawings,dwHandles,dwHit,DFIB};
+return{addTf:(k,ms,base)=>{TFMS[k]=ms;PIV[k]=PIV[base]||10},heatPal:t=>{PALTV=!!t},dfLevels,DEF,PIV,THEME,withDefaults,compute,draw,summary,fmt,tlab,vprofile,rkCol,heatCol,heatTxt,tIdx,idxT,drawDrawings,dwHandles,dwHit,DFIB,FIBX};
 })();
 if(typeof module!=="undefined")module.exports=CC;

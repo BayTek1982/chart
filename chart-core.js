@@ -499,6 +499,10 @@ function dwHandles(d,L,k,tf){const {X,Y}=dwXY(L,k,tf),p=d.pts;
   if(d.type==="hl")return[{h:0,x:Math.min(L.pw-30,Math.max(30,X(p[0].t))),y:Y(p[0].p)}];
   if(d.type==="brush")return[];
   const hs=p.map((q,i)=>({h:i,x:X(q.t),y:Y(q.p)}));
+  // Rechteck & Co.: zusätzlich die beiden anderen Ecken und Griffe in der Mitte jeder Seite (nur Breite bzw. nur Höhe ändern)
+  if(p.length>1&&["rect","ell","prange","drange","measure","vpr"].includes(d.type)){const x0=X(p[0].t),x1=X(p[1].t),y0=Y(p[0].p),y1=Y(p[1].p),mx=(x0+x1)/2,my=(y0+y1)/2;
+    if(d.type==="vpr"){const yy=Math.min(L.mainH-30,Math.max(30,L.mainH/2));return[{h:"x0",x:x0,y:yy,s:1},{h:"x1",x:x1,y:yy,s:1}]}
+    hs.push({h:"c01",x:x0,y:y1},{h:"c10",x:x1,y:y0},{h:"x0",x:x0,y:my,s:1},{h:"x1",x:x1,y:my,s:1},{h:"y0",x:mx,y:y0,s:1},{h:"y1",x:mx,y:y1,s:1})}
   if(d.type==="chan"&&p.length>1)hs.push({h:"off",x:(X(p[0].t)+X(p[1].t))/2,y:Y((p[0].p+p[1].p)/2+d.off)});
   return hs}
 function segDist(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,l=dx*dx+dy*dy;let t=l?((px-x1)*dx+(py-y1)*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(px-(x1+t*dx),py-(y1+t*dy))}
@@ -511,6 +515,7 @@ function dwHit(d,L,k,tf,x,y){const {X,Y}=dwXY(L,k,tf),p=d.pts,tol=7;
     case"text":{return Math.abs(x-X(p[0].t)-30)<40&&Math.abs(y-Y(p[0].p))<10}
     case"tl":{const e=tlEnds(d,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p),L.pw);return segDist(x,y,e[0],e[1],e[2],e[3])<tol}
     case"info":return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol;
+    case"plabel":{const ax=X(p[0].t),ay=Y(p[0].p);return(x>=ax-6&&x<=ax+150&&y>=ay-34&&y<=ay+6)}
     case"note":{const bx=X(p[1].t),by=Y(p[1].p);return(Math.abs(x-bx)<70&&Math.abs(y-by)<14)||segDist(x,y,X(p[0].t),Y(p[0].p),bx,by)<tol}
     case"chan":{const o=Y(p[0].p+d.off)-Y(p[0].p);return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol||segDist(x,y,X(p[0].t),Y(p[0].p)+o,X(p[1].t),Y(p[1].p)+o)<tol}
     case"arrow":return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol;
@@ -533,6 +538,9 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
         const t1=`${fmt(p[1].p-p[0].p)} (${pc>=0?"+":""}${nf(pc,2)} %)`,t2=`${Math.abs(bars)} Kerzen · ${dd?dd+" T ":""}${hh?hh+" Std ":""}${!dd&&mm?mm+" Min":""}`.trim();
         ctx.font='700 11px "JetBrains Mono",monospace';const tw=Math.max(ctx.measureText(t1).width,ctx.measureText(t2).width),bx=x2+10,by=y2-17;
         ctx.fillStyle=th.bg;ctx.globalAlpha=.88;ctx.fillRect(bx,by,tw+12,34);ctx.globalAlpha=1;ctx.strokeStyle=c;ctx.lineWidth=1;ctx.strokeRect(bx+.5,by+.5,tw+12,34);tx(t1,bx+6,by+10,c,null,1);tx(t2,bx+6,by+24,th.txt);break}
+      case"plabel":{const ax=X(p[0].t),ay=Y(p[0].p),fs=+d.fs||12,t=(d.text?d.text+" ":"")+fmt(p[0].p);ctx.font=`700 ${fs}px "JetBrains Mono",ui-monospace,monospace`;const tw=ctx.measureText(t).width,hh=fs+8,bx=ax+10,by=ay-hh-8;
+        ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx+2,by+hh);ctx.lineTo(bx+14,by+hh);ctx.closePath();ctx.fill();ctx.fillRect(bx,by,tw+12,hh);ctx.beginPath();ctx.arc(ax,ay,2.5,0,7);ctx.fill();
+        ctx.textAlign="left";ctx.textBaseline="middle";const q=hexRgb(c);ctx.fillStyle=q&&(0.299*q[0]+0.587*q[1]+0.114*q[2])/255>0.6?"#0e131b":"#fff";ctx.fillText(t,bx+6,by+hh/2+.5);break}
       case"note":{if(p.length<2)break;const ax=X(p[0].t),ay=Y(p[0].p),bx=X(p[1].t),by=Y(p[1].p),fs=+d.fs||12,t=d.text||"Notiz";ctx.font=`700 ${fs}px Archivo,system-ui,sans-serif`;const tw=ctx.measureText(t).width,hh=fs+10;
         ln(ax,ay,bx,by,c,1.5);ctx.fillStyle=c;ctx.beginPath();ctx.arc(ax,ay,3,0,7);ctx.fill();
         ctx.fillStyle=th.bg;ctx.fillRect(bx-tw/2-8,by-hh/2,tw+16,hh);ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.strokeRect(bx-tw/2-8,by-hh/2,tw+16,hh);
@@ -589,7 +597,7 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
         ctx.fillStyle=ra(d.fill||c,(d.fop!=null?+d.fop:8)/100);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x2,y2+o);ctx.lineTo(x1,y1+o);ctx.closePath();ctx.fill();
         ln(x1,y1,x2,y2,c,w,ds);ln(x1,y1+o,x2,y2+o,c,w,ds);ln(x1,y1+o/2,x2,y2+o/2,ra(c,.5),1,[4,4]);break}}
     if(d.lock&&sel===d.id){ctx.font="12px system-ui";ctx.textAlign="left";ctx.fillStyle=c;ctx.fillText("🔒",X(p[0].t)+6,Y(p[0].p)-12)}
-    if(sel===d.id&&!d.lock){dwHandles(d,L,k,tf).forEach(h=>{ctx.fillStyle=th.bg;ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.x,h.y,5,0,7);ctx.fill();ctx.stroke()})}});
+    if(sel===d.id&&!d.lock){dwHandles(d,L,k,tf).forEach(h=>{ctx.fillStyle=th.bg;ctx.strokeStyle=c;ctx.lineWidth=2;ctx.setLineDash([]);ctx.beginPath();if(h.s)ctx.rect(h.x-4.5,h.y-4.5,9,9);else ctx.arc(h.x,h.y,5,0,7);ctx.fill();ctx.stroke()})}});
   ctx.restore()}
 
 return{addTf:(k,ms,base)=>{TFMS[k]=ms;PIV[k]=PIV[base]||10},heatPal:t=>{PALTV=!!t},dfLevels,DEF,PIV,THEME,withDefaults,compute,draw,summary,fmt,tlab,vprofile,rkCol,heatCol,heatTxt,tIdx,idxT,drawDrawings,dwHandles,dwHit,DFIB,FIBX};

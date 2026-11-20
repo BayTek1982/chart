@@ -169,7 +169,7 @@ html,body{height:100%;overflow:hidden}
 #colMenu .crs{margin-top:12px;width:100%;border:1px solid var(--line);background:none;color:var(--fg);border-radius:9px;padding:9px;font:600 .85rem inherit;font-family:inherit;cursor:pointer}
 #eyeMenu{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4);padding:6px;display:flex;flex-direction:column;min-width:250px}
 #eyeMenu button{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--fg);font:600 .92rem inherit;font-family:inherit;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left}
-#eyeMenu button:hover{background:var(--chip)}#eyeMenu .ck{width:16px;color:var(--gold);font-weight:800}
+#eyeMenu button:hover{background:var(--chip)}#eyeMenu button:disabled{opacity:.45;cursor:default}#eyeMenu .ck{width:16px;color:var(--gold);font-weight:800}
 #eyeMenu button[data-e="all"]{border-top:1px solid var(--line);border-radius:0 0 8px 8px;margin-top:4px}
 .indHide #bodBox,.indHide #heatTab,.indHide #rkTab,.indHide #bpMt,.indHide #bpVt,.indHide #bsBias,.indHide #bsIm,.indHide #bsLs,.indHide #bfVp,.indHide #bfRk,.indHide #bwRt,.indHide #bwTb,.indHide #bwMt,.indHide #bwTip{display:none!important}
 #tfMenu{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.4);padding:8px;display:grid;grid-template-columns:repeat(3,auto);gap:4px;max-width:calc(100vw - 16px)}
@@ -376,7 +376,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 
 <script src="gz-core.js?v=3"></script>
 <script src="ex.js?v=1"></script>
-<script src="chart-core.js?v=36"></script>
+<script src="chart-core.js?v=37"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -758,17 +758,25 @@ const TOOLS=[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstrati
   ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
   ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
   ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],
-  ["xline","⤡","Verlängerte Linie (in beide Richtungen endlos)"],["info","ℹ","Info-Linie (Abstand in Preis, Prozent, Kerzen und Zeit)"],["note","💬","Sprechblase (Notiz mit Zeiger auf eine Kerze)"],["vpr","▥","Volumenprofil für einen Bereich (POC, VAH, VAL)"],["-"],
-  ["mag","🧲","Magnet in 5 Stufen (rastet an Hoch/Tief/Open/Close ein) – weiterklicken = stärker"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
+  ["xline","⤡","Verlängerte Linie (in beide Richtungen endlos)"],["info","ℹ","Info-Linie (Abstand in Preis, Prozent, Kerzen und Zeit)"],["plabel","🏷","Preis-Label (zeigt den Preis an der angeklickten Stelle, auf Wunsch mit Text davor)"],["vpr","▥","Volumenprofil für einen Bereich (POC, VAH, VAL)"],["-"],
+  ["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["mag","🧲","Magnet in 5 Stufen (rastet an Hoch/Tief/Open/Close ein) – weiterklicken = stärker"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["clear","🗑","Zeichnungen dieses Werts löschen: alle oder nur die nicht gesperrten"]];
 // Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
 const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6,xline:2,info:2,note:2,vpr:2};const TWO=Object.keys(NEED);
-const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff",info:"#26c6da",note:"#f0a33a",vpr:"#64b5f6"};
+const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff",info:"#26c6da",note:"#f0a33a",vpr:"#64b5f6",plabel:"#f0a33a"};
 S.ovZu=LS("blcOvZu")===true;document.querySelector(".ov").classList.toggle("zu",S.ovZu);
 $("ovT").addEventListener("click",e=>{if(!e.target.closest("#ovTg"))return;S.ovZu=!S.ovZu;LS("blcOvZu",S.ovZu);document.querySelector(".ov").classList.toggle("zu",S.ovZu);legend()});
 S.dwHide=LS("blcDwHide")===true;S.posHide=LS("blcPosHide")===true;S.indHide=LS("blcIndHide")===true;
 // Auge: wie TradingView – Zeichnungen / Indikatoren / Positionen getrennt oder alles ausblenden
 function hideCfg(){const o={};for(const k in S.cfg){const v=S.cfg[k];o[k]=v&&typeof v==="object"&&"on" in v?Object.assign({},v,{on:false}):v}return o}
 function eyeSet(k,v){S[k]=v;LS({dwHide:"blcDwHide",posHide:"blcPosHide",indHide:"blcIndHide"}[k],v);if(k!=="indHide")S.sel=null;document.documentElement.classList.toggle("indHide",S.indHide)}
+// Papierkorb: nur die nicht gesperrten Zeichnungen löschen oder alle (lässt sich mit ↶ zurückholen)
+function delMenu(btn){let m=$("eyeMenu");if(m){m.remove();return}if(!S.dw.length){toast("Keine Zeichnungen für "+S.sym);return}m=document.createElement("div");m.id="eyeMenu";document.body.appendChild(m);
+  const nL=S.dw.filter(d=>d.lock).length,nF=S.dw.length-nL;
+  m.innerHTML=`<button data-d="frei" ${nF?"":"disabled"}><span class="ck">🗑</span>Nicht gesperrte löschen (${nF})</button><button data-d="alle"><span class="ck">🗑</span>Alle löschen (${S.dw.length}${nL?`, davon ${nL} gesperrt 🔒`:""})</button>`;
+  const r=btn.getBoundingClientRect();m.style.top=Math.max(8,Math.min(r.top,innerHeight-m.offsetHeight-8))+"px";m.style.left=Math.min(r.right+8,innerWidth-m.offsetWidth-8)+"px";
+  m.onclick=e=>{e.stopPropagation();const b=e.target.closest("[data-d]");if(!b||b.disabled)return;const all=b.dataset.d==="alle";if(all&&nL&&!confirm(`Wirklich alle ${S.dw.length} Zeichnungen für ${S.sym} löschen, auch die ${nL} gesperrten?`))return;
+    S.dw=all?[]:S.dw.filter(d=>d.lock);S.sel=null;saveDw();m.remove();paint();toast(all?"Alle Zeichnungen gelöscht – ↶ holt sie zurück":`${nF} Zeichnung(en) gelöscht – ↶ holt sie zurück`)};
+  setTimeout(()=>document.addEventListener("click",function cl(e){if(!m.contains(e.target)){m.remove();document.removeEventListener("click",cl)}}),0)}
 function eyeMenu(btn){let m=$("eyeMenu");if(m){m.remove();return}m=document.createElement("div");m.id="eyeMenu";document.body.appendChild(m);
   const all=()=>S.dwHide&&S.indHide&&S.posHide;
   const draw=()=>{m.innerHTML=[["dwHide","Zeichnungen verbergen"],["indHide","Indikatoren verbergen"],["posHide","Positionen (Long/Short) verbergen"],["all","Alles ausblenden"]]
@@ -786,7 +794,7 @@ $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");
   else if(t==="hide"){eyeMenu(b);return}
   else if(t==="undo"){dwUndo(-1);return}
   else if(t==="redo"){dwUndo(1);return}
-  else if(t==="clear"){if(S.dw.length&&confirm(`Alle ${S.dw.length} Zeichnungen für ${S.sym} löschen?`)){S.dw=[];S.sel=null;saveDw()}}
+  else if(t==="clear"){delMenu(b);return}
   else{S.tool=t==="sel"?null:t;S.pend=null;S.sel=null}
   renderTools();paint()});
 const dwKey=()=>`bcbD:${S.mkt}:${S.sym}`;
@@ -853,6 +861,8 @@ function dwMove(x,y,pressed){if(!L)return false;
     else if(o.type==="pos"){if(g.h==="e"){const dp=pt.p-o.pts[0].p,dt=pt.t-o.pts[0].t;d.pts=[{t:o.pts[0].t+dt,p:pt.p}];d.tp=o.tp+dp;d.sl=o.sl+dp;d.t2=o.t2+dt}else if(g.h==="tp")d.tp=pt.p;else if(g.h==="sl")d.sl=pt.p;else if(g.h==="t2")d.t2=pt.t}
     else if(g.h==="off"){d.off=pt.p-lineP(d,pt.t)}
     else if(o.type==="hl"){d.pts=[{t:o.pts[0].t,p:pt.p}]}
+    // Seiten- und Eck-Griffe (Rechteck & Co.): nur Breite, nur Höhe oder die freie Ecke ziehen
+    else if(typeof g.h==="string"&&/^(x0|x1|y0|y1|c01|c10)$/.test(g.h)&&d.pts.length>1){const a=d.pts[0],b=d.pts[1];if(g.h==="x0")a.t=pt.t;else if(g.h==="x1")b.t=pt.t;else if(g.h==="y0")a.p=pt.p;else if(g.h==="y1")b.p=pt.p;else if(g.h==="c01"){a.t=pt.t;b.p=pt.p}else{b.t=pt.t;a.p=pt.p}}
     else d.pts[g.h]=pt;
     paint();return true}
   if(!pressed&&L){cv.style.cursor=S.tool?"crosshair":hitDw(x,y)?"move":cv.style.cursor}
@@ -862,8 +872,8 @@ function dwUp(x,y){if(DEMO.on){DEMO.on=false;return true}if(S.dwd&&S.dwd.mode===
   if(S.dwd){const g=S.dwd;S.dwd=null;if(g.moved)saveDw();return true}return false}
 function renderEbar(){const b=$("ebar"),d=S.dw.find(z=>z.id===S.sel);if(!d){b.hidden=true;return}b.hidden=false;
   if(b.dataset.id===d.id&&b.dataset.t===d.type)return;b.dataset.id=d.id;b.dataset.t=d.type;
-  const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5",info:"Info-Linie",note:"Sprechblase",vpr:"Volumenprofil"};
-  const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","vl","note","vpr"].includes(d.type);
+  const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5",info:"Info-Linie",note:"Sprechblase",vpr:"Volumenprofil",plabel:"Preis-Label"};
+  const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","vl","note","vpr","plabel"].includes(d.type);
   b.innerHTML=`<b>${names[d.type]||""}</b><button data-e="cfg" title="Alle Einstellungen: Stil, Koordinaten, Sichtbarkeit, Vorlage (auch per Doppelklick auf die Zeichnung)">⚙</button>${!noCol?`<input type="color" data-e="col" value="${/^#[0-9a-f]{6}$/i.test(d.col)?d.col:"#f0a33a"}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${["tl","hl","ray"].includes(d.type)?`<label title="Meldung, wenn der Kurs die Linie kreuzt"><input type="checkbox" data-e="alarm" ${d.alarm?"checked":""}> 🔔 Alarm</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}${DWT[d.type]?`<button data-e="tpl0" title="Gemerkte Farbe/Stärke/Linienart für dieses Werkzeug vergessen (wieder Standard)">↺ Vorlage</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
 $("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col"){d.col=e.target.value;dwtSet(d,"col")}if(k==="w"){d.w=+e.target.value;dwtSet(d,"w")}if(k==="ext")d.ext=e.target.checked;if(k==="alarm"){d.alarm=e.target.checked;if(d.alarm&&window.alPerm)alPerm();toast(d.alarm?"🔔 Alarm aktiv – meldet, wenn der Kurs die Linie kreuzt":"Alarm aus")}if(k==="ds"){d.ds=e.target.value;dwtSet(d,"ds")}if(k==="lock")d.lock=e.target.checked;saveDw();paint()});
 $("ebar").addEventListener("click",e=>{const k=e.target.dataset&&e.target.dataset.e,d=S.dw.find(z=>z.id===S.sel);if(!d)return;
@@ -2291,7 +2301,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   const rzUp=()=>{if(rz){rz=null;LS("blcBodH",Math.round(box.getBoundingClientRect().height))}};rs.addEventListener("pointerup",rzUp);rs.addEventListener("pointercancel",rzUp)}
 </script>
 <script src="bps.js?v=8"></script>
-<script src="dw.js?v=3"></script>
+<script src="dw.js?v=4"></script>
 <script src="wl.js?v=13"></script>
 <script src="al.js?v=4"></script>
 <script src="split.js?v=1"></script>

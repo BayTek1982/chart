@@ -72,9 +72,12 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
     <textarea id="wlTxt" rows="3" placeholder="OKX:BTCUSDT.P, OKX:ETHUSDT.P …">${esc(impTxt)}</textarea><div class="row"><input type="file" id="wlFile" accept=".txt,.csv,text/plain,text/csv"><button class="btn" data-a="imp">In neue Liste importieren</button><button class="btn ghost" data-a="impAdd">Zur aktuellen Liste</button></div>
     <div class="row"><button class="btn ghost" data-a="imp0">Schließen</button></div></div>`;
   const so=l.sort||{k:"eigen",d:1},sorted=so.k!=="eigen";
-  const C=V.tab?COLS.filter(c=>V.cols[c.k]):COLS.filter(c=>c.k==="chgp"),gw=C.map(c=>c.w+"px").join(" "),AD=C.some(c=>c.k==="ald")||so.k==="ald"?alarmDist():{};
+  const C=V.tab?COLS.filter(c=>V.cols[c.k]):COLS.filter(c=>c.k==="chgp"),sumW=C.reduce((a,c)=>a+c.w,0),gaps=6*(C.length+2)+18+8;
+  // Kein seitliches Scrollen: am PC wird das Panel so breit wie nötig (höchstens 55 % des Fensters); reicht der Platz trotzdem nicht (Handy), werden die Spalten schmaler
+  if(innerWidth>=1000)document.documentElement.style.setProperty("--sideW",Math.max(390,Math.min(Math.round(innerWidth*.55),sumW+gaps+96+30))+"px");
+  const fW=Math.max(.5,Math.min(1,(b.clientWidth-gaps-(C.length>3?84:100))/Math.max(1,sumW))),gw=C.map(c=>Math.floor(c.w*fW)+"px").join(" "),AD=C.some(c=>c.k==="ald")||so.k==="ald"?alarmDist():{};
   // Kopfzeile wie in TradingView: Spalte antippen = sortieren, noch einmal = umdrehen, drittes Mal = eigene Reihenfolge
-  h+=`<div class="wlTbl"><div style="min-width:${96+C.reduce((a,c)=>a+c.w+6,0)}px"><div class="wlHd" style="grid-template-columns:minmax(0,1fr) ${gw}">${[{s:"sym",t:"Symbol"}].concat(C).map(c=>c.s?`<button data-hs="${c.s}" class="${so.k===c.s?"on":""}" title="Nach ${c.t} sortieren">${c.t}${so.k===c.s?(so.d>0?" ▲":" ▼"):""}</button>`:`<span>${c.t}</span>`).join("")}</div><div class="wlRows">`;let n=0;
+  h+=`<div class="wlTbl${fW<1?" eng":""}"><div style="min-width:${fW<=.5?Math.round(84+sumW*.5+gaps):0}px"><div class="wlHd" style="grid-template-columns:minmax(0,1fr) ${gw}">${[{s:"sym",t:"Symbol"}].concat(C).map(c=>c.s?`<button data-hs="${c.s}" class="${so.k===c.s?"on":""}" title="Nach ${c.t} sortieren">${c.t}${so.k===c.s?(so.d>0?" ▲":" ▼"):""}</button>`:`<span>${c.t}</span>`).join("")}</div><div class="wlRows">`;let n=0;
   const val=s=>{const q=Q[s]||{};return so.k==="sym"?s:so.k==="preis"?q.p:so.k==="ver"?q.d:so.k==="verp"?q.ch:so.k==="flag"?(FLAG[s]||99):so.k==="vol"?q.v:so.k==="ald"?(AD[s]==null?null:Math.abs(AD[s])):0};
   const srt=a=>sorted?a.slice().sort((a,b)=>{const x=val(a),y=val(b);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return-1;return(typeof x==="string"?x.localeCompare(y):x-y)*so.d}):a;
   const isS=s=>s.startsWith("###"),canEd=edit&&!filt&&!sorted&&V.grp==="sec";

@@ -183,8 +183,9 @@ html,body{height:100%;overflow:hidden}
 .top{flex-wrap:nowrap!important}.top #tfSeg{flex:1 1 0;min-width:70px}.top #tfSeg button{flex:0 0 auto}.acts{flex:none}
 .ml{display:none}
 /* Werkzeugleiste: bei wenig Höhe drei statt zwei Spalten, damit alle Werkzeuge ohne Scrollen sichtbar sind */
-@media (max-height:1000px){html .tools{grid-template-columns:repeat(3,42px)!important}}
-@media (max-height:1000px) and (pointer:coarse){html .tools{grid-template-columns:repeat(3,46px)!important}}
+html .tools.c3{grid-template-columns:repeat(3,42px)!important}
+html .tools.c2s button{height:34px}
+@media (pointer:coarse){html .tools.c3{grid-template-columns:repeat(3,46px)!important}}
 html.emb .tools{grid-template-columns:repeat(3,30px)!important}
 /* Einstellfenster für Zeichnungen (Stil / Koordinaten / Sichtbarkeit / Vorlage) */
 #dwDlg{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(0,0,0,.35)}#dwDlg[hidden]{display:none}
@@ -1235,6 +1236,12 @@ bakIn.onchange=async()=>{const f=bakIn.files[0];if(!f)return;try{if(f.size>8e6)t
   catch(e){toast("Das ist keine gültige Sicherungsdatei")}};
 $("thBtn").onclick=()=>themeToggle();$("colBtn").onclick=()=>colMenu($("moreBtn"));
 {const rb0=renderBar;renderBar=function(){rb0();fitBar()};addEventListener("resize",()=>{moreClose();renderBar()});if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitBar);thIcon();fitBar()}
+// Werkzeugleiste: zwei Spalten, wenn die Höhe reicht – sonst drei, damit alle Werkzeuge ohne Scrollen sichtbar sind
+function fitTools(){const t=$("tools"),bx=$("box");if(!t||!bx)return;const n=t.querySelectorAll("button").length,hr=t.querySelectorAll("hr").length,bh=matchMedia("(pointer:coarse)").matches?44:40;
+  const av=bx.clientHeight-146,need=h=>Math.ceil(n/2)*(h+4)+hr*9+12,fine=bh===40;
+  // PC: passt die lange Leiste nur knapp nicht, die Knöpfe etwas flacher machen (34 statt 40 Pixel) statt auf drei Spalten zu wechseln
+  const c2s=!SLOT&&fine&&need(40)>av&&need(34)<=av;t.classList.toggle("c2s",c2s);t.classList.toggle("c3",!!SLOT||(!c2s&&need(bh)>av))}
+{const rt0=renderTools;renderTools=function(){rt0();fitTools()};addEventListener("resize",fitTools);if(window.ResizeObserver)new ResizeObserver(fitTools).observe($("box"));fitTools()}
 // ---------- Seitenleiste: Indikatoren oder Analyse ----------
 let sideM="ind";
 function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;$("dlgBody").hidden=m!=="ind";$("indSrchW").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("alBody").hidden=m!=="al";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":m==="al"?"Alarme":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow();if(m==="al"&&window.alShow)alShow()}
@@ -2254,7 +2261,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
 </script>
 <script src="bps.js?v=8"></script>
 <script src="dw.js?v=1"></script>
-<script src="wl.js?v=10"></script>
+<script src="wl.js?v=11"></script>
 <script src="al.js?v=3"></script>
 <script src="split.js?v=1"></script>
 </body>

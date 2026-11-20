@@ -7,6 +7,9 @@ const HEX=/^#[0-9a-f]{6}$/i,NOCOL=["pos","measure","prange","drange"],NODASH=["p
 const FIBALL=[0,0.236,0.382,0.5,0.559,0.618,0.667,0.705,0.786,0.882,0.886,1,1.272,1.414,1.618,2,2.272,2.618,3.618,4.236];
 const VDEF={m:[1,59],h:[1,24],d:[1,366],w:[1,52],M:[1,12]},VNAM={m:"Minuten",h:"Stunden",d:"Tage",w:"Wochen",M:"Monate"};
 let cur=null,orig=null,tab="stil";
+// Fenster verschieben: an der Titelzeile ziehen; die Position bleibt, solange die Seite offen ist (Doppelklick auf den Titel = zurück in die Mitte)
+const POS={set:false,l:0,t:0};let mv=null;
+const posCss=()=>POS.set?`position:absolute;margin:0;left:${POS.l}px;top:${POS.t}px;max-height:${Math.max(220,innerHeight-POS.t-12)}px`:"";
 const el=()=>document.getElementById("dwDlg"),E=s=>esc(s);
 const ld=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // benannte Vorlagen je Werkzeug
@@ -66,7 +69,7 @@ function tabSicht(d){const v=d.vis||VDEF,u=tfUnit(S.tf);
     +Object.keys(VDEF).map(k=>{const r=v[k];return`<div class="vsr${r?"":" off"}"><input type="checkbox" data-vs="${k}" data-f="on" ${r?"checked":""}><span>${VNAM[k]}</span><input type="number" min="1" step="1" data-vs="${k}" data-f="a" value="${(r||VDEF[k])[0]}"><span>–</span><input type="number" min="1" step="1" data-vs="${k}" data-f="b" value="${(r||VDEF[k])[1]}"></div>`}).join("")
     +`<button type="button" class="btn ghost" data-a="visAll">Auf allen Zeitrahmen zeigen</button>`}
 function render(){const d=cur;if(!d)return;const names=Object.keys(TN[d.type]||{}),hasStd=!!DWT[d.type];
-  el().innerHTML=`<div class="dd" role="dialog" aria-label="Einstellungen der Zeichnung"><div class="dhd"><span>${E(NAMES[d.type]||"Zeichnung")}</span><button type="button" data-a="x" title="Schließen (Abbrechen)">✕</button></div>
+  el().innerHTML=`<div class="dd" style="${posCss()}" role="dialog" aria-label="Einstellungen der Zeichnung"><div class="dhd" title="Ziehen = Fenster verschieben · Doppelklick = zurück in die Mitte"><span>⠿ ${E(NAMES[d.type]||"Zeichnung")}</span><button type="button" data-a="x" title="Schließen (Abbrechen)">✕</button></div>
     <div class="dtab">${[["stil","Stil"],["koord","Koordinaten"],["sicht","Sichtbarkeit"]].map(([k,t])=>`<button type="button" data-tab="${k}" class="${tab===k?"on":""}">${t}</button>`).join("")}</div>
     <div class="dbd">${tab==="stil"?tabStil(d):tab==="koord"?tabKoord(d):tabSicht(d)}</div>
     <div class="dft"><select data-a="tpl" title="Vorlagen für dieses Werkzeug"><option value="">Vorlage …</option>${names.map(n=>`<option value="use:${E(n)}">▸ ${E(n)}</option>`).join("")}<option value="save">＋ Als Vorlage speichern …</option><option value="std">★ Als Standard für neue ${E(NAMES[d.type]||"")}</option>${hasStd?`<option value="std0">↺ Standard zurücksetzen</option>`:""}${names.map(n=>`<option value="del:${E(n)}">✕ „${E(n)}“ löschen</option>`).join("")}</select>
@@ -111,6 +114,14 @@ function onChange(e){const t=e.target,d=cur;if(!d||t.dataset.a!=="tpl")return;co
   else if(v.startsWith("use:")){const st=(TN[ty]||{})[v.slice(4)];if(st){applyStyle(d,st);toast("Vorlage angewendet")}}
   else if(v.startsWith("del:")){const n=v.slice(4);if(TN[ty]&&confirm(`Vorlage „${n}“ löschen?`)){delete TN[ty][n];sv("blcDwTN",TN)}}
   upd()}
-const box=el();if(box){box.addEventListener("input",onInput);box.addEventListener("click",onClick);box.addEventListener("change",onChange)}
+// Ziehen an der Titelzeile (Maus und Finger); das Fenster bleibt mit mindestens 60 Pixel im Bild
+function clampPos(){const dd=el().querySelector(".dd");if(!dd)return;if(POS.set){const w=dd.offsetWidth;POS.l=Math.max(60-w,Math.min(innerWidth-60,POS.l));POS.t=Math.max(0,Math.min(innerHeight-50,POS.t))}dd.style.cssText=posCss()}
+function mvDown(e){const hd=e.target.closest(".dhd");if(!hd||e.target.closest("button"))return;const r=el().querySelector(".dd").getBoundingClientRect();mv={x:e.clientX-r.left,y:e.clientY-r.top,id:e.pointerId};try{hd.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()}
+function mvMove(e){if(!mv||e.pointerId!==mv.id)return;if(e.pointerType==="mouse"&&e.buttons===0){mv=null;return} // Maustaste außerhalb des Fensters losgelassen
+  POS.set=true;POS.l=e.clientX-mv.x;POS.t=e.clientY-mv.y;clampPos()}
+function mvUp(e){if(mv&&e.pointerId===mv.id)mv=null}
+const box=el();if(box){box.addEventListener("pointerdown",mvDown);box.addEventListener("pointermove",mvMove);box.addEventListener("pointerup",mvUp);box.addEventListener("pointercancel",mvUp);
+  box.addEventListener("dblclick",e=>{if(e.target.closest(".dhd")&&!e.target.closest("button")){POS.set=false;clampPos()}});addEventListener("resize",()=>{if(cur)clampPos()});
+  box.addEventListener("input",onInput);box.addEventListener("click",onClick);box.addEventListener("change",onChange)}
 addEventListener("keydown",e=>{if(!cur)return;if(e.key==="Escape"){e.stopImmediatePropagation();e.preventDefault();close(false)}else if(e.key==="Enter"&&!e.target.matches("select,button")){e.preventDefault();close(true)}else if(!e.target.closest("#dwDlg"))e.stopImmediatePropagation()},true);
 })();

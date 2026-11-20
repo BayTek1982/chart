@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Börsen-Test · Bayazit Live-Chart</title>
+<style>
+body{font:15px/1.45 system-ui,sans-serif;background:#0e131b;color:#e7ecf3;margin:0;padding:16px;max-width:760px;margin:auto}
+h1{font-size:1.25rem;margin:0 0 4px}p{color:#8d99ab;margin:6px 0 14px}
+.ex{border:1px solid #253041;border-radius:12px;padding:12px 14px;margin:10px 0;background:#151c27}
+.ex h2{font-size:1.02rem;margin:0 0 6px}.r{display:grid;grid-template-columns:120px 1fr;gap:8px;padding:3px 0;font-size:.9rem}
+.ok{color:#3ccf8a}.no{color:#ff6b5e}.w{color:#f0a33a}small{color:#8d99ab}button{font:600 .95rem inherit;background:#f0a33a;color:#1a1206;border:0;border-radius:9px;padding:10px 16px;cursor:pointer}
+code{background:#1d2633;border-radius:5px;padding:1px 5px;font-size:.84rem}
+</style></head><body>
+<h1>Börsen-Test</h1>
+<p>Prüft in deinem Browser, ob die weiteren Börsen erreichbar sind: Kerzen, Marktliste und Live-Verbindung. Dauert etwa 20 Sekunden. Das Ergebnis kannst du als Bild an Claude schicken.</p>
+<button id="go">Test starten</button><div id="out"></div>
+<script src="ex.js?v=1"></script>
+<script>
+"use strict";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=v=>v==null||!isFinite(v)?"–":(+v).toLocaleString("de-DE",{maximumFractionDigits:v<1?6:2});
+function line(box,label){const d=document.createElement("div");d.className="r";d.innerHTML=`<span>${label}</span><span class="w">prüfe …</span>`;box.appendChild(d);return(cls,txt)=>{d.lastChild.className=cls;d.lastChild.innerHTML=txt}}
+function errTxt(e){const m=String(e&&e.message||e);return/Failed to fetch|NetworkError|Load failed/i.test(m)?"nicht erreichbar (vom Browser blockiert oder Börse gesperrt)":/abort/i.test(m)?"keine Antwort (Zeitüberschreitung)":esc(m)}
+async function testEx(A){const box=document.createElement("div");box.className="ex";box.innerHTML=`<h2>${esc(A.name)}</h2>`;document.getElementById("out").appendChild(box);
+  const k=line(box,"Kerzen"),t=line(box,"Marktliste"),w=line(box,"Live");
+  const pK=A.kl("BTC","1h",300).then(r=>{if(!r.length)return k("no","leere Antwort");const l=r[r.length-1],age=Math.round((Date.now()-l.t)/6e4);k(age<180?"ok":"w",`✓ ${r.length} Kerzen (1H) · letzter Kurs ${fmt(l.c)} · ${age} Min alt${r[0].b!=null&&isFinite(r[0].b)?" · mit Käufer-Volumen":""}`)}).catch(e=>k("no","✗ "+errTxt(e)));
+  const pT=A.tick().then(r=>{if(!r.length)return t("no","leere Antwort");const g={};r.forEach(x=>{if(x.g)(g[x.g]=g[x.g]||[]).push(x.n||x.s)});
+    t("ok",`✓ ${r.length} Märkte`+Object.keys(g).map(n=>`<br><small>${esc(n)}: ${g[n].length} – ${esc(g[n].slice(0,8).join(", "))}${g[n].length>8?" …":""}</small>`).join("")+(Object.keys(g).length?"":"<br><small>keine Forex-, Index- oder Rohstoff-Märkte erkannt</small>"))}).catch(e=>t("no","✗ "+errTxt(e)));
+  const pW=new Promise(res=>{let done=false,sock;const fin=(c,x)=>{if(done)return;done=true;w(c,x);try{sock.close()}catch(e){}res()};
+    try{sock=new WebSocket(A.ws.url("BTC","1m"))}catch(e){return fin("no","✗ "+errTxt(e))}if(A.ws.binary)sock.binaryType="arraybuffer";
+    sock.onopen=()=>{w("w","verbunden, warte auf Kurs …");try{A.ws.sub(sock,"BTC","1m")}catch(e){}};
+    sock.onmessage=async e=>{try{const c=await A.ws.msg(e.data,"BTC","1m",sock);if(c&&c.c>0)fin("ok",`✓ Live-Kurs ${fmt(c.c)}`)}catch(x){}};
+    sock.onerror=()=>fin("no","✗ Verbindung abgelehnt");sock.onclose=()=>fin("no","✗ Verbindung geschlossen, bevor ein Kurs kam");setTimeout(()=>fin("no","✗ in 15 Sekunden kein Kurs"),15000)});
+  await Promise.all([pK,pT,pW])}
+document.getElementById("go").onclick=async()=>{document.getElementById("out").innerHTML="";document.getElementById("go").disabled=true;await Promise.all(Object.values(EX.all).map(testEx));
+  const p=document.createElement("p");p.innerHTML=`Fertig · ${new Date().toLocaleString("de-DE")} · Drei grüne Zeilen = diese Börse funktioniert im Chart (Watchlist → Börse).`;document.getElementById("out").appendChild(p);document.getElementById("go").disabled=false};
+</script></body></html>

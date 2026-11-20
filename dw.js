@@ -50,13 +50,16 @@ function tabStil(d){const t=d.type;let h="";
   if(t==="vpr")h+=row("Zeilen",`<input type="number" data-k="vr" data-n="1" min="10" max="300" step="1" value="${d.vr||40}">`)+row("Value Area %",`<input type="number" data-k="vva" data-n="1" min="10" max="100" step="1" value="${d.vva||70}">`);
   if(NOCOL.includes(t)&&t!=="pos")h+=`<div class="hint">Dieses Werkzeug färbt sich selbst (blau = steigend, rot = fallend). Einstellbar sind Koordinaten und Sichtbarkeit.</div>`;
   return h}
-function tabKoord(d){let h=`<div class="hint">Preis in ${E(typeof shownCcy==="function"?shownCcy():"$")} und Zeitpunkt (deine Ortszeit). Bleibt auch nach einem Zeitrahmen-Wechsel richtig.</div>`;
-  const pt=(lab,i,noT,noP)=>row(lab,`<div class="two">${noP?"<span></span>":`<input type="number" step="any" data-pt="${i}" data-f="p" value="${pOut(d.pts[i].p)}" title="Preis">`}${noT?"<span></span>":`<input type="datetime-local" data-pt="${i}" data-f="t" value="${tOut(d.pts[i].t)}" title="Datum / Zeit">`}</div>`);
-  if(d.type==="pos"){h+=pt("Einstieg",0)+row("Ziel",`<input type="number" step="any" data-x="tp" value="${pOut(d.tp)}">`)+row("Stop",`<input type="number" step="any" data-x="sl" value="${pOut(d.sl)}">`)+row("Ende (Zeit)",`<input type="datetime-local" data-x="t2" value="${tOut(d.t2)}">`)}
+// Kerzen-Nummer wie in TradingView: 0 = letzte Kerze, 20 = zwanzig Kerzen zurück, negative Zahl = in der Zukunft. Pfeil hoch/runter verschiebt um eine Kerze.
+const bOut=t=>Math.round(S.k.length-1-CC.tIdx(S.k,t,S.tf)),bIn=v=>{const n=num(v);return n==null?null:CC.idxT(S.k,S.k.length-1-Math.round(n),S.tf)};
+const dTxt=t=>{const d=new Date(t);return isFinite(d.getTime())?d.toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"–"};
+function tabKoord(d){let h=`<div class="hint">Preis in ${E(typeof shownCcy==="function"?shownCcy():"$")} (verschiebt senkrecht) und Kerze (verschiebt waagerecht): 0 = letzte Kerze, 20 = zwanzig Kerzen zurück. Darunter steht der Zeitpunkt in deiner Ortszeit.</div>`;
+  const pt=(lab,i,noB,noP)=>row(lab,`<div class="two">${noP?"<span></span>":`<input type="number" step="any" data-pt="${i}" data-f="p" value="${pOut(d.pts[i].p)}" title="Preis">`}${noB?"<span></span>":`<input type="number" step="1" data-pt="${i}" data-f="b" value="${bOut(d.pts[i].t)}" title="Kerze (0 = letzte)">`}</div>${noB?"":`<div class="dt" data-dt="p${i}">${dTxt(d.pts[i].t)}</div>`}`);
+  if(d.type==="pos"){h+=pt("Einstieg (Preis, Kerze)",0)+row("Ziel (Preis)",`<input type="number" step="any" data-x="tp" value="${pOut(d.tp)}">`)+row("Stop (Preis)",`<input type="number" step="any" data-x="sl" value="${pOut(d.sl)}">`)+row("Ende (Kerze)",`<input type="number" step="1" data-x="t2" value="${bOut(d.t2)}" title="Kerze (0 = letzte)"><div class="dt" data-dt="t2">${dTxt(d.t2)}</div>`)}
   else if(d.type==="brush")h+=`<div class="hint">Der Pinsel hat ${d.pts.length} Punkte – verschieben geht direkt im Chart oder mit den Pfeiltasten.</div>`;
-  else{const lab=d.type==="abc"?["0","A","B","C"]:d.type==="w5"?["0","1","2","3","4","5"]:d.type==="note"?["Zeiger","Textfeld"]:null;
-    d.pts.forEach((q,i)=>{h+=pt(lab?lab[i]||"#"+(i+1):"#"+(i+1)+" (Preis, Zeit)",i,d.type==="hl",d.type==="vl")});
-    if(d.type==="chan")h+=row("Kanalbreite",`<input type="number" step="any" data-x="off" value="${pOut(d.off)}" title="Abstand der zweiten Linie (Preis)">`)}
+  else{const lab=d.type==="abc"?["0","A","B","C"]:d.type==="w5"?["0","1","2","3","4","5"]:d.type==="note"?["Zeiger","Textfeld"]:d.type==="vpr"?["Anfang","Ende"]:null,noP=d.type==="vl"||d.type==="vpr",noB=d.type==="hl";
+    d.pts.forEach((q,i)=>{h+=pt((lab?lab[i]||"#"+(i+1):"#"+(i+1))+(noP?" (Kerze)":noB?" (Preis)":" (Preis, Kerze)"),i,noB,noP)});
+    if(d.type==="chan")h+=row("Kanalbreite (Preis)",`<input type="number" step="any" data-x="off" value="${pOut(d.off)}" title="Abstand der zweiten Linie">`)}
   return h}
 function tabSicht(d){const v=d.vis||VDEF,u=tfUnit(S.tf);
   return`<div class="hint">Auf welchen Zeitrahmen die Zeichnung erscheint. Beispiel: Stunden 1–4 = nur auf 1H, 2H und 4H. Aktuell: ${E(TFLAB[S.tf]||S.tf)}${u?` (${VNAM[u[0]]} ${u[1]})`:""} → ${dwVis(d)?"sichtbar":"ausgeblendet"}.</div>`
@@ -89,8 +92,8 @@ function onInput(e){const t=e.target,d=cur;if(!d)return;const ds=t.dataset;
   if(ds.lv!=null){if(!d.lv||!d.lv.length)d.lv=fibRows(d).map(l=>({...l}));const l=d.lv[+ds.lv];if(!l)return;
     if(ds.f==="on"){l.on=t.checked;t.closest(".lvr").classList.toggle("off",!l.on)}else if(ds.f==="v"){const n=num(t.value);if(n!=null&&n>=-20&&n<=50)l.v=n}else if(ds.f==="c"&&HEX.test(t.value))l.c=t.value;
     return upd(true)}
-  if(ds.pt!=null){const q=d.pts[+ds.pt];if(!q)return;if(ds.f==="p"){const n=pIn(t.value);if(n!=null)q.p=n}else{const n=tIn(t.value);if(n!=null)q.t=n}return upd(true)}
-  if(ds.x){if(ds.x==="t2"){const n=tIn(t.value);if(n!=null)d.t2=n}else{const n=pIn(t.value);if(n!=null)d[ds.x]=n}return upd(true)}
+  if(ds.pt!=null){const q=d.pts[+ds.pt];if(!q)return;if(ds.f==="p"){const n=pIn(t.value);if(n!=null)q.p=n}else{const n=bIn(t.value);if(n!=null){q.t=n;const o=el().querySelector(`[data-dt="p${+ds.pt}"]`);if(o)o.textContent=dTxt(n)}}return upd(true)}
+  if(ds.x){if(ds.x==="t2"){const n=bIn(t.value);if(n!=null){d.t2=n;const o=el().querySelector('[data-dt="t2"]');if(o)o.textContent=dTxt(n)}}else{const n=pIn(t.value);if(n!=null)d[ds.x]=n}return upd(true)}
   if(ds.vs){const rows=[...el().querySelectorAll(".vsr")],v={};let all=true;rows.forEach(r=>{const k=r.querySelector("[data-f=on]").dataset.vs,on=r.querySelector("[data-f=on]").checked,a=Math.max(1,Math.round(num(r.querySelector("[data-f=a]").value)||1)),b=Math.max(a,Math.round(num(r.querySelector("[data-f=b]").value)||a));
       r.classList.toggle("off",!on);if(on)v[k]=[a,b];if(!on||a>VDEF[k][0]||b<VDEF[k][1])all=false});
     if(all)delete d.vis;else d.vis=v;return upd(true)}}

@@ -42,7 +42,9 @@ colIn.addEventListener("change",()=>{const c=colIn.value.toLowerCase();if(FL.som
   const i=FLX.indexOf(null);if(i>=0)FLX[i]=c;else FLX.push(c);sv("blcFlagX",FLX);mkFL();toast("Neues Fähnchen angelegt");if(open())draw();if(typeof legend==="function")legend()});
 // Kurse: OKX = alle Perps in einem Abruf (Änderung seit 0 Uhr UTC wie TradingView), Binance = 24h
 async function quotes(){if(qBusy)return;qBusy=true;try{
-  if(S.ex==="okx"){const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP",10000);const q={};
+  const A=typeof EX!=="undefined"&&EX.get(S.ex);
+  if(A){const q={};(await A.tick()).forEach(x=>{q[x.s]={p:x.p,ch:x.ch,d:x.d,v:x.v,h:x.h,l:x.l}});Q=q}
+  else if(S.ex==="okx"){const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP",10000);const q={};
     for(const x of j.data||[])if(/-USDT-SWAP$/.test(x.instId)){const o=+x.sodUtc0||+x.open24h;q[x.instId.slice(0,-10)]={p:+x.last,ch:o?(+x.last/o-1)*100:null,d:o?+x.last-o:null,v:+x.volCcy24h*+x.last,h:+x.high24h||null,l:+x.low24h||null}}Q=q}
   else{const syms=[...new Set(W.lists.flatMap(l=>l.items).filter(s=>!s.startsWith("###")))];if(syms.length){
     const j=await getJSON(`https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${encodeURIComponent(JSON.stringify(syms.map(s=>s+"USDT")))}`,10000).catch(async()=>{
@@ -64,7 +66,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
       <div class="mh">Spalten anpassen</div>${COLS.map(c=>`<button data-vc="${c.k}">${ck(V.cols[c.k])}${{last:"Zuletzt (Kurs)",chg:"Veränderung",chgp:"Veränderung %",vol:"Volumen (24 Std., in USDT)",hl:"24-Stunden-Hoch und -Tief",ald:"Abstand zum nächsten Alarm"}[c.k]}</button>`).join("")}<hr>
       <div class="mh">Symbolanzeige</div><button data-v="logo">${ck(V.logo)}Logo</button><button data-vn="sym">${ck(V.nm==="sym")}Symbol</button><button data-vn="name">${ck(V.nm==="name")}Name</button></div>`;
   h+=`
-    <div class="wlEx">Börse: <button data-ex="okx" class="${S.ex==="okx"?"on":""}">OKX Perpetual</button><button data-ex="binance" class="${S.ex==="binance"?"on":""}">Binance Spot</button>
+    <div class="wlEx">Börse: <select id="wlExSel" aria-label="Börse">${[["okx","OKX Perpetual"],["binance","Binance Spot"]].concat(typeof EX!=="undefined"?Object.values(EX.all).map(a=>[a.id,a.name+(a.test?" (Test)":"")]):[]).map(([k,t])=>`<option value="${k}" ${S.ex===k?"selected":""}>${esc(t)}</option>`).join("")}</select>
     <span class="wlSrc">${S.src?"Chart: "+esc(S.src):""}</span></div>
     <div class="wlFl"><button data-f="0" class="${filt===0?"on":""}">Alle</button>${FL.map((f,i)=>i&&f?`<button data-f="${i}" class="dot${filt===i?" on":""}${edit&&i>=FL0.length?" del":""}" style="--c:${f[0]}" title="${edit&&i>=FL0.length?"Eigenes Fähnchen löschen":"Nur "+f[1]}">${edit&&i>=FL0.length?"✕":""}</button>`:"").join("")}<button data-a="flAdd" class="flAdd" title="Eigenes Fähnchen (Farbe) hinzufügen">＋</button></div>`;
   if(sortOpen){const so=l.sort||{k:"eigen",d:1};h+=`<div class="wlSort">${SORTS.map(([k,t])=>`<button data-sort="${k}" class="${so.k===k?"on":""}">${t}${so.k===k&&k!=="eigen"?(so.d>0?" ↑":" ↓"):""}</button>`).join("")}</div>`}
@@ -92,12 +94,13 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
     const cell=c=>c.k==="last"?`<span class="px">${q.p?CC.fmt(q.p):"–"}</span>`:c.k==="chg"?`<span class="ch ${up}">${q.d==null||!isFinite(q.d)?"–":(q.d>=0?"+":"−")+CC.fmt(Math.abs(q.d))}</span>`:c.k==="chgp"?`<span class="ch ${up}">${pct(q.ch)}</span>`
       :c.k==="vol"?`<span class="px vo">${fmtVol(q.v)}</span>`:c.k==="hl"?`<span class="px hl">${q.h?CC.fmt(q.h):"–"}<br>${q.l?CC.fmt(q.l):"–"}</span>`:`<span class="px vo">${AD[s]==null?"–":(AD[s]>=0?"+":"")+AD[s].toFixed(1).replace(".",",")+" %"}</span>`;
     h+=`<div class="wlRow${s===cur?" cur":""}" style="grid-template-columns:18px minmax(0,1fr) ${gw} auto" data-s="${esc(s)}" data-i="${canEd?i:-1}" ${canEd?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>
-      <span class="sy">${lg}${nm?`${esc(nm)}<small> ${esc(s)}</small>`:`${esc(s)}<small>${S.ex==="okx"?".P":""}</small>`}${NOTE[s]?`<span class="nt">${esc(NOTE[s])}</span>`:""}</span>${C.map(cell).join("")}
+      <span class="sy">${lg}${nm?`${esc(nm)}<small> ${esc(s)}</small>`:`${esc(s)}<small>${S.ex!=="binance"?".P":""}</small>`}${NOTE[s]?`<span class="nt">${esc(NOTE[s])}</span>`:""}</span>${C.map(cell).join("")}
       ${canEd?`<span class="ed"><button data-mv="${i}" data-d="-1" title="Nach oben">▲</button><button data-mv="${i}" data-d="1" title="Nach unten">▼</button><button data-rm="${i}" title="Entfernen">✕</button></span>`:""}</div>`;
     if(pop===s)h+=`<div class="wlPop">${FL.map((x,k)=>k&&!x?"":`<button data-setf="${k}" data-s="${esc(s)}" class="dot" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("")}<button class="ntB" data-note="${esc(s)}">✎ Notiz</button></div>`});
   h+=`</div></div></div>`;if(!n)h+=`<p class="wlE">${filt?"Keine Symbole mit diesem Fähnchen.":"Noch leer – oben mit ＋ das aktuelle Symbol hinzufügen oder unter ⋯ importieren."}</p>`;
-  h+=`<p class="wlE">Tipp: Antippen öffnet den Chart · Punkt links = Fähnchen · ↑/↓ wechselt das Symbol (Tastatur) · Änderung ${S.ex==="okx"?"seit 0 Uhr UTC":"24 Std."}</p>`;
+  h+=`<p class="wlE">Tipp: Antippen öffnet den Chart · Punkt links = Fähnchen · ↑/↓ wechselt das Symbol (Tastatur) · Änderung ${S.ex==="okx"||S.ex==="bitget"?"seit 0 Uhr UTC":"24 Std."}</p>`;
   b.innerHTML=h;
+  const exs=$("wlExSel");if(exs)exs.onchange=()=>{if(exs.value!==S.ex){S.ex=exs.value;save();Q={};S.list.k=[];loadList();load();quotes()}draw()};
   const ta=$("wlTxt");if(ta)ta.oninput=()=>{impTxt=ta.value};
   // Datei gewählt → sofort als neue Liste importieren (Name = Dateiname)
   const fi=$("wlFile");if(fi)fi.onchange=async()=>{const f=fi.files[0];if(!f)return;impTxt=await f.text();impName=f.name.replace(/\.(txt|csv)$/i,"");act("imp")}}
@@ -123,7 +126,7 @@ function act(a){const l=L();
     saveW();imp=false;impTxt="";impName="";toast(it.filter(s=>!s.startsWith("###")).length+" Symbole importiert");quotes()}
   if(a==="sync"){menu=null;const pl=btoa(unescape(encodeURIComponent(JSON.stringify({l:W.lists,f:FLAG,x:FLX,n:NOTE})))),url=location.origin+location.pathname+"#wl="+pl;
     if(navigator.share)navigator.share({title:"Meine Watchlist",url}).catch(()=>{});else(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast("Link kopiert – auf dem anderen Gerät öffnen")).catch(()=>prompt("Diesen Link auf dem anderen Gerät öffnen:",url))}
-  if(a==="exp"){menu=null;const t=l.items.map(s=>s.startsWith("###")?s:(S.ex==="okx"?"OKX:"+s+"USDT.P":"BINANCE:"+s+"USDT")).join(",");
+  if(a==="exp"){menu=null;const t=l.items.map(s=>s.startsWith("###")?s:(typeof EX!=="undefined"&&EX.get(S.ex)?EX.get(S.ex).tv(s):S.ex==="okx"?"OKX:"+s+"USDT.P":"BINANCE:"+s+"USDT")).join(",");
     (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Liste kopiert – in TradingView unter „Liste importieren“ einfügen")).catch(()=>prompt("Zum Kopieren:",t))}
   draw()}
 function setup(){const b=$("wlBody");

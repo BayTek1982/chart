@@ -16,7 +16,7 @@ function okA(a){if(!a||typeof a!=="object")return null;const n=v=>typeof v==="nu
   if(n(a.lb))o.lb=a.lb;return o}
 let A=ld("blcAlarms",[]),LOG=ld("blcAlarmLog",[]),last={},lastD={},form=null,reg=null;
 A=(Array.isArray(A)?A:[]).map(okA).filter(Boolean);if(!Array.isArray(LOG))LOG=[];
-const hist={},st={},cb={}; // Kursverlauf je Coin (für „bewegt sich um“), letzter Zustand je Alarm, Kerzenschluss-Merker
+const hist={},st={},cb={},FRESH=new Set(); // FRESH = in dieser Sitzung angelegte/geänderte Alarme: melden sofort, wenn die Bedingung schon erfüllt ist // Kursverlauf je Coin (für „bewegt sich um“), letzter Zustand je Alarm, Kerzenschluss-Merker
 // Geteilte Ansicht: Preis-Alarme prüft nur die Hauptseite (sonst meldet jedes Fenster denselben Alarm); die Fenster prüfen nur die Linien ihres eigenen Charts
 const EMB=typeof SLOT!=="undefined"&&!!SLOT,split=()=>document.documentElement.classList.contains("split");
 // Formular-Eingaben merken, bevor die Liste neu gezeichnet wird (sonst gehen Tippen und Häkchen verloren)
@@ -58,7 +58,7 @@ function evalA(a,sym,p,p0,ch){const now=Date.now(),key=a.id+"|"+sym;
     const close=c0.last,prev=c0.prev;c0.b=b;c0.prev=close;c0.last=p;
     if((EVT(a.c)?hit(a.c,prev,close,a.p):state(a,sym,close,ch))&&extra())trigger(a,sym,close);return}
   let ev;if(EVT(a.c))ev=hit(a.c,p0,p,a.p);
-  else{const s=state(a,sym,p,ch),was=st[key];st[key]=s;ev=s&&(was===false||(was===undefined&&a.trig==="once"))} // Zustand: melden, wenn er neu eintritt
+  else{const s=state(a,sym,p,ch),was=st[key];st[key]=s;ev=s&&(was===false||(was===undefined&&(a.trig==="once"||FRESH.has(a.id))))} // Zustand: melden, wenn er neu eintritt
   if(!ev||!extra())return;
   if(a.trig==="bar"){const b=Math.floor(now/(ATF[a.tf]||9e5));if(a.lb===b)return;a.lb=b}
   trigger(a,sym,p)}
@@ -117,7 +117,7 @@ function setup(){const b=$("alBody");
     if(d.a==="save"){const o=okA({...form,id:form.id||Date.now(),sym:form.lst?undefined:String(form.sym||"").trim().toUpperCase().replace(/^[A-Z]+:/,"").replace(/(USDT)?(\.P)?$/,""),p:parseFloat(String(form.p).replace(",",".")),min:parseFloat(form.min),on:true,
         more:(form.more||[]).map(m=>({c:m.c,p:parseFloat(String(m.p).replace(",","."))})),lb:undefined});
       if(!o||!(o.p>0)){toast(form.lst?"Bitte einen Wert angeben":"Bitte Coin und Wert angeben");return}if(o.exp&&o.exp<Date.now()){toast("Das Ablaufdatum liegt in der Vergangenheit");return}
-      if(form.i!=null&&A[form.i]){o.hits=A[form.i].hits||0;A[form.i]=o}else A.push(o);Object.keys(st).forEach(k=>{if(k.startsWith(o.id+"|"))delete st[k]});saveA();form=null;toast("Alarm gespeichert")}
+      if(form.i!=null&&A[form.i]){o.hits=A[form.i].hits||0;A[form.i]=o}else A.push(o);Object.keys(st).forEach(k=>{if(k.startsWith(o.id+"|"))delete st[k]});FRESH.add(o.id);saveA();form=null;toast("Alarm gespeichert")}
     if(d.a==="logdel"){LOG=[];saveL()}
     if(d.on!=null){A[+d.on].on=t.checked;saveA()}
     if(d.rm!=null){A.splice(+d.rm,1);saveA()}

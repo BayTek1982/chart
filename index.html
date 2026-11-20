@@ -343,7 +343,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="chart-core.js?v=34"></script>
+<script src="chart-core.js?v=35"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -379,14 +379,14 @@ const SLOT=+(new URLSearchParams(location.search).get("slot"))||0,SLOTSYM=["BTC"
 if(SLOT)document.documentElement.classList.add("emb");
 const savedMain=LS("blc1")||LS("bcb1")||{};
 const saved=SLOT?Object.assign({},savedMain,{sym:SLOTSYM[SLOT]||"BTC"},LS("blc1s"+SLOT)||{}):savedMain;
-const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[],sel:null,pend:null,dwd:null,mag:saved.mag===false||saved.mag===0?0:saved.mag===2?2:1,dwShared:false,mkt:"k",sym:saved.sym||"BTC",tf:saved.tf||"4h",cfg:CC.withDefaults(saved.cfg),profiles:saved.profiles||{},k:[],I:{},view:null,cross:null,src:"",ex:saved.ex==="binance"?"binance":"okx",list:{k:[],a:[]}};
+const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[],sel:null,pend:null,dwd:null,mag:saved.mag5!=null?Math.max(0,Math.min(5,Math.round(+saved.mag5)||0)):saved.mag===false||saved.mag===0?0:saved.mag===2?5:3,dwShared:false,mkt:"k",sym:saved.sym||"BTC",tf:saved.tf||"4h",cfg:CC.withDefaults(saved.cfg),profiles:saved.profiles||{},k:[],I:{},view:null,cross:null,src:"",ex:saved.ex==="binance"?"binance":"okx",list:{k:[],a:[]}};
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(SLOT||!h.get("s"))return;
   S.mkt=h.get("m")==="a"?"a":"k";S.sym=h.get("s").toUpperCase().replace(/[^A-Z0-9.^=\-]/g,"");if(h.get("tf"))S.tf=h.get("tf");if(!TF[S.mkt].includes(S.tf))S.tf="1d";
   if(h.get("i"))try{S.cfg=CC.withDefaults(JSON.parse(decodeURIComponent(escape(atob(h.get("i"))))))}catch(e){}
   if(h.get("d"))try{S.hashDw=JSON.parse(decodeURIComponent(escape(atob(h.get("d")))))}catch(e){}})();
 if(!TF[S.mkt].includes(S.tf))S.tf="1d";
-const save=()=>{if(SLOT){LS("blc1s"+SLOT,{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cur:S.cur});const m=LS("blc1")||{};LS("blc1",Object.assign(m,{cfg:S.cfg,profiles:S.profiles,mag:S.mag}))}
-  else LS("blc1",{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cfg:S.cfg,profiles:S.profiles,cur:S.cur,mag:S.mag})};
+const save=()=>{if(SLOT){LS("blc1s"+SLOT,{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cur:S.cur});const m=LS("blc1")||{};LS("blc1",Object.assign(m,{cfg:S.cfg,profiles:S.profiles,mag5:S.mag}))}
+  else LS("blc1",{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cfg:S.cfg,profiles:S.profiles,cur:S.cur,mag5:S.mag})};
 
 // ---------- Daten ----------
 // Börsen: OKX Perpetual (USDT-SWAP, wie „OKX:…USDT.P“ in TradingView) und Binance Spot
@@ -608,7 +608,9 @@ function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t
   add(c.ob.on,"OB","#3ccf8a");add(c.rsic.on,"RSI-Kerzen","#ffeb3b");add(c.lsob.on,"LSOB","#2979ff");add(c.rsi.on,"RSI","#b388ff");add(c.macd.on,"MACD","#5b9bff");add(c.risk.on,"Risiko","#e6d200");add(c.heat.on,"Hitze","#18c7e6");return l}
 function legend(){$("ovL").innerHTML=S.indHide?`<span style="opacity:.7">Indikatoren verborgen (👁)</span>`:legendItems().map(x=>`<span style="color:${x.col}">${esc(x.t)}</span>`).join("");$("ovT").innerHTML=`<button class="ovTg" id="ovTg" title="Infozeilen ein-/ausklappen">${S.ovZu?"▸":"▾"}</button>${window.wlFlagBtn?wlFlagBtn():""}${esc(S.mkt==="k"?S.sym+"/USDT":S.sym)}<small>${TFLAB[S.tf]} · ${esc(S.src)} · ${esc(curText())}</small><a class="tvl" href="${tvUrl()}" target="_blank" rel="noopener" title="In TradingView öffnen">↗ TV</a>`;
   document.querySelectorAll("#curSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cur===S.cur));
-  document.title=`${S.sym} ${TFLAB[S.tf]} · Live-Chart`}
+  setTitle(`${S.sym} ${TFLAB[S.tf]} · Live-Chart`)}
+// Tab-Titel: in der geteilten Ansicht zeigt der Tab immer das erste Fenster (oben links)
+function setTitle(t){if(SLOT){if(SLOT===1)try{parent.document.title=t}catch(e){}return}if(!document.documentElement.classList.contains("split"))document.title=t}
 function analysis(){const rows=S.k.length?CC.summary(S.k,S.I,S.cfg,S.tf):[];
   if(S.k.length&&S.cfg.risk.on&&!S.I.risk)rows.push({t:"Risiko",v:"keine Daten",s:S.mkt==="k"?"Risiko gibt es für die Coins mit langer Kurs-Historie (wie im Coin-Scanner).":"Für diese Aktie liegen keine Risiko-Daten vor."});
   if(S.k.length&&S.cfg.heat.on&&!S.I.heat)rows.push({t:"Hitze",v:"keine Daten",s:"zu wenig Wochen-Historie"});
@@ -700,7 +702,7 @@ const TOOLS=[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstrati
   ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
   ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
   ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],["-"],
-  ["mag","🧲","Magnet (rastet an Hoch/Tief/Open/Close ein)"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
+  ["mag","🧲","Magnet in 5 Stufen (rastet an Hoch/Tief/Open/Close ein) – weiterklicken = stärker"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["clear","🗑","Alle Zeichnungen dieses Werts löschen"]];
 // Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
 const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6};const TWO=Object.keys(NEED);
 const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff"};
@@ -722,7 +724,7 @@ function eyeMenu(btn){let m=$("eyeMenu");if(m){m.remove();return}m=document.crea
 document.documentElement.classList.toggle("indHide",S.indHide);
 function renderTools(){$("tools").innerHTML=TOOLS.map(t=>t[0]==="-"?"<hr>":`<button data-tool="${t[0]}" title="${t[2]}" class="${(t[0]==="sel"&&!S.tool)||S.tool===t[0]||(t[0]==="mag"&&+S.mag)||(t[0]==="hide"&&(S.dwHide||S.indHide||S.posHide))?"on":""}">${t[1]}${t[0]==="mag"&&+S.mag?`<sup class="magN">${S.mag}</sup>`:""}</button>`).join("")}
 $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");if(!b)return;const t=b.dataset.tool;
-  if(t==="mag"){S.mag=((+S.mag||0)+1)%3;save();toast(["Magnet aus","Magnet schwach (rastet in der Nähe ein)","Magnet stark (rastet immer an Hoch/Tief/Open/Close ein)"][S.mag])}
+  if(t==="mag"){S.mag=((+S.mag||0)+1)%6;save();toast(["Magnet aus","Magnet Stufe 1 – rastet nur ganz nah ein","Magnet Stufe 2 – rastet nah ein","Magnet Stufe 3 – rastet in der Nähe ein","Magnet Stufe 4 – rastet weit ein","Magnet Stufe 5 – rastet immer an Hoch/Tief/Open/Close ein"][S.mag])}
   else if(t==="theme"){colMenu(b);return}
   else if(t==="hide"){eyeMenu(b);return}
   else if(t==="undo"){dwUndo(-1);return}
@@ -751,7 +753,7 @@ const nid=()=>Math.random().toString(36).slice(2,9);
 // gespeichert wird in Originalwährung, angezeigt in der aktuellen
 function dispDw(){const F=S.F;if(S.dwHide&&S.posHide)return[];const src=S.dwHide?S.dw.filter(d=>d.type==="pos"):S.posHide?S.dw.filter(d=>d.type!=="pos"):S.dw;if(F===1)return src;return src.map(d=>({...d,pts:d.pts.map(q=>({t:q.t,p:q.p*F})),tp:d.tp!=null?d.tp*F:d.tp,sl:d.sl!=null?d.sl*F:d.sl,off:d.off!=null?d.off*F:d.off}))}
 function toPt(x,y){const k=S.k,i=Math.round(S.view.from+x/L.cw-0.5);let t=CC.idxT(k,S.view.from+x/L.cw-0.5,S.tf),p=L.P(y);
-  if(S.mag&&i>=0&&i<k.length){const lim=+S.mag===2?1e9:36;let best=null;[k[i].o,k[i].h,k[i].l,k[i].c].forEach(v=>{const d=Math.abs(L.Y(v)-y);if(d<lim&&(!best||d<best.d))best={d,v}});if(best){p=best.v;t=k[i].t}}
+  if(S.mag&&i>=0&&i<k.length){const lim=[0,10,20,36,60,1e9][+S.mag]||36;let best=null;[k[i].o,k[i].h,k[i].l,k[i].c].forEach(v=>{const d=Math.abs(L.Y(v)-y);if(d<lim&&(!best||d<best.d))best={d,v}});if(best){p=best.v;t=k[i].t}}
   return{t,p:p/S.F}}
 function hitDw(x,y){const list=dispDw();for(let j=list.length-1;j>=0;j--){const d=list[j];
     if(S.sel===d.id){const h=CC.dwHandles(d,L,S.k,S.tf).find(h=>Math.hypot(h.x-x,h.y-y)<11);if(h)return{d:S.dw.find(z=>z.id===d.id),h:h.h}}}
@@ -762,7 +764,10 @@ function dwDown(x,y,ptype){if(S.tool==="demo"&&L&&x<=L.pw){demoStart(x,y);return
   if(S.tool){const t=S.tool,d={id:nid(),type:t,col:DCOL[t]||"#f0a33a",w:2,pts:[pt]};{const T=DWT[t];if(T){if(T.col)d.col=T.col;if(T.w)d.w=T.w;if(T.ds)d.ds=T.ds}}const ps=t==="long"||t==="short";if(S.dwHide&&!ps){S.dwHide=false;LS("blcDwHide",false)}if(S.posHide&&ps){S.posHide=false;LS("blcPosHide",false)}
     if(t==="brush"){S.dw.push(d);S.dwd={mode:"brush",d,x,y};paint();return true}
     if(t==="text"){const tx=prompt("Text:","");if(!tx){return true}d.text=tx.slice(0,80)}
-    if(t==="long"||t==="short"){const lg=t==="long";d.type="pos";d.tp=pt.p*(lg?1.04:0.96);d.sl=pt.p*(lg?0.98:1.02);d.t2=CC.idxT(S.k,CC.tIdx(S.k,pt.t,S.tf)+20,S.tf)}
+    if(t==="long"||t==="short"){const lg=t==="long";d.type="pos";
+      // Startgröße nach dem sichtbaren Ausschnitt (nicht feste Prozent): Ziel 16 %, Stop 8 % der Charthöhe, Breite gut ein Fünftel der sichtbaren Kerzen
+      const rng=(L.hi-L.lo)/S.F,up=Math.min(rng*.16,pt.p*.9),dn=Math.min(rng*.08,pt.p*.45);d.tp=pt.p+(lg?up:-up);d.sl=pt.p-(lg?dn:-dn);
+      d.t2=CC.idxT(S.k,CC.tIdx(S.k,pt.t,S.tf)+Math.max(8,Math.round((S.view.to-S.view.from)*.22)),S.tf)}
     if(t==="chan")d.off=-(L.hi-L.lo)*0.08/S.F;
     S.dw.push(d);
     if(TWO.includes(t)){d.pts[1]={...pt};S.pend=d;S.dwd={mode:"new",x,y,moved:false}}else{S.tool=null;S.sel=d.id;saveDw();renderTools()}
@@ -1226,7 +1231,7 @@ function tick(q){if(CTF[S.tf]&&q.i===CTF[S.tf].base){q=ctfLive(q);if(!q)return}c
   if(KSTEP[S.tf]&&c.t-last.t>KSTEP[S.tf]*1.6){if(Date.now()-gapT>15000){gapT=Date.now();load(true)}return}
   const F=S.F,same=S.k===a,d=F===1?c:{t:c.t,o:c.o*F,h:c.h*F,l:c.l*F,c:c.c*F,v:c.v},neu=c.t>last.t;
   if(!neu){a[n-1]=c;if(!same)S.k[n-1]=d}else{a.push(c);if(!same)S.k.push(d);if(S.view&&S.view.to>=n-1){S.view.from++;S.view.to++}}
-  liveState(true,CC.fmt(d.c)+" "+shownCcy());document.title=`${CC.fmt(d.c)} ${S.sym} ${TFLAB[S.tf]}`;
+  liveState(true,CC.fmt(d.c)+" "+shownCcy());setTitle(`${CC.fmt(d.c)} ${S.sym} ${TFLAB[S.tf]}`);
   if(neu){clearTimeout(rcT);rcT=0;recompute();return}
   if(!rcT)rcT=setTimeout(()=>{rcT=0;if(S.pend||S.dwd||drag||pinch)paint();else recompute()},900)}
 {const load0=load;load=async function(keep){wsStop();await load0(keep);wsStart()}}

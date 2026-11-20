@@ -550,8 +550,10 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
       case"pos":{const x1=X(p[0].t),x2=X(d.t2),xa=Math.min(x1,x2),xw=Math.abs(x2-x1),e=p[0].p,ye=Y(e),yt=Y(d.tp),ys=Y(d.sl),lg=d.tp>e;
         ctx.fillStyle="rgba(60,207,138,.18)";ctx.fillRect(xa,Math.min(ye,yt),xw,Math.abs(yt-ye));ctx.fillStyle="rgba(255,107,94,.18)";ctx.fillRect(xa,Math.min(ye,ys),xw,Math.abs(ys-ye));
         ln(xa,ye,xa+xw,ye,th.fg,1.5);const tp=(d.tp/e-1)*100,sl=(d.sl/e-1)*100,crv=Math.abs(d.tp-e)/Math.abs(e-d.sl||1);
-        tx(`${lg?"Long":"Short"} · Ziel ${fmt(d.tp)} (${tp>=0?"+":""}${nf(tp,2)} %) · CRV ${nf(crv,2)}`,xa+4,yt+(lg?9:-9),"#3ccf8a",null,1);
-        tx(`Stop ${fmt(d.sl)} (${sl>=0?"+":""}${nf(sl,2)} %)`,xa+4,ys+(lg?-9:9),"#ff6b5e",null,1);tx(`Einstieg ${fmt(e)}`,xa+4,ye+(lg?9:-9),th.fg);break}
+        // Beschriftung: Ziel und Stop außen an der Box, Einstieg rechts neben der Linie – mit Mindestabstand, damit sich bei flacher Box nichts überdeckt
+        const sg=lg?-1:1,yT=lg?Math.min(yt-9,ye-15):Math.max(yt+9,ye+15),yS=lg?Math.max(ys+9,ye+15):Math.min(ys-9,ye-15);
+        tx(`${lg?"Long":"Short"} · Ziel ${fmt(d.tp)} (${tp>=0?"+":""}${nf(tp,2)} %) · CRV ${nf(crv,2)}`,xa+4,yT,"#3ccf8a",null,1);
+        tx(`Stop ${fmt(d.sl)} (${sl>=0?"+":""}${nf(sl,2)} %)`,xa+4,yS,"#ff6b5e",null,1);tx(`Einstieg ${fmt(e)}`,xa+xw+6,ye,th.fg);break}
       case"measure":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p),up=p[1].p>=p[0].p,col=up?"#5b9bff":"#ff6b5e";
         ctx.fillStyle=ra(col,.14);ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ln(x1,y1,x2,y2,col,1.5);
         const pc=(p[1].p/p[0].p-1)*100,bars=Math.round(tIdx(k,p[1].t,tf)-tIdx(k,p[0].t,tf));

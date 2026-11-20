@@ -287,6 +287,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 .wl{padding:10px 12px;font-size:.86rem}
 .wlTop{display:flex;gap:6px;align-items:center}.wlTop select{flex:1;min-width:0;background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:6px}
 .wlTop .btn{padding:6px 9px;font-size:.8rem}.wlTop .btn.on{border-color:var(--acc,#f0a030)}
+.wlEx select{background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:5px 6px;font:inherit;font-size:.8rem;max-width:60%}
 .wlEx{margin:8px 0 4px;display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:.78rem;opacity:.9}.wlEx button{background:none;border:1px solid var(--line);color:inherit;border-radius:7px;padding:3px 8px;cursor:pointer;font-size:.78rem}
 .wlEx button.on{border-color:#f0a030;color:#f0a030}.wlSrc{margin-left:auto;opacity:.6}
 .wlFl{display:flex;gap:6px;align-items:center;margin:6px 0}.wlFl button{background:none;border:1px solid var(--line);color:inherit;border-radius:7px;padding:2px 8px;cursor:pointer;font-size:.76rem}.wlFl button.on{border-color:#f0a030}
@@ -342,6 +343,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
       <button class="btn ghost" id="colBtn">🎨<span class="ml"> Farben &amp; Anzeige …</span></button>
       <button class="btn ghost" id="bakSave">💾<span class="ml"> Sicherung speichern</span></button>
       <button class="btn ghost" id="bakLoad">📂<span class="ml"> Sicherung einspielen</span></button>
+      <a class="btn ghost" href="boersen-test.html" target="_blank" rel="noopener">🧪<span class="ml"> Börsen-Test (welche Börse ist erreichbar?)</span></a>
       <a class="btn ghost" href="https://scanner.kompassapps.de/">✦<span class="ml"> Zum Coin-Scanner</span></a></div>
     <div id="mktSeg" hidden></div>
   </div>
@@ -373,6 +375,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 </div>
 
 <script src="gz-core.js?v=3"></script>
+<script src="ex.js?v=1"></script>
 <script src="chart-core.js?v=36"></script>
 <script>
 "use strict";
@@ -409,7 +412,7 @@ const SLOT=+(new URLSearchParams(location.search).get("slot"))||0,SLOTSYM=["BTC"
 if(SLOT)document.documentElement.classList.add("emb");
 const savedMain=LS("blc1")||LS("bcb1")||{};
 const saved=SLOT?Object.assign({},savedMain,{sym:SLOTSYM[SLOT]||"BTC"},LS("blc1s"+SLOT)||{}):savedMain;
-const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[],sel:null,pend:null,dwd:null,mag:saved.mag5!=null?Math.max(0,Math.min(5,Math.round(+saved.mag5)||0)):saved.mag===false||saved.mag===0?0:saved.mag===2?5:3,dwShared:false,mkt:"k",sym:saved.sym||"BTC",tf:saved.tf||"4h",cfg:CC.withDefaults(saved.cfg),profiles:saved.profiles||{},k:[],I:{},view:null,cross:null,src:"",ex:saved.ex==="binance"?"binance":"okx",list:{k:[],a:[]}};
+const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[],sel:null,pend:null,dwd:null,mag:saved.mag5!=null?Math.max(0,Math.min(5,Math.round(+saved.mag5)||0)):saved.mag===false||saved.mag===0?0:saved.mag===2?5:3,dwShared:false,mkt:"k",sym:saved.sym||"BTC",tf:saved.tf||"4h",cfg:CC.withDefaults(saved.cfg),profiles:saved.profiles||{},k:[],I:{},view:null,cross:null,src:"",ex:saved.ex==="binance"?"binance":EX.get(saved.ex)?saved.ex:"okx",list:{k:[],a:[]}};
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(SLOT||!h.get("s"))return;
   S.mkt=h.get("m")==="a"?"a":"k";S.sym=h.get("s").toUpperCase().replace(/[^A-Z0-9.^=\-]/g,"");if(h.get("tf"))S.tf=h.get("tf");if(!TF[S.mkt].includes(S.tf))S.tf="1d";
   if(h.get("i"))try{S.cfg=CC.withDefaults(JSON.parse(decodeURIComponent(escape(atob(h.get("i"))))))}catch(e){}
@@ -420,7 +423,7 @@ const save=()=>{if(SLOT){LS("blc1s"+SLOT,{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cu
 
 // ---------- Daten ----------
 // Börsen: OKX Perpetual (USDT-SWAP, wie „OKX:…USDT.P“ in TradingView) und Binance Spot
-const SRCOK=()=>S.src==="Binance"||S.src==="OKX Perp";
+const SRCOK=()=>S.src==="Binance"||S.src==="OKX Perp"||!!EX.src(S.src);
 const KSTEP={"1m":6e4,"3m":18e4,"5m":3e5,"15m":9e5,"30m":18e5,"1h":36e5,"2h":72e5,"4h":144e5,"12h":432e5,"1d":864e5,"1w":6048e5,"1M":2592e6};CTFT.push([KSTEP,1]);for(const k in CTF)KSTEP[k]=CTF[k].ms;
 const okxRow=r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[6]});
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -446,15 +449,22 @@ async function binK(sym,tf,limit,endTime){if(CTF[tf]){const c=CTF[tf];return ctf
   const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}USDT&interval=${tf}&limit=${Math.min(1000,limit)}${endTime?"&endTime="+endTime:""}`,15000);
   return Array.isArray(j)?j.map(r=>({t:+r[0],o:+r[1],h:+r[2],l:+r[3],c:+r[4],v:+r[5],b:+r[9]})):[]}
 // Kerzen von derselben Quelle wie der Chart (für höhere Zeitrahmen, ältere Kerzen usw.)
-function kFetch(sym,tf,limit,endTime){return S.src==="OKX Perp"?okxK(sym,tf,Math.min(limit,1000),endTime):binK(sym,tf,limit,endTime)}
-async function loadList(){
-  if(S.ex==="okx")try{const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP");
+// Kerzen einer der weiteren Börsen (ex.js); eigene Intervalle werden wie bei OKX aus dem Basis-Zeitrahmen zusammengesetzt
+async function exK(A,sym,tf,limit,endTime){if(CTF[tf]){const c=CTF[tf];return ctfAgg(await exK(A,sym,c.base,Math.min(limit*c.n,1000),endTime),tf).slice(-limit)}
+  if(!A.tfs.includes(tf))throw new Error(`${A.short} hat den Zeitrahmen ${TFLAB[tf]||tf} nicht.`);return A.kl(sym,tf,Math.min(limit,1000),endTime)}
+function kFetch(sym,tf,limit,endTime){const A=EX.src(S.src);if(A)return exK(A,sym,tf,limit,endTime);return S.src==="OKX Perp"?okxK(sym,tf,Math.min(limit,1000),endTime):binK(sym,tf,limit,endTime)}
+async function loadList(){const A=EX.get(S.ex);
+  if(A)try{S.list.k=(await A.tick()).map(x=>({s:x.s,n:"Perp",nm:x.n||"",g:x.g||"",ex:A.id,v:x.v})).sort((a,b)=>b.v-a.v)}catch(e){}
+  if(!A&&S.ex==="okx")try{const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP");
     S.list.k=(j.data||[]).filter(x=>/-USDT-SWAP$/.test(x.instId)).map(x=>({s:x.instId.slice(0,-10),n:"Perp",ex:"okx",v:+x.volCcy24h*+x.last})).sort((a,b)=>b.v-a.v)}catch(e){}
-  if(S.ex!=="okx"||!S.list.k.length)try{const t=await getJSON("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI");
+  if((!A&&S.ex!=="okx")||!S.list.k.length)try{const t=await getJSON("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI");
     S.list.k=t.filter(x=>/USDT$/.test(x.symbol)&&+x.closeTime>Date.now()-2*864e5).map(x=>({s:x.symbol.slice(0,-4),n:"",ex:"bin",v:+x.quoteVolume})).filter(x=>!/^(USDC|FDUSD|TUSD|USDP|DAI|EUR|BUSD|USD1)$/.test(x.s)).sort((a,b)=>b.v-a.v)}catch(e){}
   try{const j=await getJSON(RAW+"gz_1d.json?t="+Math.floor(Date.now()/36e5),40000);S.list.a=(j.items||[]).map(x=>({s:x.y,n:x.n,c:x.c}))}catch(e){}}
 async function klines(){const s=S.sym,tf=S.tf;
-  if(S.mkt==="k"){const order=S.ex==="okx"?["okx","bin"]:["bin","okx"];
+  if(S.mkt==="k"){const A=EX.get(S.ex);
+    // gewählte Börse zuerst; liefert sie nichts, auf OKX bzw. Binance ausweichen (mit Hinweis)
+    if(A){try{const k=await exK(A,s,tf,1000);if(k.length)return{src:A.name,k}}catch(e){}toast(`${A.short}: ${s} nicht gefunden oder nicht erreichbar – zeige eine andere Börse`)}
+    const order=S.ex==="binance"?["bin","okx"]:["okx","bin"];
     for(const x of order){try{const k=x==="okx"?await okxK(s,tf,1000):await binK(s,tf,1000);if(k.length)return{src:x==="okx"?"OKX Perp":"Binance",k}}catch(e){}}
     throw new Error(`${s}/USDT wurde bei OKX (Perpetual) und Binance nicht gefunden.`)}
   const j=await getJSON(RAW+"c/"+s.replace(/[^A-Za-z0-9.\-]/g,"_")+".json?t="+Math.floor(Date.now()/3e5));
@@ -474,7 +484,7 @@ async function longData(){const key=S.mkt+":"+S.sym;if(LONG[key])return LONG[key
       try{const j=await getJSON(`https://scanner.kompassapps.de/data/risk/${encodeURIComponent(S.sym)}.json?t=${HB()}`);out.e=j.d.map(x=>({d:x[0],p:x[1],r:x[2]}))}catch(e){}}
     if(!out.e.length){try{const j=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${S.sym}USDT&interval=1d&limit=1000`);out.e=j.map(r=>({d:dayOf(+r[0]),p:+r[4],r:null}))}catch(e){}
       // dritte Quelle: Tageskerzen des OKX-Perpetuals selbst (z. B. Aktien-Perps, die es bei Binance Spot nicht gibt) – die längere Historie gewinnt
-      if(S.ex==="okx")try{const k=await okxK(S.sym,"1d",1000);if(k.length>out.e.length)out.e=k.map(r=>({d:dayOf(r.t),p:r.c,r:null}))}catch(e){}}
+      if(S.ex!=="binance")try{const A=EX.get(S.ex),k=A?await exK(A,S.sym,"1d",1000):await okxK(S.sym,"1d",1000);if(k.length>out.e.length)out.e=k.map(r=>({d:dayOf(r.t),p:r.c,r:null}))}catch(e){}}
     // Hitze aus Tageskursen: Kurs ÷ ((19 abgeschlossene Wochen-Schlusskurse + Kurs) / 20)
     const W=new Map();out.e.forEach(x=>W.set(wkDay(x.d),x.p));const wks=[...W.keys()].sort((a,b)=>a-b);out.wc=wks.map(w=>[w,W.get(w)]);
     let wi=0;const closes=[];out.e.forEach(x=>{const w=wkDay(x.d);while(wi<wks.length&&wks[wi]<w){closes.push(W.get(wks[wi]));wi++}
@@ -542,7 +552,7 @@ function notice(t){$("notice").hidden=!t;$("notice").textContent=t||""}
 // ---------- TradingView-Link ----------
 const YEX={HK:"HKEX",T:"TSE",KS:"KRX",DE:"XETR",PA:"EURONEXT",AS:"EURONEXT",BR:"EURONEXT",MI:"MIL",MC:"BME",HE:"OMXHEX",L:"LSE",SW:"SIX"};
 const TVIDX={"^GSPC":"SP:SPX","^NDX":"NASDAQ:NDX","^DJI":"DJ:DJI","^RUT":"TVC:RUT","^GDAXI":"XETR:DAX","^MDAXI":"XETR:MDAX","^TECDAX":"XETR:TDXP","^STOXX50E":"TVC:SX5E","^HSI":"TVC:HSI","^N225":"TVC:NI225","^KS11":"TVC:KOSPI","GC=F":"COMEX:GC1!","SI=F":"COMEX:SI1!","CL=F":"NYMEX:CL1!","BZ=F":"TVC:UKOIL","NG=F":"NYMEX:NG1!","HG=F":"COMEX:HG1!","PL=F":"NYMEX:PL1!","PA=F":"NYMEX:PA1!","DX-Y.NYB":"TVC:DXY"};
-function tvSym(){if(S.mkt==="k")return/OKX/.test(S.src)?"OKX:"+S.sym+"USDT.P":"BINANCE:"+S.sym+"USDT";const y=S.sym;if(TVIDX[y])return TVIDX[y];
+function tvSym(){if(S.mkt==="k"){const A=EX.src(S.src);if(A)return A.tv(S.sym)}if(S.mkt==="k")return/OKX/.test(S.src)?"OKX:"+S.sym+"USDT.P":"BINANCE:"+S.sym+"USDT";const y=S.sym;if(TVIDX[y])return TVIDX[y];
   const m=y.match(/^(.+)\.([A-Z]{1,2})$/);if(m&&YEX[m[2]])return YEX[m[2]]+":"+(m[2]==="HK"?m[1].replace(/^0+/,""):m[1].replace(/-/g,"_"));return y.replace(/-/g,".")}
 const tvUrl=()=>`https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tvSym())}&interval=${{"1m":"1","3m":"3","5m":"5","15m":"15","30m":"30","1h":"60","2h":"120","4h":"240","12h":"720","1d":"D","1w":"W","1M":"M"}[S.tf]||tvCtf()}`;
 function tvCtf(){const c=CTF[S.tf];if(!c)return"D";const m=c.ms/6e4;return c.wk?(m/10080)+"W":m%1440===0?(m/1440)+"D":String(m)}
@@ -895,11 +905,12 @@ const GECKO={},norm=t=>String(t||"").toUpperCase().normalize("NFD").replace(/[̀
 let geT=0,geQ="";
 function sugList(q){const Q=norm(q),out=[];if(!Q)return out;const seen=new Set();
   const score=(sym,name)=>{const S0=norm(sym),N=norm(name);if(S0===Q)return 0;if(N===Q)return 1;if(N.startsWith(Q))return 2;if(S0.startsWith(Q))return 3;if(N.includes(Q))return 4;return 9};
-  S.list.k.forEach((x,i)=>{const n=CNAME[x.s]||GECKO[x.s]||"",sc=score(x.s,n);if(sc<9){out.push({s:x.s,m:"k",n:n||"Krypto",ex:x.ex,sc,r:i});seen.add("k"+x.s)}});
+  // Märkte der weiteren Börsen können eine Gruppe (Forex, Index, Rohstoff, Aktie) und einen lesbaren Namen mitbringen
+  S.list.k.forEach((x,i)=>{const n=x.nm||(x.g?"":CNAME[x.s]||GECKO[x.s])||"",sc=Math.min(score(x.s,n),x.g&&norm(x.g).startsWith(Q)?4:9);if(sc<9){out.push({s:x.s,m:"k",n:n||(x.g?"":"Krypto"),g:x.g||"",ex:x.ex,sc,r:i});seen.add("k"+x.s)}});
   S.list.a.forEach((x,i)=>{const sc=score(x.s.replace(/\..*$/,""),x.n);if(sc<9)out.push({s:x.s,m:"a",n:x.n||"Aktie / Index",sc,r:5000+i})});
   return out.sort((a,b)=>a.sc-b.sc||a.r-b.r).slice(0,30)}
 function showSug(){const q=$("sym").value.trim();if(!q){$("sug").hidden=true;return}const m=sugList(q);sugI=m.length?0:-1;
-  $("sug").innerHTML=m.length?m.map((x,i)=>`<button data-s="${esc(x.s)}" data-m="${x.m}" class="${i===0?"on":""}"><b>${x.m==="k"&&window.wlFlag&&wlFlag(x.s)?`<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${wlFlag(x.s)};margin-right:6px"></i>`:""}${esc(x.s)}${x.m==="k"?(x.ex==="okx"?"<small>USDT.P</small>":"<small>USDT</small>"):""}</b><small>${esc(x.n)}${x.m==="a"?" · Aktie":x.ex==="okx"?' · <span class="exT okx">OKX Perp</span>':' · <span class="exT">Binance Spot</span>'}</small></button>`).join(""):`<div class="sugE">Suche „${esc(q)}“ …</div>`;
+  $("sug").innerHTML=m.length?m.map((x,i)=>`<button data-s="${esc(x.s)}" data-m="${x.m}" class="${i===0?"on":""}"><b>${x.m==="k"&&window.wlFlag&&wlFlag(x.s)?`<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${wlFlag(x.s)};margin-right:6px"></i>`:""}${esc(x.s)}${x.m==="k"?(x.ex==="bin"?"<small>USDT</small>":"<small>USDT.P</small>"):""}</b><small>${esc(x.n)}${x.g?" · "+esc(x.g):""}${x.m==="a"?" · Aktie":x.ex==="okx"?' · <span class="exT okx">OKX Perp</span>':EX.get(x.ex)?` · <span class="exT okx">${esc(EX.get(x.ex).name)}</span>`:' · <span class="exT">Binance Spot</span>'}</small></button>`).join(""):`<div class="sugE">Suche „${esc(q)}“ …</div>`;
   $("sug").hidden=false;
   // Namenssuche (z. B. „Bitcoin“) über CoinGecko, nur Coins, die es an der Börse gibt
   const Q=norm(q);if(Q.length>=3&&Q!==geQ){clearTimeout(geT);geT=setTimeout(async()=>{geQ=Q;try{const j=await getJSON("https://api.coingecko.com/api/v3/search?query="+encodeURIComponent(q),8000);
@@ -1268,16 +1279,21 @@ function liveState(on,txt){$("live").classList.toggle("on",on);if(txt!=null)$("l
 function wsStop(){clearTimeout(wsT);if(ws){const s=ws;ws=null;clearInterval(s._p);try{s.close()}catch(e){}}}
 function wsStart(){if(document.documentElement.classList.contains("split")){wsStop();return}const key=S.src+"|"+S.sym+"|"+S.tf;
   if(!SRCOK()||!S.kO.length){wsStop();wsKey="";liveState(false,S.kO.length?"ohne Live":"–");return}
-  if(ws&&wsKey===key&&ws.readyState<2)return;wsStop();wsKey=key;liveState(false,"verbinde …");let got=false;const okx=S.src==="OKX Perp";
-  $("live").title="Live-Verbindung zu "+(okx?"OKX (Perpetual)":"Binance (Spot)");
-  let sock;try{sock=new WebSocket(okx?"wss://ws.okx.com:8443/ws/v5/business":WSU[wsI%WSU.length]+S.sym.toLowerCase()+"usdt@kline_"+(CTF[S.tf]?CTF[S.tf].base:S.tf))}catch(e){return}
-  ws=sock;const sym=S.sym,tf=CTF[S.tf]?CTF[S.tf].base:S.tf;
+  if(ws&&wsKey===key&&ws.readyState<2)return;wsStop();wsKey=key;liveState(false,"verbinde …");let got=false;const okx=S.src==="OKX Perp",A=EX.src(S.src),sym=S.sym,tf=CTF[S.tf]?CTF[S.tf].base:S.tf;
+  $("live").title="Live-Verbindung zu "+(A?A.name:okx?"OKX (Perpetual)":"Binance (Spot)");
+  let sock;try{sock=new WebSocket(A?A.ws.url(sym,tf):okx?"wss://ws.okx.com:8443/ws/v5/business":WSU[wsI%WSU.length]+S.sym.toLowerCase()+"usdt@kline_"+tf)}catch(e){return}
+  ws=sock;
+  // weitere Börsen (ex.js): anmelden, wach halten, jede Nachricht in eine Kerze übersetzen
+  if(A){if(A.ws.binary)sock.binaryType="arraybuffer";
+    sock.onopen=()=>{try{A.ws.sub(sock,sym,tf)}catch(_){}sock._l=Date.now();sock._p=setInterval(()=>{if(!A.ws.quiet&&Date.now()-sock._l>60000){try{sock.close()}catch(_){}if(sock.onclose)sock.onclose();return}try{A.ws.ping(sock)}catch(_){}},20000)};
+    sock.onmessage=async e=>{sock._l=Date.now();if(sock!==ws)return;try{const c=await A.ws.msg(e.data,sym,tf,sock);if(c&&sock===ws&&c.c>0&&c.t>0){got=true;tick({t:c.t,o:c.o,h:c.h,l:c.l,c:c.c,v:c.v,V:c.b,i:tf,s:sym+"USDT"})}}catch(_){}}}
+  else{
   if(okx)sock.onopen=()=>{try{sock.send(JSON.stringify({op:"subscribe",args:[{channel:"candle"+OKXB[tf],instId:sym+"-USDT-SWAP"}]}))}catch(_){}sock._l=Date.now();
     // alle 20 s „ping“; kommt 50 s lang gar nichts zurück, gilt die Verbindung als tot → neu verbinden
     sock._p=setInterval(()=>{if(Date.now()-sock._l>50000){try{sock.close()}catch(_){}if(sock.onclose)sock.onclose();return}try{sock.send("ping")}catch(_){}},20000)};
   sock.onmessage=e=>{sock._l=Date.now();if(sock!==ws||e.data==="pong")return;try{const m=JSON.parse(e.data);
     if(okx){if(m&&m.arg&&Array.isArray(m.data))for(const r of m.data){got=true;tick({t:r[0],o:r[1],h:r[2],l:r[3],c:r[4],v:r[6],i:tf,s:sym+"USDT"})}}
-    else if(m&&m.k){got=true;tick(m.k)}}catch(_){}};
+    else if(m&&m.k){got=true;tick(m.k)}}catch(_){}}}
   sock.onerror=()=>{try{sock.close()}catch(_){}};
   sock.onclose=()=>{clearInterval(sock._p);if(sock!==ws)return;ws=null;liveState(false,"getrennt – verbinde neu …");if(!got)wsI++;clearTimeout(wsT);// lief die Verbindung schon: Kerzen neu holen (schließt die Lücke der Unterbrechung), sonst nur neu verbinden
     wsT=setTimeout(()=>{if(document.visibilityState==="visible"){if(got)load(true);else wsStart()}},3000)}}
@@ -1400,7 +1416,7 @@ function bodTable(){const c=S.cfg.bod,R=BOD.R,el=$("bodTab");if(!R||!c.tab){el.h
   row("Quelle","Börse, von der das Open Interest stammt.",q,gr,st==="ok"?`Symbol: ${BOD.sym} (Binance-Terminbörse). Verlauf höchstens 30 Tage zurück.`:st==="tf"?`Auf ${TFLAB[S.tf]} gibt es kein Open Interest (verfügbar: 5m bis 1D). Delta und CVD funktionieren trotzdem.`:st==="lädt"?"Open Interest wird geladen.":"Für diesen Coin liefert die Binance-Terminbörse kein Open Interest (oder sie ist von hier nicht erreichbar). Delta und CVD funktionieren trotzdem.");
   row("Bezug","Zeitraum, auf den sich OI, Δ, Trend, Div und Fazit beziehen.\nÄndern in den Einstellungen → Bezugszeitraum Tabelle.",R.bezK,gr,"Bezug: "+R.bezL+".");
   row("OI","Open-Interest-Veränderung, Bezug: "+R.bezL+".",R.oiPct==null?"keine Daten":(R.oiPct>=0?"▲ +":"▼ ")+R.oiPct.toFixed(1).replace(".",",")+" %",R.oiPct==null?gr:R.oiPct>=0?cK:cV,R.oiPct==null?"Für diesen Zeitraum liegt kein Open Interest vor.":R.oiPct>=0?"Neues Geld fließt in den Markt.":"Positionen werden geschlossen, Geld fließt ab.");
-  row("Δ","Summe aus Kauf- minus Verkaufsvolumen, Bezug: "+R.bezL+(S.src==="Binance"?" (echtes Käufer-/Verkäufer-Volumen von Binance).":" (geschätzt aus der Kerzenrichtung – OKX liefert kein Käufer-/Verkäufer-Volumen)."),R.dSum==null?"–":(R.dSum>=0?"▲ ":"▼ ")+fv(R.dSum),R.dSum==null?gr:R.dSum>=0?cK:cV,(R.dSum||0)>=0?"Käufer waren aggressiver.":"Verkäufer waren aggressiver.");
+  row("Δ","Summe aus Kauf- minus Verkaufsvolumen, Bezug: "+R.bezL+(S.src==="Binance"||S.src==="Binance Futures"?" (echtes Käufer-/Verkäufer-Volumen von Binance).":" (geschätzt aus der Kerzenrichtung – diese Börse liefert kein Käufer-/Verkäufer-Volumen)."),R.dSum==null?"–":(R.dSum>=0?"▲ ":"▼ ")+fv(R.dSum),R.dSum==null?gr:R.dSum>=0?cK:cV,(R.dSum||0)>=0?"Käufer waren aggressiver.":"Verkäufer waren aggressiver.");
   row("Trend","Szenario aus Preis- und OI-Veränderung, Bezug: "+R.bezL+".",SZK[R.trend],szCol(R.trend),SZL[R.trend]);
   const l=S.kO.length-1;row("Kerze","Szenario der aktuellen Kerze. „!“ = signifikante OI-Veränderung.",SZK[R.szen[l]]+(R.sig[l]?" !":""),szCol(R.szen[l]),SZL[R.szen[l]]);
   row("Div","Widerspruch zwischen Preis und Volumen-Delta, Bezug: "+R.bezL+".",R.divBaer?"⚠ ▼":R.divBulle?"⚠ ▲":"–",R.divBaer?cV:R.divBulle?cK:gr,R.divBaer?"Preis steigt, aber Verkäufer überwiegen.\nDer Anstieg wird nicht von aggressiven Käufern getragen – Vorsicht.":R.divBulle?"Preis fällt, aber Käufer überwiegen.\nDer Verkaufsdruck wird absorbiert – mögliche Bodenbildung.":"Keine Divergenz: Preis und Delta zeigen in dieselbe Richtung.");
@@ -2274,8 +2290,8 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
 </script>
 <script src="bps.js?v=8"></script>
 <script src="dw.js?v=2"></script>
-<script src="wl.js?v=12"></script>
-<script src="al.js?v=3"></script>
+<script src="wl.js?v=13"></script>
+<script src="al.js?v=4"></script>
 <script src="split.js?v=1"></script>
 </body>
 </html>

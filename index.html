@@ -230,6 +230,7 @@ html.emb #rail,html.split #rail{display:none!important}html.emb .stage,html.spli
 /* Infozeilen links oben (Kurse O/H/L/C und Indikator-Namen) ein- und ausklappbar */
 .ov .t .ovTg{pointer-events:auto;border:0;background:none;color:var(--muted);font-size:.8rem;padding:2px 6px 2px 0;cursor:pointer;vertical-align:1px}
 .ov.zu .o,.ov.zu .lg,.ov.zu .t small{display:none}
+.ov .t .nmI{font:600 .8rem var(--f-body);color:var(--muted);margin-left:8px}
 /* Handy: Zeitrahmen so breit wie ihre 4 Knöpfe, die Knöpfe rechts teilen sich den restlichen Platz (breiter, leichter zu treffen) */
 @media (max-width:900px){html .top #tfSeg{flex:0 0 auto!important;min-width:0!important;overflow:visible!important}html .top .acts{flex:1 1 auto!important;min-width:0}html .top .acts>.btn{flex:1 1 0;min-width:42px;padding-left:4px!important;padding-right:4px!important;text-align:center;font-size:1rem}}
 @media (max-width:560px){html .top .sym{flex:0 1 74px!important;min-width:54px!important}html .top #tfSeg button{padding:5px 6px!important;font-size:.78rem!important}html .top .acts>.btn{min-width:38px}}
@@ -321,7 +322,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 .wlRow .lgo{position:relative;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:hsl(var(--h) 55% 42%);color:#fff;font:700 .68rem var(--f-body);font-style:normal;margin-right:7px;vertical-align:-4px;overflow:hidden}.wlRow .lgo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--panel)}
 .wlRow{padding:7px 4px;border-bottom:1px solid rgba(128,128,128,.12);cursor:pointer;font-family:var(--f-num)}.wlRow:hover{background:rgba(128,128,128,.08)}.wlRow.cur{background:rgba(240,160,48,.12)}
 .wlRow .fl{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(128,128,128,.5);background:var(--c);padding:0;cursor:pointer}.wlRow .fl.set{border-color:var(--c)}
-.wlRow .sy{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlRow .sy small{opacity:.5;font-weight:400}.wlRow .sy .nt{display:block;font:400 .72rem var(--f-body);opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlPop .ntB{margin-left:auto;background:none;border:1px solid var(--line);color:inherit;border-radius:7px;padding:2px 9px;cursor:pointer;font-size:.78rem}.wlRow .px{text-align:right}.wlRow .ch{text-align:right}.wlRow .ch.up{color:#26a69a}.wlRow .ch.dn{color:#ef5350}
+.wlRow .sy{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlRow .sy small{opacity:.5;font-weight:400}.wlRow .sy .cn{font:400 .74rem var(--f-body);opacity:.62;margin-left:6px}.wlRow .sy .tg{font:700 .6rem var(--f-body);border:1px solid var(--line);border-radius:4px;padding:0 3px;margin-left:5px;opacity:.75;vertical-align:1px}.wlRow .sy .nt{display:block;font:400 .72rem var(--f-body);opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wlPop .ntB{margin-left:auto;background:none;border:1px solid var(--line);color:inherit;border-radius:7px;padding:2px 9px;cursor:pointer;font-size:.78rem}.wlRow .px{text-align:right}.wlRow .ch{text-align:right}.wlRow .ch.up{color:#26a69a}.wlRow .ch.dn{color:#ef5350}
 .wlRow .ed button,.wlSec button{background:none;border:none;color:inherit;opacity:.7;cursor:pointer;padding:2px 4px}
 .wlSec{padding:8px 4px 3px;font-size:.72rem;font-weight:700;letter-spacing:.04em;opacity:.75;text-transform:uppercase;display:flex;justify-content:space-between}
 .wlPop{display:flex;gap:8px;padding:6px 4px 8px 28px}.wlPop .dot{color:#999;font-size:10px;line-height:14px}
@@ -469,13 +470,19 @@ async function binK(sym,tf,limit,endTime){if(CTF[tf]){const c=CTF[tf];return ctf
 async function exK(A,sym,tf,limit,endTime){if(CTF[tf]){const c=CTF[tf];return ctfAgg(await exK(A,sym,c.base,Math.min(limit*c.n,1000),endTime),tf).slice(-limit)}
   if(!A.tfs.includes(tf))throw new Error(`${A.short} hat den Zeitrahmen ${TFLAB[tf]||tf} nicht.`);return A.kl(sym,tf,Math.min(limit,1000),endTime)}
 function kFetch(sym,tf,limit,endTime){const A=EX.src(S.src);if(A)return exK(A,sym,tf,limit,endTime);return S.src==="OKX Perp"?okxK(sym,tf,Math.min(limit,1000),endTime):binK(sym,tf,limit,endTime)}
+// Echte Aktie / echter Index zu einem Kürzel aus dem Coin-Scanner (stündliche Yahoo-Daten): „MCD“ → MCD, „068270“ → 068270.KS, „SAP“ → SAP.DE
+let STK=null;
+function stockOf(sym){if(!sym)return null;if(!STK){STK={};for(const x of S.list.a){const b=String(x.s).replace(/\..*$/,"").replace(/[^A-Za-z0-9]/g,"").toUpperCase();if(!STK[b]||/^\w+$/.test(x.s))STK[b]=x;STK[String(x.s).toUpperCase()]=x}}return STK[String(sym).toUpperCase()]||null}
+// Ausgeschriebener Name zu einem Kürzel: Coin (feste Liste, CoinGecko), Markt einer Börse (Forex/Index …) oder Aktie
+function symName(sym,mkt){if(!sym)return"";if(mkt==="a"){const x=stockOf(sym);return x&&x.n||""}const e=S.list.k.find(x=>x.s===sym);
+  return(e&&e.nm)||CNAME[sym]||GECKO[sym]||(window.wlCoinName&&wlCoinName(sym))||(stockOf(sym)||{}).n||""}
 async function loadList(){const A=EX.get(S.ex);
   if(A)try{S.list.k=(await A.tick()).map(x=>({s:x.s,n:"Perp",nm:x.n||"",g:x.g||"",ex:A.id,v:x.v})).sort((a,b)=>b.v-a.v)}catch(e){}
   if(!A&&S.ex==="okx")try{const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP");
     S.list.k=(j.data||[]).filter(x=>/-USDT-SWAP$/.test(x.instId)).map(x=>({s:x.instId.slice(0,-10),n:"Perp",ex:"okx",v:+x.volCcy24h*+x.last})).sort((a,b)=>b.v-a.v)}catch(e){}
   if((!A&&S.ex!=="okx")||!S.list.k.length)try{const t=await getJSON("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI");
     S.list.k=t.filter(x=>/USDT$/.test(x.symbol)&&+x.closeTime>Date.now()-2*864e5).map(x=>({s:x.symbol.slice(0,-4),n:"",ex:"bin",v:+x.quoteVolume})).filter(x=>!/^(USDC|FDUSD|TUSD|USDP|DAI|EUR|BUSD|USD1)$/.test(x.s)).sort((a,b)=>b.v-a.v)}catch(e){}
-  try{const j=await getJSON(RAW+"gz_1d.json?t="+Math.floor(Date.now()/36e5),40000);S.list.a=(j.items||[]).map(x=>({s:x.y,n:x.n,c:x.c}))}catch(e){}}
+  try{const j=await getJSON(RAW+"gz_1d.json?t="+Math.floor(Date.now()/36e5),40000);S.list.a=(j.items||[]).map(x=>({s:x.y,n:x.n,c:x.c,p:Array.isArray(x.m)&&x.m.length?+x.m[x.m.length-1]:null,ch:typeof x.ch==="number"?x.ch:null}));STK=null;if(typeof legend==="function")try{legend()}catch(e){}}catch(e){}}
 async function klines(){const s=S.sym,tf=S.tf;
   if(S.mkt==="k"){const A=EX.get(S.ex);
     // gewählte Börse zuerst; liefert sie nichts, auf OKX bzw. Binance ausweichen (mit Hinweis)
@@ -680,7 +687,7 @@ function legendItems(){const c=S.cfg,l=[];const add=(on,t,col)=>{if(on)l.push({t
   add(c.sk.on,"SK","#f0a33a");add(c.gz.on,"Golden Zone","#f0a33a");add(c.fib.on,"Fibonacci","#26c6da");add(c.dfib.on,"Dyn. Fib (BSI)","#ff9800");add(c.ms.on,"Struktur","#8d99ab");
   add(c.tl.on,"Trendlinien","#ffeb3b");add(c.sr.on,"S/R","#8d99ab");add(c.vp.on,"Volumenprofil","#ba68c8");add(c.liq.on,"Liquidität","#2979ff");add(c.fvg.on,"FVG","#3ccf8a");
   add(c.ob.on,"OB","#3ccf8a");add(c.rsic.on,"RSI-Kerzen","#ffeb3b");add(c.lsob.on,"LSOB","#2979ff");add(c.rsi.on,"RSI","#b388ff");add(c.macd.on,"MACD","#5b9bff");add(c.risk.on,"Risiko","#e6d200");add(c.heat.on,"Hitze","#18c7e6");return l}
-function legend(){$("ovL").innerHTML=S.indHide?`<span style="opacity:.7">Indikatoren verborgen (👁)</span>`:legendItems().map(x=>`<span style="color:${x.col}">${esc(x.t)}</span>`).join("");$("ovT").innerHTML=`<button class="ovTg" id="ovTg" title="Infozeilen ein-/ausklappen">${S.ovZu?"▸":"▾"}</button>${window.wlFlagBtn?wlFlagBtn():""}${esc(S.mkt==="k"?S.sym+"/USDT":S.sym)}<small>${TFLAB[S.tf]} · ${esc(S.src)} · ${esc(curText())}</small><a class="tvl" href="${tvUrl()}" target="_blank" rel="noopener" title="In TradingView öffnen">↗ TV</a>`;
+function legend(){$("ovL").innerHTML=S.indHide?`<span style="opacity:.7">Indikatoren verborgen (👁)</span>`:legendItems().map(x=>`<span style="color:${x.col}">${esc(x.t)}</span>`).join("");$("ovT").innerHTML=`<button class="ovTg" id="ovTg" title="Infozeilen ein-/ausklappen">${S.ovZu?"▸":"▾"}</button>${window.wlFlagBtn?wlFlagBtn():""}${esc(S.mkt==="k"?S.sym+"/USDT":S.sym)}${symName(S.sym,S.mkt)?`<span class="nmI">${esc(symName(S.sym,S.mkt))}</span>`:""}<small>${TFLAB[S.tf]} · ${esc(S.src)} · ${esc(curText())}</small><a class="tvl" href="${tvUrl()}" target="_blank" rel="noopener" title="In TradingView öffnen">↗ TV</a>`;
   document.querySelectorAll("#curSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cur===S.cur));
   setTitle(`${S.sym} ${TFLAB[S.tf]} · Live-Chart`)}
 // Tab-Titel: in der geteilten Ansicht zeigt der Tab immer das erste Fenster (oben links)
@@ -2372,7 +2379,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
 </script>
 <script src="bps.js?v=8"></script>
 <script src="dw.js?v=5"></script>
-<script src="wl.js?v=13"></script>
+<script src="wl.js?v=14"></script>
 <script src="al.js?v=4"></script>
 <script src="split.js?v=1"></script>
 </body>

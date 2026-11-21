@@ -14,19 +14,21 @@ const W=ld("blcWl",null)||{cur:0,lists:[]};W.lists=okLists(W.lists);if(!W.lists.
 const SORTS=[["eigen","Benutzerdefinierte Reihenfolge"],["sym","Nach Symbol"],["preis","Nach letztem Preis"],["ver","Nach Veränderung"],["verp","Nach Veränderung (%)"],["flag","Nach Fähnchen"],["vol","Nach Volumen"]];
 // Ansicht (Menü ⋯): Tabellenansicht, Gruppierung, Spalten, Logo, Symbol oder Name – je Gerät gespeichert
 const COLS=[{k:"last",t:"Kurs",w:92,s:"preis"},{k:"chg",t:"Änd",w:78,s:"ver"},{k:"chgp",t:"Änd %",w:74,s:"verp"},{k:"vol",t:"Volumen",w:76,s:"vol"},{k:"hl",t:"24h H/T",w:92},{k:"ald",t:"Alarm",w:66,s:"ald"}];
-const V=(()=>{const a=ld("blcWlView",{})||{},c=a.cols&&typeof a.cols==="object"?a.cols:{},o={tab:a.tab!==false,grp:["none","sec","flag"].includes(a.grp)?a.grp:"sec",logo:a.logo2!==false,nm:a.nm==="name"?"name":"sym",cols:{}};
+const V=(()=>{const a=ld("blcWlView",{})||{},c=a.cols&&typeof a.cols==="object"?a.cols:{},o={tab:a.tab!==false,grp:["none","sec","flag"].includes(a.grp)?a.grp:"sec",logo:a.logo2!==false,sub:a.sub!==false,hide0:a.hide0===true,nm:a.nm==="name"?"name":"sym",cols:{}};
   const def={last:1,chg:innerWidth>430?1:0,chgp:1,vol:0,hl:0,ald:0};COLS.forEach(x=>o.cols[x.k]=c[x.k]==null?!!def[x.k]:!!c[x.k]);return o})();
 const saveV=()=>sv("blcWlView",{...V,logo2:V.logo});
 // Logos: Bild-Adressen der 500 größten Coins von CoinGecko (dieselbe Quelle wie die Namenssuche), einmal am Tag geholt und gespeichert
 let LG=(()=>{const a=ld("blcLogo",null);return a&&a.m&&typeof a.m==="object"?a:{t:0,m:{}}})(),lgBusy=false;
 const lgUrl=s=>{const u=LG.m[s.replace(/^\d+/,"")]||LG.m[s];return typeof u==="string"&&/^https:\/\/[a-z0-9.-]+\//i.test(u)?u:""};
-async function lgLoad(){if(lgBusy||Date.now()-LG.t<864e5)return;lgBusy=true;try{const m={};for(const pg of[1,2]){const j=await getJSON(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=${pg}&sparkline=false`,15000);
-      for(const c of Array.isArray(j)?j:[]){const sy=String(c.symbol||"").toUpperCase();if(/^[A-Z0-9]{1,20}$/.test(sy)&&!m[sy]&&typeof c.image==="string"&&c.image.startsWith("https://"))m[sy]=c.image.replace("/large/","/small/")}}
-    if(Object.keys(m).length){LG={t:Date.now(),m};sv("blcLogo",LG);BADLG.clear();if(open()&&!menu)draw()}}catch(e){LG.t=Date.now()-864e5+6e5}finally{lgBusy=false}}
+async function lgLoad(){if(lgBusy||(Date.now()-LG.t<864e5&&LG.n))return;lgBusy=true;try{const m={},nmap={};for(const pg of[1,2]){const j=await getJSON(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=${pg}&sparkline=false`,15000);
+      for(const c of Array.isArray(j)?j:[]){const sy=String(c.symbol||"").toUpperCase();if(/^[A-Z0-9]{1,20}$/.test(sy)&&!m[sy]&&typeof c.image==="string"&&c.image.startsWith("https://")){m[sy]=c.image.replace("/large/","/small/");if(typeof c.name==="string")nmap[sy]=c.name.replace(/[<>"'`&]/g,"").slice(0,40)}}}
+    if(Object.keys(m).length){LG={t:Date.now(),m,n:nmap};sv("blcLogo",LG);BADLG.clear();if(open()&&!menu)draw()}}catch(e){LG.t=Date.now()-864e5+6e5}finally{lgBusy=false}}
 const BADLG=new Set(); // Coins ohne ladbares Logo (dann bleibt der Buchstaben-Kreis)
 const fmtVol=v=>!(v>0)?"–":v>=1e9?(v/1e9).toFixed(v>=1e10?1:2).replace(".",",")+" Mrd":v>=1e6?(v/1e6).toFixed(v>=1e8?0:1).replace(".",",")+" Mio":v>=1e3?Math.round(v/1e3)+" Tsd":String(Math.round(v));
 const hue=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h};
-const coinName=s=>(typeof CNAME!=="undefined"&&CNAME[s])||(typeof GECKO!=="undefined"&&GECKO[s])||"";
+// Name zu einem Kürzel: Coin (feste Liste, CoinGecko) oder – wenn kein Coin bekannt ist – die Aktie aus dem Coin-Scanner
+const stk=s=>typeof stockOf==="function"?stockOf(s):null;
+const coinName=s=>(typeof CNAME!=="undefined"&&CNAME[s])||(typeof GECKO!=="undefined"&&GECKO[s])||(LG.n&&LG.n[s.replace(/^\d+(?=[A-Z])/,"")])||(stk(s)||{}).n||"";
 // Abstand zum nächsten aktiven Preis-Alarm je Coin (in %)
 function alarmDist(){const o={};let A=[];try{A=JSON.parse(localStorage.getItem("blcAlarms"))||[]}catch(e){}for(const a of Array.isArray(A)?A:[]){if(!a||!a.on||!a.sym||a.c==="mv"||!(a.p>0))continue;const q=Q[a.sym];if(!q||!q.p)continue;const d=(a.p/q.p-1)*100;if(o[a.sym]==null||Math.abs(d)<Math.abs(o[a.sym]))o[a.sym]=d}return o}
 let menu=null,impTxt="",impName="",sortOpen=false,FLAG=okFlags(ld("blcFlag",{})),filt=+ld("blcWlFilt",0)||0,edit=false,imp=false,pop=null,Q={},qT=0,qBusy=false;
@@ -64,7 +66,8 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   if(menu==="view")h+=`<div class="wlMenu"><button data-v="tab">${ck(V.tab)}Tabellenansicht (aus = kompakt: nur Symbol und Änd %)</button><hr>
       <div class="mh">Gruppieren nach</div>${[["none","Keine Gruppe"],["sec","Benutzerdefinierte Abschnitte"],["flag","Fähnchen"]].map(([k,t])=>`<button data-vg="${k}">${ck(V.grp===k)}${t}</button>`).join("")}<hr>
       <div class="mh">Spalten anpassen</div>${COLS.map(c=>`<button data-vc="${c.k}">${ck(V.cols[c.k])}${{last:"Zuletzt (Kurs)",chg:"Veränderung",chgp:"Veränderung %",vol:"Volumen (24 Std., in USDT)",hl:"24-Stunden-Hoch und -Tief",ald:"Abstand zum nächsten Alarm"}[c.k]}</button>`).join("")}<hr>
-      <div class="mh">Symbolanzeige</div><button data-v="logo">${ck(V.logo)}Logo</button><button data-vn="sym">${ck(V.nm==="sym")}Symbol</button><button data-vn="name">${ck(V.nm==="name")}Name</button></div>`;
+      <div class="mh">Symbolanzeige</div><button data-v="logo">${ck(V.logo)}Logo</button><button data-vn="sym">${ck(V.nm==="sym")}Symbol</button><button data-vn="name">${ck(V.nm==="name")}Name</button><button data-v="sub">${ck(V.sub)}Name klein hinter dem Symbol (welches Unternehmen / welcher Coin)</button><hr>
+      <div class="mh">Ohne Daten</div><button data-v="hide0">${ck(V.hide0)}Symbole ohne Kurs ausblenden</button></div>`;
   h+=`
     <div class="wlEx">Börse: <select id="wlExSel" aria-label="Börse">${[["okx","OKX Perpetual"],["binance","Binance Spot"]].concat(typeof EX!=="undefined"?Object.values(EX.all).map(a=>[a.id,a.name+(a.test?" (Test)":"")]):[]).map(([k,t])=>`<option value="${k}" ${S.ex===k?"selected":""}>${esc(t)}</option>`).join("")}</select>
     <span class="wlSrc">${S.src?"Chart: "+esc(S.src):""}</span></div>
@@ -88,13 +91,16 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   else if(V.grp==="flag"){const it=l.items.filter(s=>!isS(s));rows=[];FL.forEach((f,i)=>{if(!i||!f)return;const g=it.filter(s=>FLAG[s]===i);if(g.length)rows.push({t:f[1]+" · "+g.length,c:f[0]},...srt(g))});const g0=it.filter(s=>!FLAG[s]);if(g0.length)rows.push({t:"Ohne Fähnchen · "+g0.length},...srt(g0))}
   else if(V.grp==="none"||sorted)rows=srt(l.items.filter(s=>!isS(s)));
   else rows=l.items.map((s,i)=>isS(s)?{t:s.slice(3),i}:s);
+  // Zeilen ohne Perp-Kurs: Kurs der echten Aktie aus dem Coin-Scanner zeigen (stündlich, nicht live); auf Wunsch Zeilen ganz ohne Kurs ausblenden
+  const qOf=s=>{const q=Q[s];if(q&&q.p)return q;const x=stk(s);return x&&x.p?{p:x.p,ch:x.ch,d:x.ch!=null?x.p-x.p/(1+x.ch/100):null,v:null,h:null,l:null,a:x.s}:{}};
+  if(V.hide0&&Object.keys(Q).length){rows=rows.filter(s=>typeof s!=="string"||qOf(s).p);rows=rows.filter((s,i)=>typeof s==="string"||(typeof rows[i+1]==="string"))}
   rows.forEach(s=>{if(typeof s!=="string"){h+=`<div class="wlSec"${s.i!=null?` data-i="${s.i}"`:""}>${s.c?`<i class="sd" style="--c:${s.c}"></i>`:""}${esc(s.t)}${canEd&&s.i!=null?`<button data-rm="${s.i}" title="Entfernen">✕</button>`:""}</div>`;return}
-    const f=FLAG[s]||0,i=l.items.indexOf(s);n++;const q=Q[s]||{},up=q.ch>0?"up":q.ch<0?"dn":"",nm=V.nm==="name"?coinName(s):"";
+    const f=FLAG[s]||0,i=l.items.indexOf(s);n++;const q=qOf(s),up=q.ch>0?"up":q.ch<0?"dn":"",cn=coinName(s),nm=V.nm==="name"?cn:"",isCur=q.a?S.mkt==="a"&&S.sym===q.a:S.mkt==="k"&&s===cur;
     const lg=V.logo?`<i class="lgo" style="--h:${hue(s)}">${esc(s.replace(/^\d+/,"")[0]||s[0])}${BADLG.has(s)?"":`<img loading="lazy" alt="" data-lg="${esc(s)}"${lgUrl(s)?"":' data-t2="1"'} src="${esc(lgUrl(s)||`https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png`)}">`}</i>`:"";
     const cell=c=>c.k==="last"?`<span class="px">${q.p?CC.fmt(q.p):"–"}</span>`:c.k==="chg"?`<span class="ch ${up}">${q.d==null||!isFinite(q.d)?"–":(q.d>=0?"+":"−")+CC.fmt(Math.abs(q.d))}</span>`:c.k==="chgp"?`<span class="ch ${up}">${pct(q.ch)}</span>`
       :c.k==="vol"?`<span class="px vo">${fmtVol(q.v)}</span>`:c.k==="hl"?`<span class="px hl">${q.h?CC.fmt(q.h):"–"}<br>${q.l?CC.fmt(q.l):"–"}</span>`:`<span class="px vo">${AD[s]==null?"–":(AD[s]>=0?"+":"")+AD[s].toFixed(1).replace(".",",")+" %"}</span>`;
-    h+=`<div class="wlRow${s===cur?" cur":""}" style="grid-template-columns:18px minmax(0,1fr) ${gw} auto" data-s="${esc(s)}" data-i="${canEd?i:-1}" ${canEd?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>
-      <span class="sy">${lg}${nm?`${esc(nm)}<small> ${esc(s)}</small>`:`${esc(s)}<small>${S.ex!=="binance"?".P":""}</small>`}${NOTE[s]?`<span class="nt">${esc(NOTE[s])}</span>`:""}</span>${C.map(cell).join("")}
+    h+=`<div class="wlRow${isCur?" cur":""}" style="grid-template-columns:18px minmax(0,1fr) ${gw} auto" data-s="${esc(s)}"${q.a?` data-y="${esc(q.a)}" title="Echte Aktie aus dem Coin-Scanner – stündlich aktualisiert, nicht live"`:cn?` title="${esc(cn)}"`:""} data-i="${canEd?i:-1}" ${canEd?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>
+      <span class="sy">${lg}${nm?`${esc(nm)}<small> ${esc(s)}</small>`:`${esc(s)}<small>${q.a?"":S.ex!=="binance"?".P":""}</small>`}${q.a?`<span class="tg">Aktie</span>`:""}${!nm&&V.sub&&cn?`<span class="cn">${esc(cn)}</span>`:""}${NOTE[s]?`<span class="nt">${esc(NOTE[s])}</span>`:""}</span>${C.map(cell).join("")}
       ${canEd?`<span class="ed"><button data-mv="${i}" data-d="-1" title="Nach oben">▲</button><button data-mv="${i}" data-d="1" title="Nach unten">▼</button><button data-rm="${i}" title="Entfernen">✕</button></span>`:""}</div>`;
     if(pop===s)h+=`<div class="wlPop">${FL.map((x,k)=>k&&!x?"":`<button data-setf="${k}" data-s="${esc(s)}" class="dot" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("")}<button class="ntB" data-note="${esc(s)}">✎ Notiz</button></div>`});
   h+=`</div></div></div>`;if(!n)h+=`<p class="wlE">${filt?"Keine Symbole mit diesem Fähnchen.":"Noch leer – oben mit ＋ das aktuelle Symbol hinzufügen oder unter ⋯ importieren."}</p>`;
@@ -107,7 +113,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
 function parse(t){const out=[];for(let x of String(t).split(/[,\n\r;]+/)){x=x.trim();if(!x)continue;if(x.startsWith("###")){out.push("###"+x.slice(3).trim());continue}
     x=x.replace(/^[A-Z0-9_]+:/i,"").replace(/\.P$/i,"").toUpperCase().replace(/(USDT|USDC|USD|PERP)$/,"").replace(/[^A-Z0-9]/g,"");if(x&&!out.includes(x))out.push(x)}return out}
 function act(a){const l=L();
-  if(a==="add"){if(!l.items.includes(S.sym)){l.items.push(S.sym);saveW();quotes()}else toast(S.sym+" ist schon in der Liste")}
+  if(a==="add"){const ns=S.sym.replace(/\..*$/,"").replace(/[^A-Za-z0-9]/g,"").toUpperCase();if(ns&&!l.items.includes(ns)){l.items.push(ns);saveW();quotes()}else toast(S.sym+" ist schon in der Liste")}
   if(a==="flAdd"){colIn.click();return}
   if(a==="sortm")sortOpen=!sortOpen;
   if(a==="edit")edit=!edit;if(a==="lmenu")menu=menu==="list"?null:"list";if(a==="vmenu")menu=menu==="view"?null:"view";if(a==="imp0"){imp=!imp;menu=null}
@@ -149,7 +155,7 @@ function setup(){const b=$("wlBody");
     if(d.setf!=null){const k=+d.setf;if(k)FLAG[d.s]=k;else delete FLAG[d.s];saveF();pop=null;return draw()}
     if(d.rm!=null){L().items.splice(+d.rm,1);saveW();return draw()}
     if(d.mv!=null){const it=L().items,i=+d.mv,j=i+ +d.d;if(j>=0&&j<it.length){[it[i],it[j]]=[it[j],it[i]];saveW()}return draw()}
-    if(d.s&&!edit&&t.classList.contains("wlRow")){pick(d.s,"k");setTimeout(draw,50)}});
+    if(d.s&&!edit&&t.classList.contains("wlRow")){if(d.y)pick(d.y,"a");else pick(d.s,"k");setTimeout(draw,50)}});
   // Logo nicht ladbar: zweite Quelle versuchen, sonst bleibt der Buchstaben-Kreis
   b.addEventListener("error",e=>{const im=e.target;if(!im||im.tagName!=="IMG"||!im.dataset.lg)return;const s=im.dataset.lg;if(!im.dataset.t2){im.dataset.t2="1";im.src=`https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png`}else{BADLG.add(s);im.remove()}},true);
   // Umschalt+W öffnet das Listen-Menü
@@ -160,9 +166,9 @@ function setup(){const b=$("wlBody");
   b.addEventListener("drop",e=>{const r=e.target.closest("[data-i]");if(dragI<0||!r)return;e.preventDefault();const it=L().items,[x]=it.splice(dragI,1);it.splice(+r.dataset.i,0,x);dragI=-1;saveW();draw()});
   // ↑/↓ wechselt das Symbol wie in TradingView
   document.addEventListener("keydown",e=>{if(e.defaultPrevented||S.sel||!open()||e.target.closest("input,textarea,select"))return;if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
-    const it=[...document.querySelectorAll("#wlBody .wlRow")].map(r=>r.dataset.s);if(!it.length)return;e.preventDefault();
-    let i=it.indexOf(S.sym);i=i<0?0:(i+(e.key==="ArrowDown"?1:-1)+it.length)%it.length;pick(it[i],"k");setTimeout(draw,50)})}
-window.wlShow=()=>{draw();quotes();if(V.logo)lgLoad()};window.wlLists=()=>W.lists;
+    const rw=[...document.querySelectorAll("#wlBody .wlRow")],it=rw.map(r=>r.dataset.y||r.dataset.s);if(!it.length)return;e.preventDefault();
+    let i=it.indexOf(S.sym);i=i<0?0:(i+(e.key==="ArrowDown"?1:-1)+it.length)%it.length;pick(it[i],rw[i].dataset.y?"a":"k");setTimeout(draw,50)})}
+window.wlShow=()=>{draw();quotes();if(V.logo||V.sub)lgLoad()};window.wlCoinName=s=>(LG.n&&LG.n[s])||"";window.wlLists=()=>W.lists;
 window.wlFlagBtn=()=>{if(S.mkt!=="k")return"";const f=FLAG[S.sym]||0;return`<button class="ovFl${f?" set":""}" id="ovFl" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen setzen"></button>`};
 document.addEventListener("click",e=>{const old=document.querySelector(".flPop");
   const b=e.target.closest("#ovFl");if(b){e.stopPropagation();if(old){old.remove();return}const r=b.getBoundingClientRect(),p=document.createElement("div");p.className="flPop";

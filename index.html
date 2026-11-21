@@ -605,6 +605,8 @@ function curTh(){const b=Object.assign({},CC.THEME[baseDark()?"dark":"light"]),p
   const f=UCOL.br/100;if(f){b.bg=shade(b.bg,f);b.axis=shade(b.axis,f)}
   const c=UCOL.c;if(c.bg)b.bg=c.bg;if(c.axis)b.axis=c.axis;if(c.fg){b.fg=c.fg}if(c.txt)b.txt=c.txt;if(c.up)b.up=b.green=c.up;if(c.dn)b.dn=c.dn;if(c.gold)b.gold=c.gold;
   if(c.grid){const g=hx(c.grid);if(g)b.grid=`rgba(${g[0]},${g[1]},${g[2]},.35)`}if(c.cross){const g=hx(c.cross);if(g)b.cross=`rgba(${g[0]},${g[1]},${g[2]},.75)`}
+  // Fadenkreuz und Raster richten sich nach dem tatsächlichen Hintergrund (z. B. dunkler eigener Hintergrund in einem hellen Thema) – sonst sind sie unsichtbar
+  {const dk=lum(b.bg)<.5;if(!c.cross)b.cross=dk?"rgba(236,240,247,.7)":"rgba(20,26,36,.6)";if(!c.grid&&dk!==baseDark())b.grid=dk?"rgba(255,255,255,.08)":"rgba(15,23,42,.08)";if(!c.dn&&dk!==baseDark())b.dn=dk?"#e7ecf3":"#141a24"}
   return b}
 const dark=()=>lum(curTh().bg)<.5;
 function applyTheme(){const h=document.documentElement,bd=baseDark();h.classList.toggle("dk",bd&&THM!=="auto");h.classList.toggle("lt",!bd&&THM!=="auto");
@@ -660,7 +662,9 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   // Fehler in einem Teil dürfen nicht den ganzen Chart anhalten: Canvas-Zustand zurücksetzen und weiterzeichnen
   const safe=f=>{try{f()}catch(e){console.error(e);cv.width=cv.width;ctx.setTransform(d,0,0,d,0,0)}};
   safe(()=>{L=CC.draw(ctx,r.width,r.height,{cd:cdText(),lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO})});
-  if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));if(L&&S.k.length&&!S.indHide){safe(()=>bsiPaint(th));safe(()=>bftPaint(th));safe(()=>bft2Paint(th));safe(()=>bwiPaint(th));if(window.bpsPaint)safe(()=>bpsPaint(th));safe(()=>bodMain(th));safe(()=>bodPaint(th))}safe(heatPaint);safe(rkPaint);{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&S._krN>0&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}if(PLC&&!S.tool&&!S.pend)plcEnd();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man);
+  if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));
+  // Setz-Markierung: Ring an der Stelle, an der der nächste Punkt landet (Handy und PC)
+  if(L&&S.cross&&S.cross.y<L.mainH&&S.cross.x<=L.pw&&(PLC||S.pend||(S.tool&&plcOk(S.tool))))safe(()=>{ctx.save();ctx.lineWidth=2;ctx.strokeStyle=th.bg;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,7.5,0,7);ctx.stroke();ctx.strokeStyle=th.gold;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,6,0,7);ctx.stroke();ctx.fillStyle=th.gold;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,1.8,0,7);ctx.fill();ctx.restore()});if(L&&S.k.length&&!S.indHide){safe(()=>bsiPaint(th));safe(()=>bftPaint(th));safe(()=>bft2Paint(th));safe(()=>bwiPaint(th));if(window.bpsPaint)safe(()=>bpsPaint(th));safe(()=>bodMain(th));safe(()=>bodPaint(th))}safe(heatPaint);safe(rkPaint);{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&S._krN>0&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}if(PLC&&!S.tool&&!S.pend)plcEnd();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man);
   // 🔔＋ am Fadenkreuz (wie das „+“ an der Preisskala in TradingView): Alarm beim Preis unter dem Fadenkreuz
   {const b=$("axAl"),c=S.cross,ok=L&&c&&S.k.length&&S.mkt==="k"&&!S.tool&&!S.pend&&!S.dwd&&c.y>4&&c.y<L.mainH-4&&c.x<=L.pw;b.hidden=!ok;if(ok){const h=b.offsetHeight||22;b.style.left=Math.max(0,L.pw-(b.offsetWidth||44)-3)+"px";b.style.top=Math.max(0,c.y-h/2)+"px"}}})}
 // Restzeit bis zum Schluss der laufenden Kerze (unter dem Kurs in der Preisskala)
@@ -739,7 +743,9 @@ cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointe
       if(!drag.vert&&!drag.sub&&(drag.man||Math.abs(dy)>12))drag.vert=true;
       if(drag.vert&&L){const pp=(drag.hi-drag.lo)/(L.mB-L.mT),off=(drag.man?0:0);S.view.man=true;S.view.lo=drag.lo+dy*pp+off;S.view.hi=drag.hi+dy*pp+off}
       S.cross=drag.touch?null:{x:e.offsetX,y:e.offsetY};paint();return}}
-  if(e.pointerType!=="touch"||drag){S.cross={x:e.offsetX,y:e.offsetY};paint()}});
+  if(e.pointerType!=="touch"||drag){S.cross=S.tool&&plcOk(S.tool)&&e.pointerType!=="touch"&&!drag?snapCross(e.offsetX,e.offsetY):{x:e.offsetX,y:e.offsetY};paint()}});
+// Vorschau beim Zeichnen (auch mit der Maus): das Fadenkreuz steht dort, wo der Punkt gesetzt würde – es rastet je nach Magnet-Stufe sichtbar an Hoch/Tief/Open/Close ein
+function snapCross(x,y){if(!L||!S.k.length||!S.view||x>L.pw||y>L.mainH)return{x,y};const pt=toPt(x,y);return{x:Math.max(0,Math.min(L.pw-1,(CC.tIdx(S.k,pt.t,S.tf)-S.view.from+.5)*L.cw)),y:L.Y(pt.p*S.F)}}
 const up=e=>{ptrs.delete(e.pointerId);clearTimeout(holdT);
   if(PLC&&PLC.g){const g=PLC.g;PLC.g=null;if(!g.moved&&e.type==="pointerup")plcTap();if(!ptrs.size)drag=null;return}
   if(drag&&drag.xl){if(!drag.moved){S.xLock=false;S.cross=null;lastTap=null;paint()}if(!ptrs.size)drag=null;return}
@@ -897,8 +903,8 @@ function lineP(d,t){const a=d.pts[0],b=d.pts[1];if(!b||b.t===a.t)return a.p;retu
 function dwMove(x,y,pressed){if(!L)return false;
   if(S.tool==="demo"){if(pressed&&DEMO.on)demoAdd(x,y);cv.style.cursor="crosshair";return true}
   if(S.dwd&&S.dwd.mode==="brush"){if(pressed&&Math.hypot(x-S.dwd.x,y-S.dwd.y)>3){S.dwd.x=x;S.dwd.y=y;const d=S.dwd.d;if(d.pts.length<600)d.pts.push(toPt(x,y));paint()}return true}
-  if(S.pend&&S.dwd&&S.dwd.mode==="new"){if(Math.hypot(x-S.dwd.x,y-S.dwd.y)>6)S.dwd.moved=true;S.pend.pts[S.pend.pts.length-1]=toPt(x,y);paint();return true}
-  if(S.pend){S.pend.pts[S.pend.pts.length-1]=toPt(x,y);paint();return true}
+  if(S.pend&&S.dwd&&S.dwd.mode==="new"){if(Math.hypot(x-S.dwd.x,y-S.dwd.y)>6)S.dwd.moved=true;S.pend.pts[S.pend.pts.length-1]=toPt(x,y);S.cross=snapCross(x,y);paint();return true}
+  if(S.pend){S.pend.pts[S.pend.pts.length-1]=toPt(x,y);S.cross=snapCross(x,y);paint();return true}
   if(S.dwd&&pressed){const g=S.dwd,d=S.dw.find(z=>z.id===g.id);if(!d)return false;const pt=toPt(x,y);if(Math.hypot(x-g.x,y-g.y)>3)g.moved=true;const o=g.orig;
     if(g.h==null){const dt=pt.t-g.start.t,dp=pt.p-g.start.p;d.pts=o.pts.map(q=>({t:q.t+dt,p:q.p+dp}));if(o.type==="pos"){d.tp=o.tp+dp;d.sl=o.sl+dp;d.t2=o.t2+dt}}
     else if(o.type==="pos"){if(g.h==="e"){const dp=pt.p-o.pts[0].p,dt=pt.t-o.pts[0].t;d.pts=[{t:o.pts[0].t+dt,p:pt.p}];d.tp=o.tp+dp;d.sl=o.sl+dp;d.t2=o.t2+dt}else if(g.h==="tp")d.tp=pt.p;else if(g.h==="sl")d.sl=pt.p;else if(g.h==="t2")d.t2=pt.t}

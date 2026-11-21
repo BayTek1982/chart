@@ -1,8 +1,8 @@
 // Einstellfenster für Zeichnungen (wie in TradingView): Reiter Stil, Koordinaten, Sichtbarkeit + Vorlagen.
 // Öffnen: Doppelklick auf eine Zeichnung oder ⚙ in der Leiste der Zeichnung. Änderungen wirken sofort; „Abbrechen“ stellt den alten Stand wieder her.
 (function(){
-const NAMES={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",xl:"Kreuzlinie",rect:"Rechteck",text:"Text",fib:"Fib-Retracement",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Ellipse",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5",info:"Info-Linie",note:"Sprechblase",vpr:"Volumenprofil (Bereich)",plabel:"Preis-Label"};
-const HEX=/^#[0-9a-f]{6}$/i,NOCOL=["pos","measure","prange","drange"],NODASH=["pos","measure","prange","drange","text","vl","note","vpr","brush","plabel"],AREA=["rect","ell","chan"];
+const NAMES={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",xl:"Kreuzlinie",rect:"Rechteck",text:"Text",fib:"Fib-Retracement",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Ellipse",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5",info:"Info-Linie",note:"Sprechblase",vpr:"Volumenprofil (Bereich)",plabel:"Preis-Label",aup:"Pfeil nach oben",adn:"Pfeil nach unten",tri:"Dreieck"};
+const HEX=/^#[0-9a-f]{6}$/i,NOCOL=["pos","measure","prange","drange"],NODASH=["pos","measure","prange","drange","text","vl","note","vpr","brush","plabel","aup","adn"],AREA=["rect","ell","chan","tri"];
 // weitere gängige Level, die im Fenster zum Anhaken angeboten werden
 const FIBALL=[0,0.236,0.382,0.5,0.559,0.618,0.667,0.705,0.786,0.882,0.886,1,1.272,1.414,1.618,2,2.272,2.618,3.618,4.236];
 const VDEF={m:[1,59],h:[1,24],d:[1,366],w:[1,52],M:[1,12]},VNAM={m:"Minuten",h:"Stunden",d:"Tage",w:"Wochen",M:"Monate"};
@@ -39,7 +39,7 @@ function tabStil(d){const t=d.type;let h="";
   if(!NODASH.includes(t))h+=row("Linienart",`<select data-k="ds"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`);
   if(t==="tl"){const old=d.ext&&d.extL==null&&d.extR==null,l=d.pts[1]&&d.pts[1].t<d.pts[0].t;
     h+=row("Verlängern",`<div class="two">${chk("extL","nach links",d.extL||(old&&l))}${chk("extR","nach rechts",d.extR||(old&&!l))}</div>`)+row("Beschriftung",chk("lbl","Preis am rechten Ende",d.lbl))+row("Text an der Linie",`<input type="text" data-k="text" maxlength="80" value="${E(d.text||"")}" placeholder="optional">`)}
-  if(AREA.includes(t))h+=row("Füllung",`<div class="two">${colIn("fill",d.fill,d.col||"#5b9bff")}<input type="number" data-k="fop" min="0" max="100" step="1" value="${d.fop!=null?d.fop:(t==="rect"?15:t==="ell"?13:8)}" title="Deckkraft in %"></div>`)+`<div class="hint">Deckkraft der Füllung in Prozent (0 = durchsichtig).</div>`;
+  if(AREA.includes(t))h+=row("Füllung",`<div class="two">${colIn("fill",d.fill,d.col||"#5b9bff")}<input type="number" data-k="fop" min="0" max="100" step="1" value="${d.fop!=null?d.fop:(t==="rect"||t==="tri"?15:t==="ell"?13:8)}" title="Deckkraft in %"></div>`)+`<div class="hint">Deckkraft der Füllung in Prozent (0 = durchsichtig).</div>`;
   if(t==="fib"||t==="fibx"){h+=row("Trendlinie",chk("ftl","gestrichelte Verbindung zeigen",d.ftl!==false))
     +row("Verlängern",`<select data-k="fext"><option value="">Nicht erweitern</option><option value="l" ${d.fext==="l"?"selected":""}>Nach links</option><option value="r" ${d.fext==="r"?"selected":""}>Nach rechts</option><option value="b" ${d.fext==="b"?"selected":""}>Beide Seiten</option></select>`)
     +row("Preise",chk("fpx","Preis hinter dem Level zeigen",d.fpx!==false));
@@ -48,6 +48,7 @@ function tabStil(d){const t=d.type;let h="";
   if(t==="pos"){h+=row("Farbe Ziel / Stop",`<div class="two">${colIn("cTp",d.cTp,"#3ccf8a")}${colIn("cSl",d.cSl,"#ff6b5e")}</div>`)
     +row("Einsatz",`<input type="number" data-k="amt" data-n="1" min="0" step="any" value="${d.amt||""}" placeholder="z. B. 50">`)+row("Hebel",`<input type="number" data-k="lev" data-n="1" min="1" max="500" step="1" value="${d.lev||""}" placeholder="z. B. 25">`)
     +`<div class="hint">Mit Einsatz (und Hebel) zeigt die Position Gewinn am Ziel und Verlust am Stop in der Kurswährung. Leer lassen = nur Prozent und CRV.</div>`}
+  if(t==="aup"||t==="adn")h+=row("Text am Pfeil",`<input type="text" data-k="text" maxlength="40" value="${E(d.text||"")}" placeholder="optional">`);
   if(t==="plabel")h+=row("Text vor dem Preis",`<input type="text" data-k="text" maxlength="40" value="${E(d.text||"")}" placeholder="optional, z. B. Einstieg">`)+row("Schriftgröße",`<input type="number" data-k="fs" data-n="1" min="8" max="40" step="1" value="${d.fs||12}">`);
   if(t==="text"||t==="note")h+=row("Text",`<input type="text" data-k="text" maxlength="80" value="${E(d.text||"")}">`)+row("Schriftgröße",`<input type="number" data-k="fs" data-n="1" min="8" max="40" step="1" value="${d.fs||(t==="note"?12:13)}">`)+(t==="text"?row("Hintergrund",chk("bg","Text hinterlegen",d.bg)):"");
   if(t==="abc"||t==="w5")h+=row("Beschriftung",chk("nolab!","Punkte beschriften (0, A, B … / 1–5)",!d.nolab));
@@ -89,7 +90,7 @@ function onInput(e){const t=e.target,d=cur;if(!d)return;const ds=t.dataset;
     else if(t.type==="color"){if(HEX.test(t.value))d[k]=t.value}
     else if(ds.n){const n=num(t.value);if(n==null||(k!=="w"&&n<=0&&k!=="fop"))delete d[k];else d[k]=k==="w"?Math.max(1,Math.min(4,Math.round(n))):n;if(k==="w"&&!d.w)d.w=2}
     else if(k==="fop"){const n=num(t.value);d.fop=n==null?15:Math.max(0,Math.min(100,n))}
-    else if(k==="text"){d.text=t.value.slice(0,80);if(!d.text&&(d.type==="tl"||d.type==="plabel"))delete d.text}
+    else if(k==="text"){d.text=t.value.slice(0,80);if(!d.text&&(d.type==="tl"||d.type==="plabel"||d.type==="aup"||d.type==="adn"))delete d.text}
     else if(k==="ds"){if(t.value==="s")delete d.ds;else d.ds=t.value}
     else if(k==="fext"){if(t.value)d.fext=t.value;else delete d.fext}
     return upd(true)}

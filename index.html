@@ -187,6 +187,20 @@ html .tools.c3{grid-template-columns:repeat(3,42px)!important}
 html .tools.c2s button{height:34px}
 @media (pointer:coarse){html .tools.c3{grid-template-columns:repeat(3,46px)!important}}
 html.emb .tools{grid-template-columns:repeat(3,30px)!important}
+/* Setz-Modus am Handy: Hinweisleiste oben im Chart */
+#plcBar{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:10px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px 6px 10px;box-shadow:0 6px 18px rgba(0,0,0,.4);font-size:.82rem}
+#plcBar[hidden]{display:none}#plcBar b{background:var(--chip);border-radius:7px;padding:4px 8px;white-space:nowrap;font-family:var(--f-num)}#plcBar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#plcBar button{border:0;background:none;color:var(--fg);font-size:1.1rem;cursor:pointer;padding:4px 6px}
+/* Werkzeug-Fenster: Suche, Gruppen, Favoriten */
+#tpick{position:fixed;inset:0;z-index:69;display:grid;place-items:center;background:rgba(0,0,0,.3)}#tpick[hidden]{display:none}
+#tpick .tp{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.5);width:560px;max-width:calc(100vw - 16px);max-height:calc(100vh - 24px);display:flex;flex-direction:column}
+#tpick .th{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 8px;font-weight:800;font-size:1.15rem}#tpick .th button{border:0;background:var(--chip);color:var(--fg);border-radius:8px;width:34px;height:34px;cursor:pointer}
+#tpick input[type=search]{margin:0 16px 8px;font:600 .95rem var(--f-body);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+#tpick .tc{display:flex;gap:4px;padding:0 12px 6px;overflow-x:auto;scrollbar-width:none}#tpick .tc::-webkit-scrollbar{display:none}#tpick .tc button{border:0;background:none;color:var(--muted);font:700 .88rem inherit;font-family:inherit;padding:8px 10px;border-radius:9px;cursor:pointer;white-space:nowrap}#tpick .tc button.on{background:var(--chip);color:var(--fg)}
+#tpick .tb{padding:6px 16px 14px;overflow:auto}#tpick .tg{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 0 6px}
+#tpick .tl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+#tpick .ti{position:relative;display:grid;gap:6px;justify-items:center;text-align:center;background:var(--chip);border:1px solid transparent;border-radius:12px;padding:14px 8px 10px;cursor:pointer;color:var(--fg);font:600 .84rem inherit;font-family:inherit}#tpick .ti:hover{border-color:var(--gold)}
+#tpick .ti i{font:700 1.35rem var(--f-num);font-style:normal;height:28px;display:grid;place-items:center}#tpick .ti .st{position:absolute;right:4px;top:2px;border:0;background:none;color:var(--muted);font-size:1.05rem;cursor:pointer;padding:6px}#tpick .ti .st.on{color:var(--gold)}
+#tpick .tf{border-top:1px solid var(--line);padding:10px 16px;font-size:.78rem;color:var(--muted)}
 /* Einstellfenster für Zeichnungen (Stil / Koordinaten / Sichtbarkeit / Vorlage) */
 #dwDlg{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(0,0,0,.12)}#dwDlg[hidden]{display:none}
 #dwDlg .dd{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.5);width:430px;max-width:calc(100vw - 16px);max-height:calc(100vh - 24px);display:flex;flex-direction:column}
@@ -319,6 +333,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 </head>
 <body>
 <div id="dwDlg" hidden></div>
+<div id="tpick" hidden></div>
 <div id="split" hidden></div><div id="layMenu" class="layMenu" hidden></div>
 <div class="wrap">
   <div class="bar top" id="barTop">
@@ -357,6 +372,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
     <div id="heatTab" hidden></div><div id="rkTab" class="bwt" hidden></div>
     <div class="bwt" id="bpMt" hidden></div><div class="bwt" id="bpVt" hidden></div><div class="bwt" id="bsBias" hidden></div><div class="bwt" id="bsIm" hidden></div><div class="bwt" id="bsLs" hidden></div><div class="bwt" id="bfVp" hidden></div><div class="bwt" id="bfRk" hidden></div><div class="bwt" id="bwRt" hidden></div><div class="bwt" id="bwTb" hidden></div><div class="bwt" id="bwMt" hidden></div><div id="bwTip" hidden></div>
     <div class="ebar" id="ebar" hidden></div>
+    <div id="plcBar" hidden><b id="plcN"></b><span id="plcT"></span><button id="plcX" type="button" title="Abbrechen">🗑</button></div>
     <div class="loading" id="loading">Lädt …</div>
   </div>
   <div class="bodbox" id="bodBox" hidden><div class="bodRs" id="bodRs" title="Ziehen = Fenster höher/niedriger"></div><canvas id="bodCv"></canvas>
@@ -376,7 +392,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 
 <script src="gz-core.js?v=3"></script>
 <script src="ex.js?v=1"></script>
-<script src="chart-core.js?v=37"></script>
+<script src="chart-core.js?v=38"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -644,7 +660,7 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   // Fehler in einem Teil dürfen nicht den ganzen Chart anhalten: Canvas-Zustand zurücksetzen und weiterzeichnen
   const safe=f=>{try{f()}catch(e){console.error(e);cv.width=cv.width;ctx.setTransform(d,0,0,d,0,0)}};
   safe(()=>{L=CC.draw(ctx,r.width,r.height,{cd:cdText(),lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO})});
-  if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));if(L&&S.k.length&&!S.indHide){safe(()=>bsiPaint(th));safe(()=>bftPaint(th));safe(()=>bft2Paint(th));safe(()=>bwiPaint(th));if(window.bpsPaint)safe(()=>bpsPaint(th));safe(()=>bodMain(th));safe(()=>bodPaint(th))}safe(heatPaint);safe(rkPaint);{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&S._krN>0&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man);
+  if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));if(L&&S.k.length&&!S.indHide){safe(()=>bsiPaint(th));safe(()=>bftPaint(th));safe(()=>bft2Paint(th));safe(()=>bwiPaint(th));if(window.bpsPaint)safe(()=>bpsPaint(th));safe(()=>bodMain(th));safe(()=>bodPaint(th))}safe(heatPaint);safe(rkPaint);{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&S._krN>0&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}if(PLC&&!S.tool&&!S.pend)plcEnd();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man);
   // 🔔＋ am Fadenkreuz (wie das „+“ an der Preisskala in TradingView): Alarm beim Preis unter dem Fadenkreuz
   {const b=$("axAl"),c=S.cross,ok=L&&c&&S.k.length&&S.mkt==="k"&&!S.tool&&!S.pend&&!S.dwd&&c.y>4&&c.y<L.mainH-4&&c.x<=L.pw;b.hidden=!ok;if(ok){const h=b.offsetHeight||22;b.style.left=Math.max(0,L.pw-(b.offsetWidth||44)-3)+"px";b.style.top=Math.max(0,c.y-h/2)+"px"}}})}
 // Restzeit bis zum Schluss der laufenden Kerze (unter dem Kurs in der Preisskala)
@@ -699,6 +715,8 @@ const onAxis=(x,y)=>L&&x>L.pw&&y<L.mainH;
 function setMan(){if(S.view&&!S.view.man&&L){S.view.man=true;S.view.lo=L.lo;S.view.hi=L.hi}}
 function scaleY(f){setMan();const v=S.view,mid=(v.lo+v.hi)/2,half=(v.hi-v.lo)/2*f;v.lo=mid-half;v.hi=mid+half}
 cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
+  // Setz-Modus (Handy): ein Finger bewegt die Markierung, zwei Finger zoomen wie gewohnt
+  if(PLC&&e.pointerType==="touch"){if(ptrs.size===1){PLC.g={x:e.offsetX,y:e.offsetY,px:PLC.x,py:PLC.y,moved:false};drag=null;return}PLC.g=null}
   if(ptrs.size===1&&!S.tool&&!S.pend&&paneDown(e.offsetX,e.offsetY)){drag=null;return}
   if(ptrs.size===1&&dwDown(e.offsetX,e.offsetY,e.pointerType)){drag=null;return}
   if(ptrs.size===1&&S.xLock&&e.pointerType==="touch"&&S.cross&&!onAxis(e.offsetX,e.offsetY)){drag={xl:true,x:e.offsetX,y:e.offsetY,cx:S.cross.x,cy:S.cross.y,moved:false,touch:true};return}
@@ -706,6 +724,7 @@ cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);ptrs.set
   if(ptrs.size===1&&S.view)drag={x:e.offsetX,y:e.offsetY,from:S.view.from,to:S.view.to,lo:L?L.lo:0,hi:L?L.hi:1,man:S.view.man,moved:false,vert:false,touch:e.pointerType==="touch",axis:onAxis(e.offsetX,e.offsetY),sub:(L&&e.offsetY>L.mainH&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h))||null};if(drag&&drag.sub)drag.po=S.paneO[drag.sub.s]||0;
   if(ptrs.size===2)clearTimeout(holdT);if(ptrs.size===2&&S.view){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),from:S.view.from,to:S.view.to,cx:(a.x+b.x)/2};drag=null}});
 cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
+  if(PLC&&PLC.g&&ptrs.size===1&&e.pointerType==="touch"){const g=PLC.g,dx=e.offsetX-g.x,dy=e.offsetY-g.y;if(Math.hypot(dx,dy)>8)g.moved=true;if(g.moved&&L){PLC.x=Math.max(0,Math.min(L.pw-1,g.px+dx));PLC.y=Math.max(0,Math.min(L.mainH-1,g.py+dy));plcShow()}return}
   {const pm=paneMove(e.offsetX,e.offsetY);if(pm===true)return;if(pm==="hover"&&!drag)return}
   if(dwMove(e.offsetX,e.offsetY,ptrs.has(e.pointerId)))return;
   cv.style.cursor=onAxis(e.offsetX,e.offsetY)?"ns-resize":drag&&drag.moved?"grabbing":"crosshair";
@@ -722,6 +741,7 @@ cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointe
       S.cross=drag.touch?null:{x:e.offsetX,y:e.offsetY};paint();return}}
   if(e.pointerType!=="touch"||drag){S.cross={x:e.offsetX,y:e.offsetY};paint()}});
 const up=e=>{ptrs.delete(e.pointerId);clearTimeout(holdT);
+  if(PLC&&PLC.g){const g=PLC.g;PLC.g=null;if(!g.moved&&e.type==="pointerup")plcTap();if(!ptrs.size)drag=null;return}
   if(drag&&drag.xl){if(!drag.moved){S.xLock=false;S.cross=null;lastTap=null;paint()}if(!ptrs.size)drag=null;return}
   if(drag&&drag.locked){if(!ptrs.size)drag=null;return}if(drag&&drag.sub&&drag.moved)LS("blcPO",S.paneO);if(paneUp()){cv.style.cursor="crosshair";return}if(dwUp(e.offsetX,e.offsetY))return;if(ptrs.size<2)pinch=null;if(drag&&!drag.moved&&drag.touch&&!drag.axis){const now=Date.now();
     if(lastTap&&now-lastTap.t<380&&Math.abs(lastTap.x-e.offsetX)<35&&Math.abs(lastTap.y-e.offsetY)<35){lastTap=null;tapDbl=now;S.cross=null;if(!dblAt(e.offsetX,e.offsetY))resetView();paint()}
@@ -754,15 +774,22 @@ function demoLoop(){if(DEMO.raf)return;const step=()=>{const c=demoCv(),r=cv.get
       x.beginPath();x.moveTo(s[i-1].x,s[i-1].y);x.lineTo(s[i].x,s[i].y);x.stroke()}});
   x.shadowBlur=0;
   if(DEMO.st.length||DEMO.on)DEMO.raf=requestAnimationFrame(step);else DEMO.raf=0};DEMO.raf=requestAnimationFrame(step)}
-const TOOLS=[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstration (Laserpointer: zeichnen, verblasst von selbst)"],["tl","╱","Trendlinie"],["hl","─","Horizontale Linie"],["xl","┼","Kreuzlinie (waagerecht + senkrecht, in alle 4 Richtungen verlängert)"],["ray","⟶","Horizontaler Strahl"],["vl","│","Vertikale Linie"],["rect","▭","Rechteck / Zone"],["text","T","Text"],
-  ["fib","F","Fibonacci (SK-Level)"],["long","L↑","Long-Position"],["short","S↓","Short-Position"],["measure","↔","Messen"],["chan","⫽","Paralleler Kanal"],["-"],
-  ["arrow","↗","Pfeil"],["ell","◯","Kreis / Ellipse"],["brush","〰","Pinsel (frei zeichnen)"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)"],["prange","⇕","Preisbereich"],["drange","⇔","Datumsbereich"],
-  ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)"],
-  ["xline","⤡","Verlängerte Linie (in beide Richtungen endlos)"],["info","ℹ","Info-Linie (Abstand in Preis, Prozent, Kerzen und Zeit)"],["plabel","🏷","Preis-Label (zeigt den Preis an der angeklickten Stelle, auf Wunsch mit Text davor)"],["vpr","▥","Volumenprofil für einen Bereich (POC, VAH, VAL)"],["-"],
-  ["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["mag","🧲","Magnet in 5 Stufen (rastet an Hoch/Tief/Open/Close ein) – weiterklicken = stärker"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["clear","🗑","Zeichnungen dieses Werts löschen: alle oder nur die nicht gesperrten"]];
+// Alle Werkzeuge mit Gruppe (für das Werkzeug-Fenster ⊞). In der Leiste stehen nur die Favoriten (★ im Fenster).
+const TCAT=[["trend","Trendtools"],["fib","Fibonacci"],["must","Muster"],["mess","Position & Messen"],["form","Formen"],["anm","Anmerkung"]];
+const TOOLDEF=[["tl","╱","Trendlinie","trend"],["xline","⤡","Verlängerte Linie (in beide Richtungen endlos)","trend"],["ray","⟶","Horizontaler Strahl","trend"],["hl","─","Horizontale Linie","trend"],["vl","│","Vertikale Linie","trend"],["xl","┼","Kreuzlinie (waagerecht + senkrecht)","trend"],["chan","⫽","Paralleler Kanal","trend"],["info","ℹ","Info-Linie (Abstand in Preis, Prozent, Kerzen und Zeit)","trend"],["arrow","↗","Pfeil","trend"],
+  ["fib","F","Fib-Retracement (SK-Level)","fib"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)","fib"],
+  ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)","must"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)","must"],
+  ["long","L↑","Long-Position","mess"],["short","S↓","Short-Position","mess"],["measure","↔","Messen","mess"],["prange","⇕","Preisbereich","mess"],["drange","⇔","Datumsbereich","mess"],["vpr","▥","Volumenprofil für einen Bereich (POC, VAH, VAL)","mess"],
+  ["rect","▭","Rechteck / Zone","form"],["ell","◯","Kreis / Ellipse","form"],["tri","△","Dreieck (3 Punkte)","form"],["brush","〰","Pinsel (frei zeichnen)","form"],["hlt","🖍","Leuchtstift (breit, durchscheinend)","form"],
+  ["text","T","Text","anm"],["plabel","🏷","Preis-Label (Preis der Stelle, auf Wunsch mit Text)","anm"],["aup","⬆","Pfeil nach oben (Markierung)","anm"],["adn","⬇","Pfeil nach unten (Markierung)","anm"]];
+const TFAVDEF=["tl","hl","xl","ray","vl","rect","text","fib","long","short","measure","chan","arrow","ell","brush","fibx","prange","drange","abc","w5","xline","info","plabel","vpr"];
+let TFAV=(()=>{const a=LS("blcToolFav");return Array.isArray(a)?a.filter(x=>TOOLDEF.some(t=>t[0]===x)):TFAVDEF.slice()})();
+const TEND=[["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["mag","🧲","Magnet in 5 Stufen (rastet an Hoch/Tief/Open/Close ein) – weiterklicken = stärker"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["clear","🗑","Zeichnungen dieses Werts löschen: alle oder nur die nicht gesperrten"]];
+// Leiste: Auswählen, Laserpointer, Favoriten, ⊞ (alle Werkzeuge) – darunter Rückgängig, Magnet, Auge, Farben, Löschen
+const TOOLS=()=>{const fav=TOOLDEF.filter(t=>TFAV.includes(t[0])),cur=S.tool&&!TFAV.includes(S.tool)?TOOLDEF.filter(t=>t[0]===S.tool):[];return[["sel","✥","Auswählen / verschieben"],["demo","➤","Demonstration (Laserpointer: zeichnen, verblasst von selbst)"]].concat(fav,cur,[["all","⊞","Alle Werkzeuge: Gruppen, Suche, Favoriten für die Leiste"],["-"]],TEND)};
 // Anzahl Punkte je Werkzeug (Klick – Klick oder Ziehen)
-const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6,xline:2,info:2,note:2,vpr:2};const TWO=Object.keys(NEED);
-const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff",info:"#26c6da",note:"#f0a33a",vpr:"#64b5f6",plabel:"#f0a33a"};
+const NEED={tl:2,rect:2,fib:2,measure:2,chan:2,arrow:2,ell:2,prange:2,drange:2,fibx:3,abc:4,w5:6,xline:2,info:2,note:2,vpr:2,tri:3};const TWO=Object.keys(NEED);
+const DCOL={xl:"#26c6da",tl:"#ffeb3b",chan:"#ffeb3b",fib:"#26c6da",rect:"#5b9bff",ell:"#5b9bff",text:"#e7ecf3",fibx:"#b388ff",abc:"#26c6da",w5:"#ffeb3b",prange:"#5b9bff",drange:"#5b9bff",info:"#26c6da",note:"#f0a33a",vpr:"#64b5f6",plabel:"#f0a33a",aup:"#3ccf8a",adn:"#ff6b5e",tri:"#5b9bff",hlt:"#ffeb3b"};
 S.ovZu=LS("blcOvZu")===true;document.querySelector(".ov").classList.toggle("zu",S.ovZu);
 $("ovT").addEventListener("click",e=>{if(!e.target.closest("#ovTg"))return;S.ovZu=!S.ovZu;LS("blcOvZu",S.ovZu);document.querySelector(".ov").classList.toggle("zu",S.ovZu);legend()});
 S.dwHide=LS("blcDwHide")===true;S.posHide=LS("blcPosHide")===true;S.indHide=LS("blcIndHide")===true;
@@ -787,7 +814,7 @@ function eyeMenu(btn){let m=$("eyeMenu");if(m){m.remove();return}m=document.crea
     draw();renderTools();legend();paint()};
   setTimeout(()=>document.addEventListener("click",function cl(e){if(!m.contains(e.target)){m.remove();document.removeEventListener("click",cl)}}),0)}
 document.documentElement.classList.toggle("indHide",S.indHide);
-function renderTools(){$("tools").innerHTML=TOOLS.map(t=>t[0]==="-"?"<hr>":`<button data-tool="${t[0]}" title="${t[2]}" class="${(t[0]==="sel"&&!S.tool)||S.tool===t[0]||(t[0]==="mag"&&+S.mag)||(t[0]==="hide"&&(S.dwHide||S.indHide||S.posHide))?"on":""}">${t[1]}${t[0]==="mag"&&+S.mag?`<sup class="magN">${S.mag}</sup>`:""}</button>`).join("")}
+function renderTools(){$("tools").innerHTML=TOOLS().map(t=>t[0]==="-"?"<hr>":`<button data-tool="${t[0]}" title="${t[2]}" class="${(t[0]==="sel"&&!S.tool)||S.tool===t[0]||(t[0]==="mag"&&+S.mag)||(t[0]==="hide"&&(S.dwHide||S.indHide||S.posHide))?"on":""}">${t[1]}${t[0]==="mag"&&+S.mag?`<sup class="magN">${S.mag}</sup>`:""}</button>`).join("")}
 $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");if(!b)return;const t=b.dataset.tool;
   if(t==="mag"){S.mag=((+S.mag||0)+1)%6;save();toast(["Magnet aus","Magnet Stufe 1 – rastet nur ganz nah ein","Magnet Stufe 2 – rastet nah ein","Magnet Stufe 3 – rastet in der Nähe ein","Magnet Stufe 4 – rastet weit ein","Magnet Stufe 5 – rastet immer an Hoch/Tief/Open/Close ein"][S.mag])}
   else if(t==="theme"){colMenu(b);return}
@@ -795,15 +822,30 @@ $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");
   else if(t==="undo"){dwUndo(-1);return}
   else if(t==="redo"){dwUndo(1);return}
   else if(t==="clear"){delMenu(b);return}
-  else{S.tool=t==="sel"?null:t;S.pend=null;S.sel=null}
+  else if(t==="all"){toolPick();return}
+  else toolSet(t==="sel"?null:t,e.pointerType==="touch"||(e.pointerType!=="mouse"&&matchMedia("(pointer:coarse)").matches));
   renderTools();paint()});
+// Werkzeug wählen; am Handy (touch) beginnt jedes Werkzeug im Setz-Modus (siehe PLC)
+function toolSet(t,touch){if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend)}S.tool=t;S.pend=null;S.sel=null;if(t&&touch&&plcOk(t))plcStart();else plcEnd()}
+// ---------- Setzen am Handy wie in TradingView ----------
+// Nach der Wahl eines Werkzeugs steht eine Markierung (Fadenkreuz) im Chart. Finger irgendwo ziehen = Markierung bewegen (der Finger verdeckt nichts),
+// sie rastet dabei sichtbar an Hoch/Tief/Open/Close ein (Magnet). Erst ein kurzes Tippen setzt den Punkt – bei mehreren Punkten einen nach dem anderen.
+let PLC=null;
+const plcOk=t=>!!t&&!["demo","brush","hlt"].includes(t);
+function plcSnap(){const pt=toPt(PLC.x,PLC.y);return{pt,x:(CC.tIdx(S.k,pt.t,S.tf)-S.view.from+.5)*L.cw,y:L.Y(pt.p*S.F)}}
+function plcShow(){if(!PLC||!L||!S.k.length)return;const s=plcSnap();S.cross={x:Math.max(0,Math.min(L.pw-1,s.x)),y:s.y};if(S.pend)S.pend.pts[S.pend.pts.length-1]=s.pt;
+  const N=NEED[S.pend?S.pend.type==="tl"&&S.tool==="xline"?"xline":S.pend.type:S.tool]||1,n=S.pend?S.pend.pts.length:1,def=TOOLDEF.find(t=>t[0]===S.tool);
+  $("plcN").textContent=`${Math.min(n,N)} von ${N}`;$("plcT").textContent=`${def?def[2].replace(/ \(.*$/,""):"Werkzeug"}: Finger ziehen = bewegen · kurz tippen = setzen`;$("plcBar").hidden=false;paint()}
+function plcStart(){if(!L||!S.k.length||!plcOk(S.tool)){plcEnd();return}PLC={x:L.pw/2,y:L.mainH/2,g:null};plcShow()}
+function plcEnd(){if(PLC){PLC=null;S.cross=null}const b=$("plcBar");if(b)b.hidden=true}
+function plcTap(){if(!PLC||!L)return;dwDown(PLC.x,PLC.y,"touch");dwUp(PLC.x,PLC.y);if(!S.tool&&!S.pend){plcEnd();renderTools();paint()}else plcShow()}
 const dwKey=()=>`bcbD:${S.mkt}:${S.sym}`;
 // Zeichnungs-Vorlagen: zuletzt gewählte Farbe, Stärke und Linienart je Werkzeug merken und bei der nächsten Zeichnung wieder nehmen
 // Stil-Eigenschaften einer Zeichnung prüfen und übernehmen (für gespeicherte Zeichnungen, Vorlagen, Sicherungen und Teilen-Links): nur bekannte Felder mit gültigen Werten
 function dwStyle(d){const o={},hex=/^#[0-9a-f]{6}$/i,n=(v,a,b)=>typeof v==="number"&&isFinite(v)&&v>=a&&v<=b;if(!d||typeof d!=="object")return o;
   for(const k of["col","fill","cTp","cSl"])if(hex.test(d[k]))o[k]=d[k];
   if(n(+d.w,1,4))o.w=Math.round(+d.w);if(/^[sdp]$/.test(d.ds))o.ds=d.ds;
-  for(const k of["extL","extR","lbl","bg","nolab"])if(d[k]===true)o[k]=true;
+  for(const k of["extL","extR","lbl","bg","nolab","hl"])if(d[k]===true)o[k]=true;
   for(const k of["fpx","ftl"])if(d[k]===false)o[k]=false;
   if(/^[lrb]$/.test(d.fext))o.fext=d.fext;
   if(n(d.fop,0,100))o.fop=d.fop;if(n(d.amt,0,1e12)&&d.amt>0)o.amt=d.amt;if(n(d.lev,1,500))o.lev=d.lev;if(n(d.fs,8,40))o.fs=d.fs;if(n(d.vr,10,300))o.vr=Math.round(d.vr);if(n(d.vva,10,100))o.vva=d.vva;
@@ -838,7 +880,8 @@ function dwDown(x,y,ptype){if(S.tool==="demo"&&L&&x<=L.pw){demoStart(x,y);return
   if(!L||!S.k.length||x>L.pw||y>L.mainH)return false;const pt=toPt(x,y);
   if(S.pend){const d=S.pend;d.pts[d.pts.length-1]=pt;if(d.pts.length<NEED[d.type]){d.pts.push({...pt});paint();return true}S.pend=null;S.tool=null;S.sel=d.id;saveDw();renderTools();paint();return true}
   if(S.tool){const t=S.tool,d={id:nid(),type:t,col:DCOL[t]||"#f0a33a",w:2,pts:[pt]};{const T=DWT[t==="xline"?"tl":t==="long"||t==="short"?"pos":t];if(T)Object.assign(d,JSON.parse(JSON.stringify(T)))}if(t==="xline"){d.type="tl";d.extL=d.extR=true}const ps=t==="long"||t==="short";if(S.dwHide&&!ps){S.dwHide=false;LS("blcDwHide",false)}if(S.posHide&&ps){S.posHide=false;LS("blcPosHide",false)}
-    if(t==="brush"){S.dw.push(d);S.dwd={mode:"brush",d,x,y};paint();return true}
+    if(t==="hlt"){d.type="brush";d.hl=true;if(!DWT.hlt){d.col="#ffeb3b"}}
+    if(t==="brush"||t==="hlt"){S.dw.push(d);S.dwd={mode:"brush",d,x,y};paint();return true}
     if(t==="text"||t==="note"){const tx=prompt(t==="note"?"Notiz:":"Text:","");if(!tx){return true}d.text=tx.slice(0,80)}
     if(t==="long"||t==="short"){const lg=t==="long";d.type="pos";
       // Startgröße nach dem sichtbaren Ausschnitt (nicht feste Prozent): Ziel 16 %, Stop 8 % der Charthöhe, Breite gut ein Fünftel der sichtbaren Kerzen
@@ -872,8 +915,8 @@ function dwUp(x,y){if(DEMO.on){DEMO.on=false;return true}if(S.dwd&&S.dwd.mode===
   if(S.dwd){const g=S.dwd;S.dwd=null;if(g.moved)saveDw();return true}return false}
 function renderEbar(){const b=$("ebar"),d=S.dw.find(z=>z.id===S.sel);if(!d){b.hidden=true;return}b.hidden=false;
   if(b.dataset.id===d.id&&b.dataset.t===d.type)return;b.dataset.id=d.id;b.dataset.t=d.type;
-  const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5",info:"Info-Linie",note:"Sprechblase",vpr:"Volumenprofil",plabel:"Preis-Label"};
-  const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","vl","note","vpr","plabel"].includes(d.type);
+  const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5",info:"Info-Linie",note:"Sprechblase",vpr:"Volumenprofil",plabel:"Preis-Label",aup:"Pfeil nach oben",adn:"Pfeil nach unten",tri:"Dreieck"};
+  const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","vl","note","vpr","plabel","aup","adn"].includes(d.type);
   b.innerHTML=`<b>${names[d.type]||""}</b><button data-e="cfg" title="Alle Einstellungen: Stil, Koordinaten, Sichtbarkeit, Vorlage (auch per Doppelklick auf die Zeichnung)">⚙</button>${!noCol?`<input type="color" data-e="col" value="${/^#[0-9a-f]{6}$/i.test(d.col)?d.col:"#f0a33a"}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${["tl","hl","ray"].includes(d.type)?`<label title="Meldung, wenn der Kurs die Linie kreuzt"><input type="checkbox" data-e="alarm" ${d.alarm?"checked":""}> 🔔 Alarm</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}${DWT[d.type]?`<button data-e="tpl0" title="Gemerkte Farbe/Stärke/Linienart für dieses Werkzeug vergessen (wieder Standard)">↺ Vorlage</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
 $("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col"){d.col=e.target.value;dwtSet(d,"col")}if(k==="w"){d.w=+e.target.value;dwtSet(d,"w")}if(k==="ext")d.ext=e.target.checked;if(k==="alarm"){d.alarm=e.target.checked;if(d.alarm&&window.alPerm)alPerm();toast(d.alarm?"🔔 Alarm aktiv – meldet, wenn der Kurs die Linie kreuzt":"Alarm aus")}if(k==="ds"){d.ds=e.target.value;dwtSet(d,"ds")}if(k==="lock")d.lock=e.target.checked;saveDw();paint()});
 $("ebar").addEventListener("click",e=>{const k=e.target.dataset&&e.target.dataset.e,d=S.dw.find(z=>z.id===S.sel);if(!d)return;
@@ -889,7 +932,7 @@ addEventListener("keydown",e=>{if(e.target.matches("input,select,textarea"))retu
   if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.key.toLowerCase()==="z"||e.key.toLowerCase()==="y")){e.preventDefault();dwUndo(e.key.toLowerCase()==="y"||e.shiftKey?1:-1);return}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"&&S.sel){e.preventDefault();const b=$("ebar").querySelector('[data-e="copy"]');if(b)b.click();return}
   if((e.key==="Delete"||e.key==="Backspace")&&S.sel){S.dw=S.dw.filter(z=>z.id!==S.sel);S.sel=null;saveDw();paint()}
-  if(e.key==="Escape"){if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;S.sel=null;renderTools();paint()}});
+  if(e.key==="Escape"){if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;S.sel=null;plcEnd();S.cross=null;renderTools();paint()}});
 
 let FAV;try{FAV=JSON.parse(localStorage.getItem("blcFav"))}catch(e){}if(!Array.isArray(FAV)||!FAV.length)FAV=["5m","15m","1h","4h","1d","1w"];
 // ---------- Oben: Markt, Symbol, Zeitrahmen ----------
@@ -1278,6 +1321,27 @@ function fitTools(){const t=$("tools"),bx=$("box");if(!t||!bx)return;const n=t.q
   // PC: passt die lange Leiste nur knapp nicht, die Knöpfe etwas flacher machen (34 statt 40 Pixel) statt auf drei Spalten zu wechseln
   const c2s=!SLOT&&fine&&need(40)>av&&need(34)<=av;t.classList.toggle("c2s",c2s);t.classList.toggle("c3",!!SLOT||(!c2s&&need(bh)>av))}
 {const rt0=renderTools;renderTools=function(){rt0();fitTools()};addEventListener("resize",fitTools);if(window.ResizeObserver)new ResizeObserver(fitTools).observe($("box"));fitTools()}
+// ---------- Werkzeug-Fenster ⊞: alle Werkzeuge nach Gruppen, mit Suche; ★ legt fest, was in der Leiste steht ----------
+let tpCat="fav",tpQ="";
+function toolPick(){const el=$("tpick");if(!el.hidden){el.hidden=true;return}tpQ="";tpCat=TFAV.length?"fav":"trend";el.hidden=false;tpDraw();const q=el.querySelector("input");if(q&&!matchMedia("(pointer:coarse)").matches)q.focus()}
+function tpDraw(){const el=$("tpick"),Q=norm(tpQ),card=t=>`<div class="ti" data-pick="${t[0]}" title="${esc(t[2])}"><button type="button" class="st${TFAV.includes(t[0])?" on":""}" data-star="${t[0]}" title="In der Leiste zeigen">${TFAV.includes(t[0])?"★":"☆"}</button><i>${t[1]}</i><span>${esc(t[2].replace(/ \(.*$/,""))}</span></div>`;
+  const grp=(name,list)=>list.length?`<div class="tg">${name}</div><div class="tl">${list.map(card).join("")}</div>`:"";let body;
+  if(Q)body=grp("Treffer",TOOLDEF.filter(t=>norm(t[2]).includes(Q)))||`<div class="tg">Nichts gefunden</div>`;
+  else if(tpCat==="fav")body=TCAT.map(([k,n])=>grp(n,TOOLDEF.filter(t=>t[3]===k&&TFAV.includes(t[0])))).join("")||`<div class="tg">Noch keine Favoriten – in den Gruppen mit ☆ auswählen</div>`;
+  else body=grp(TCAT.find(c=>c[0]===tpCat)[1],TOOLDEF.filter(t=>t[3]===tpCat));
+  const keep=el.querySelector("input")&&document.activeElement===el.querySelector("input");
+  el.innerHTML=`<div class="tp" role="dialog" aria-label="Zeichnungen"><div class="th"><span>Zeichnungen</span><button type="button" data-x="1" title="Schließen">✕</button></div>
+    <input type="search" placeholder="Suchen" value="${esc(tpQ)}" autocomplete="off">
+    <div class="tc">${[["fav","Favoriten"]].concat(TCAT).map(([k,n])=>`<button type="button" data-cat="${k}" class="${!Q&&tpCat===k?"on":""}">${n}</button>`).join("")}</div>
+    <div class="tb">${body}</div><div class="tf">Antippen = Werkzeug nehmen · ★ = in der Werkzeugleiste zeigen (${TFAV.length} von ${TOOLDEF.length})</div></div>`;
+  if(keep){const q=el.querySelector("input");q.focus();q.setSelectionRange(q.value.length,q.value.length)}}
+$("tpick").addEventListener("input",e=>{if(e.target.type==="search"){tpQ=e.target.value;tpDraw()}});
+$("tpick").addEventListener("click",e=>{const el=$("tpick");if(e.target===el||e.target.closest("[data-x]")){el.hidden=true;return}
+  const st=e.target.closest("[data-star]");if(st){const k=st.dataset.star;TFAV=TFAV.includes(k)?TFAV.filter(x=>x!==k):TFAV.concat(k);LS("blcToolFav",TFAV);tpDraw();renderTools();return}
+  const c=e.target.closest("[data-cat]");if(c){tpCat=c.dataset.cat;tpQ="";tpDraw();return}
+  const p=e.target.closest("[data-pick]");if(p){el.hidden=true;toolSet(p.dataset.pick,e.pointerType==="touch"||(e.pointerType!=="mouse"&&matchMedia("(pointer:coarse)").matches));renderTools();paint()}});
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("tpick").hidden){$("tpick").hidden=true;e.stopImmediatePropagation()}},true);
+$("plcX").onclick=()=>{if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;plcEnd();renderTools();paint()};
 // ---------- Seitenleiste: Indikatoren oder Analyse ----------
 let sideM="ind";
 function showSide(m){if(!$("side").hidden&&sideM===m){sideOpen(false);return}sideM=m;if(m!=="wl")document.documentElement.style.removeProperty("--sideW");$("dlgBody").hidden=m!=="ind";$("indSrchW").hidden=m!=="ind";$("anaBody").hidden=m!=="ana";$("wlBody").hidden=m!=="wl";$("alBody").hidden=m!=="al";$("sideH").textContent=m==="ind"?"Indikatoren":m==="wl"?"Watchlist":m==="al"?"Alarme":"Bot-Analyse";sideOpen(true);if(m==="wl"&&window.wlShow)wlShow();if(m==="al"&&window.alShow)alShow()}
@@ -2301,7 +2365,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
   const rzUp=()=>{if(rz){rz=null;LS("blcBodH",Math.round(box.getBoundingClientRect().height))}};rs.addEventListener("pointerup",rzUp);rs.addEventListener("pointercancel",rzUp)}
 </script>
 <script src="bps.js?v=8"></script>
-<script src="dw.js?v=4"></script>
+<script src="dw.js?v=5"></script>
 <script src="wl.js?v=13"></script>
 <script src="al.js?v=4"></script>
 <script src="split.js?v=1"></script>

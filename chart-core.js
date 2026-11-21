@@ -516,6 +516,8 @@ function dwHit(d,L,k,tf,x,y){const {X,Y}=dwXY(L,k,tf),p=d.pts,tol=7;
     case"tl":{const e=tlEnds(d,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p),L.pw);return segDist(x,y,e[0],e[1],e[2],e[3])<tol}
     case"info":return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol;
     case"plabel":{const ax=X(p[0].t),ay=Y(p[0].p);return(x>=ax-6&&x<=ax+150&&y>=ay-34&&y<=ay+6)}
+    case"aup":case"adn":{const ax=X(p[0].t),ay=Y(p[0].p),s=d.type==="aup"?1:-1;return Math.abs(x-ax)<14&&(y-ay)*s>-6&&(y-ay)*s<34}
+    case"tri":{const xs=p.map(q=>X(q.t)),ys=p.map(q=>Y(q.p));return x>=Math.min(...xs)-tol&&x<=Math.max(...xs)+tol&&y>=Math.min(...ys)-tol&&y<=Math.max(...ys)+tol}
     case"note":{const bx=X(p[1].t),by=Y(p[1].p);return(Math.abs(x-bx)<70&&Math.abs(y-by)<14)||segDist(x,y,X(p[0].t),Y(p[0].p),bx,by)<tol}
     case"chan":{const o=Y(p[0].p+d.off)-Y(p[0].p);return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol||segDist(x,y,X(p[0].t),Y(p[0].p)+o,X(p[1].t),Y(p[1].p)+o)<tol}
     case"arrow":return segDist(x,y,X(p[0].t),Y(p[0].p),X(p[1].t),Y(p[1].p))<tol;
@@ -553,7 +555,10 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
       case"arrow":{const x1=X(p[0].t),y1=Y(p[0].p),x2=X(p[1].t),y2=Y(p[1].p),a=Math.atan2(y2-y1,x2-x1),hl=8+w*2;ln(x1,y1,x2,y2,c,w,ds);
         ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a-.45),y2-hl*Math.sin(a-.45));ctx.lineTo(x2-hl*Math.cos(a+.45),y2-hl*Math.sin(a+.45));ctx.closePath();ctx.fill();break}
       case"ell":{const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p);ctx.beginPath();ctx.ellipse((x1+x2)/2,(y1+y2)/2,Math.abs(x2-x1)/2||1,Math.abs(y2-y1)/2||1,0,0,7);ctx.fillStyle=ra(d.fill||c,(d.fop!=null?+d.fop:13)/100);ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.stroke();ctx.setLineDash([]);break}
-      case"brush":{if(p.length<2)break;ctx.beginPath();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineJoin="round";ctx.lineCap="round";ctx.setLineDash(ds);p.forEach((q,i)=>i?ctx.lineTo(X(q.t),Y(q.p)):ctx.moveTo(X(q.t),Y(q.p)));ctx.stroke();ctx.setLineDash([]);break}
+      case"brush":{if(p.length<2)break;ctx.save();ctx.beginPath();ctx.strokeStyle=c;ctx.lineWidth=d.hl?w*6:w;if(d.hl)ctx.globalAlpha=.35;ctx.lineJoin="round";ctx.lineCap="round";ctx.setLineDash(d.hl?[]:ds);p.forEach((q,i)=>i?ctx.lineTo(X(q.t),Y(q.p)):ctx.moveTo(X(q.t),Y(q.p)));ctx.stroke();ctx.restore();break}
+      case"aup":case"adn":{const ax=X(p[0].t),ay=Y(p[0].p),s=d.type==="aup"?1:-1,g=4*s;ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(ax,ay+g);ctx.lineTo(ax-9,ay+g+13*s);ctx.lineTo(ax-3.5,ay+g+13*s);ctx.lineTo(ax-3.5,ay+g+27*s);ctx.lineTo(ax+3.5,ay+g+27*s);ctx.lineTo(ax+3.5,ay+g+13*s);ctx.lineTo(ax+9,ay+g+13*s);ctx.closePath();ctx.fill();
+        if(d.text)tx(d.text,ax,ay+g+38*s,c,"center",1);break}
+      case"tri":{ctx.beginPath();p.forEach((q,i)=>i?ctx.lineTo(X(q.t),Y(q.p)):ctx.moveTo(X(q.t),Y(q.p)));if(p.length>2){ctx.closePath();ctx.fillStyle=ra(d.fill||c,(d.fop!=null?+d.fop:15)/100);ctx.fill()}ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(ds);ctx.stroke();ctx.setLineDash([]);break}
       case"prange":case"drange":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p),pr=d.type==="prange",up=pr?p[1].p>=p[0].p:x2>=x1,col=up?"#5b9bff":"#ff6b5e",xa=Math.min(x1,x2),xb=Math.max(x1,x2),ya=Math.min(y1,y2),yb=Math.max(y1,y2);
         ctx.fillStyle=ra(col,.14);ctx.fillRect(xa,ya,xb-xa,yb-ya);ln(xa,y1,xb,y1,col,1);ln(xa,y2,xb,y2,col,1);ln(x1,ya,x1,yb,col,1);ln(x2,ya,x2,yb,col,1);
         const mx=(x1+x2)/2,my=(y1+y2)/2;if(pr)ln(mx,y1,mx,y2,col,1.5);else ln(x1,my,x2,my,col,1.5);

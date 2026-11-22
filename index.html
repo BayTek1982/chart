@@ -1252,7 +1252,7 @@ function renderDlg(){const c=S.cfg,Q=normQ($("indSrch").value);let h=Q?"":`<div 
 let GOPEN=LS("blcGrpOpen")||{};
 $("indSrch").addEventListener("input",()=>renderDlg());
 $("dlgBody").addEventListener("click",e=>{const b=e.target.closest("[data-gt]");if(!b)return;const k=b.dataset.gt;GOPEN[k]=!GOPEN[k];LS("blcGrpOpen",GOPEN);renderDlg()});
-function sideOpen(o){$("side").hidden=!o;$("stage").classList.toggle("open",o);["wl","al","ana"].forEach(m=>$(m+"Btn").classList.toggle("on",o&&typeof sideM!=="undefined"&&sideM===m));if(o)renderDlg();paint()}
+function sideOpen(o){$("side").hidden=!o;$("stage").classList.toggle("open",o);["wl","ind","al","ana"].forEach(m=>$(m+"Btn").classList.toggle("on",o&&typeof sideM!=="undefined"&&sideM===m));if(o)renderDlg();paint()}
 $("indBtn").onclick=()=>sideOpen($("side").hidden);$("sideX").onclick=()=>sideOpen(false);
 $("dlgBody").addEventListener("change",e=>{const t=e.target;
   if(t.dataset.grp){const g=SCHEMA[+t.dataset.grp],ks=g.items.filter(it=>!it.always).map(it=>it.k);
@@ -1298,10 +1298,12 @@ addEventListener("storage",e=>{if(e.key!=="blc1"||!e.newValue)return;try{const m
 // Neue Knöpfe einfach in BARPRI eintragen; die Leiste wird dadurch nie enger.
 const BARPRI=["pngBtn","shareBtn","curSeg","anaBtn","layBtn","alBtn","thBtn","refresh","wlBtn"];
 const BARHOME=BARPRI.map(id=>{const el=$(id),ph=document.createComment(id);el.parentNode.insertBefore(ph,el);return{el,ph}});
+// „Indikatoren“ wandert nie ins Menü ⋯, am PC aber in die Seitenleiste – deshalb eigener Platzhalter für den Rückweg
+const INDHOME=(()=>{const el=$("indBtn"),ph=document.createComment("indBtn");el.parentNode.insertBefore(ph,el);return{el,ph}})();
 function fitBar(){const top=$("barTop"),tf=$("tfSeg"),dyn=$("moreDyn");if(!top||!tf)return;
-  BARHOME.forEach(o=>o.ph.parentNode.insertBefore(o.el,o.ph.nextSibling));
+  BARHOME.concat(INDHOME).forEach(o=>o.ph.parentNode.insertBefore(o.el,o.ph.nextSibling));
   // Breite Bildschirme: diese Knöpfe stehen in der Seitenleiste rechts statt oben
-  const rail=$("rail"),inRail=innerWidth>900&&!SLOT&&!document.documentElement.classList.contains("split")?["alBtn","layBtn","anaBtn","shareBtn","pngBtn"]:[];
+  const rail=$("rail"),inRail=innerWidth>900&&!SLOT&&!document.documentElement.classList.contains("split")?["wlBtn","indBtn","alBtn","layBtn","anaBtn","shareBtn","pngBtn"]:[]; // Reihenfolge von oben: Watchlist, Indikatoren, Alarme, …
   inRail.forEach(id=>rail.appendChild($(id)));
   const fits=()=>{const need=innerWidth<=900||SLOT?0:Math.min(tf.scrollWidth,Math.max(150,top.clientWidth*.4));return top.scrollWidth<=top.clientWidth+1&&tf.clientWidth>=need-2};
   // Handy: außen bleiben nur Watchlist, Indikatoren, Neu laden und Hell/Dunkel (dafür breiter) – alles andere steht im Menü ⋯

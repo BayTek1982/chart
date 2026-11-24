@@ -6,9 +6,9 @@ const okFlx=a=>(Array.isArray(a)?a:[]).slice(0,20).map(c=>typeof c==="string"&&/
 let FLX=[],FL=FL0;const mkFL=()=>{FL=FL0.concat(FLX.map(c=>c?[c,"Eigen"]:null))};
 const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 // Listen und Fähnchen prüfen (aus dem Speicher oder aus einem Übertragungs-Link): nur Text-Symbole, Fähnchen nur 1–7 – sonst kann ein kaputter Link die Seite lahmlegen
-const okLists=a=>(Array.isArray(a)?a:[]).filter(l=>l&&typeof l==="object"&&Array.isArray(l.items)).slice(0,50).map(l=>{const o={name:String(l.name||"Liste").slice(0,60),items:l.items.filter(s=>typeof s==="string"&&s).map(s=>s.startsWith("###")?"###"+s.slice(3,63):s.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,20)).filter(Boolean).slice(0,1000)};
+const okLists=a=>(Array.isArray(a)?a:[]).filter(l=>l&&typeof l==="object"&&Array.isArray(l.items)).slice(0,50).map(l=>{const o={name:String(l.name||"Liste").slice(0,60),items:l.items.filter(s=>typeof s==="string"&&s).map(s=>s.startsWith("###")?"###"+s.slice(3,63):s.toUpperCase().replace(/[^A-Z0-9.]/g,"").replace(/^\.+|\.+$/g,"").slice(0,20)).filter(Boolean).slice(0,1000)};
   if(l.sort&&typeof l.sort==="object"&&typeof l.sort.k==="string")o.sort={k:l.sort.k.replace(/[^a-z]/g,""),d:l.sort.d<0?-1:1};if(l.fav===true)o.fav=true;if(typeof l.used==="number"&&isFinite(l.used))o.used=l.used;return o});
-const okFlags=f=>{const o={};if(f&&typeof f==="object")for(const s of Object.keys(f)){const v=f[s];if(Number.isInteger(v)&&v>=1&&FL[v]&&/^[A-Z0-9]{1,20}$/.test(s))o[s]=v}return o};
+const okFlags=f=>{const o={};if(f&&typeof f==="object")for(const s of Object.keys(f)){const v=f[s];if(Number.isInteger(v)&&v>=1&&FL[v]&&/^[A-Z0-9.]{1,20}$/.test(s))o[s]=v}return o};
 try{FLX=okFlx(JSON.parse(localStorage.getItem("blcFlagX")))}catch(e){}mkFL();
 const W=ld("blcWl",null)||{cur:0,lists:[]};W.lists=okLists(W.lists);if(!W.lists.length)W.lists=[{name:"A Krypto OKX",items:["BTC","ETH","SOL","XRP","BNB","DOGE"]}];W.cur=W.lists[+W.cur]?+W.cur:0;
 const SORTS=[["eigen","Benutzerdefinierte Reihenfolge"],["sym","Nach Symbol"],["preis","Nach letztem Preis"],["ver","Nach Veränderung"],["verp","Nach Veränderung (%)"],["flag","Nach Fähnchen"],["vol","Nach Volumen"]];
@@ -27,13 +27,22 @@ const BADLG=new Set(); // Coins ohne ladbares Logo (dann bleibt der Buchstaben-K
 const fmtVol=v=>!(v>0)?"–":v>=1e9?(v/1e9).toFixed(v>=1e10?1:2).replace(".",",")+" Mrd":v>=1e6?(v/1e6).toFixed(v>=1e8?0:1).replace(".",",")+" Mio":v>=1e3?Math.round(v/1e3)+" Tsd":String(Math.round(v));
 const hue=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h};
 // Name zu einem Kürzel: Coin (feste Liste, CoinGecko) oder – wenn kein Coin bekannt ist – die Aktie aus dem Coin-Scanner
-const stk=s=>typeof stockOf==="function"?stockOf(s):null;
+const stk=s=>typeof stockOf!=="function"?null:stockOf(s)||(/\.KS$/.test(s)?stockOf(s.slice(0,-2)+"KQ"):null);
+// Aktien mit Heimatbörse: „MRK.DE“ = Merck an der deutschen Börse (nicht das gleichnamige US-Perp). Endung ↔ TradingView-Börse
+const SFX={".DE":["XETR","Deutschland"],".KS":["KRX","Korea"],".KQ":["KRX","Korea"],".HK":["HKEX","Hongkong"],".T":["TSE","Japan"],".L":["LSE","London"],".SW":["SIX","Schweiz"],".MI":["MIL","Mailand"],".MC":["BME","Madrid"],".PA":["EURONEXT","Paris"],".AS":["EURONEXT","Amsterdam"]};
+const TVX={XETR:".DE",FWB:".DE",GETTEX:".DE",TRADEGATE:".DE",SWB:".DE",KRX:".KS",HKEX:".HK",TSE:".T",LSE:".L",SIX:".SW",MIL:".MI",BME:".MC"};
+const sfxOf=s=>{const i=s.lastIndexOf(".");return i>0&&SFX[s.slice(i)]?s.slice(i):""},baseOf=s=>s.replace(/\..*$/,"");
+const tvOf=s=>{const x=sfxOf(s);return x?SFX[x][0]+":"+(x===".HK"?baseOf(s).replace(/^0+(?=.)/,""):baseOf(s)):""};
+// Andere Schreibweisen desselben Kürzels: die Aktie an einer Heimatbörse bzw. zurück zum einfachen Kürzel (Perp / US-Aktie)
+const alts=s=>{const b=baseOf(s),o=[];if(s.includes("."))o.push(b);for(const x of(typeof S!=="undefined"&&S.list&&S.list.a)||[]){const y=String(x.s).toUpperCase();if(y!==s&&sfxOf(y)&&baseOf(y)===b&&/^[A-Z0-9.]{1,20}$/.test(y)&&!o.includes(y))o.push(y)}return o.slice(0,4)};
+// Ein Kürzel in den Listen ersetzen; Fähnchen und Notiz gehen mit
+function swapSym(l,a,b){const i=l.items.indexOf(a);if(i<0)return;if(l.items.includes(b))l.items.splice(i,1);else l.items[i]=b;if(FLAG[a]&&!FLAG[b])FLAG[b]=FLAG[a];if(NOTE[a]&&!NOTE[b])NOTE[b]=NOTE[a]}
 const coinName=s=>(typeof CNAME!=="undefined"&&CNAME[s])||(typeof GECKO!=="undefined"&&GECKO[s])||(LG.n&&LG.n[s.replace(/^\d+(?=[A-Z])/,"")])||(stk(s)||{}).n||"";
 // Abstand zum nächsten aktiven Preis-Alarm je Coin (in %)
 function alarmDist(){const o={};let A=[];try{A=JSON.parse(localStorage.getItem("blcAlarms"))||[]}catch(e){}for(const a of Array.isArray(A)?A:[]){if(!a||!a.on||!a.sym||a.c==="mv"||!(a.p>0))continue;const q=Q[a.sym];if(!q||!q.p)continue;const d=(a.p/q.p-1)*100;if(o[a.sym]==null||Math.abs(d)<Math.abs(o[a.sym]))o[a.sym]=d}return o}
 let menu=null,impTxt="",impName="",sortOpen=false,FLAG=okFlags(ld("blcFlag",{})),filt=+ld("blcWlFilt",0)||0,edit=false,imp=false,pop=null,Q={},qT=0,qBusy=false;
 // Notiz je Coin (z. B. „wartet auf 0,618“): steht klein unter dem Symbol
-const okNotes=n=>{const o={};if(n&&typeof n==="object")for(const s of Object.keys(n))if(/^[A-Z0-9]{1,20}$/.test(s)&&typeof n[s]==="string"&&n[s].trim())o[s]=n[s].trim().slice(0,80);return o};
+const okNotes=n=>{const o={};if(n&&typeof n==="object")for(const s of Object.keys(n))if(/^[A-Z0-9.]{1,20}$/.test(s)&&typeof n[s]==="string"&&n[s].trim())o[s]=n[s].trim().slice(0,80);return o};
 let NOTE=okNotes(ld("blcNote",{}));
 const saveW=()=>sv("blcWl",W),saveF=()=>sv("blcFlag",FLAG),L=()=>W.lists[W.cur]||W.lists[0];
 if(!FL[filt])filt=0; // gewählter Fähnchen-Filter bleibt über den Neustart erhalten
@@ -60,7 +69,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   let h=`<div class="wlTop"><button class="btn ghost wlName${menu==="list"?" on":""}" data-a="lmenu" title="Listen-Menü (Umschalt+W)"><span>${esc(l.name)}</span> ▾</button>
     <button class="btn ghost" data-a="add" title="Aktuelles Symbol hinzufügen">＋ ${esc(cur)}</button><button class="btn ghost${sortOpen||(l.sort&&l.sort.k!=="eigen")?" on":""}" data-a="sortm" title="Sortieren">⇅</button><button class="btn ghost${edit?" on":""}" data-a="edit" title="Bearbeiten">✎</button><button class="btn ghost${menu==="view"?" on":""}" data-a="vmenu" title="Ansicht: Spalten, Gruppieren, Logo, Symbol oder Name">⋯</button></div>`;
   if(menu==="list"){const ord=W.lists.map((x,i)=>i).sort((a,b)=>(W.lists[b].fav?1:0)-(W.lists[a].fav?1:0)||(W.lists[b].used||0)-(W.lists[a].used||0));
-    h+=`<div class="wlMenu">${mi("lalarm","⏰","Alarm auf der Liste hinzufügen …")}${mi("copy","⧉","Kopie erstellen …")}${mi("ren","✎","Umbenennen")}${mi("sec","☰","Abschnitt hinzufügen")}${mi("del","🗑","Liste löschen")}<hr>
+    h+=`<div class="wlMenu">${mi("lalarm","⏰","Alarm auf der Liste hinzufügen …")}${mi("copy","⧉","Kopie erstellen …")}${mi("ren","✎","Umbenennen")}${mi("sec","☰","Abschnitt hinzufügen")}${mi("stock","🏛","Auf Aktien einer Börse umstellen …")}${mi("del","🗑","Liste löschen")}<hr>
       ${mi("new","＋","Neue Liste erstellen …")}${mi("imp0","⇪","Liste hochladen / aus TradingView importieren …")}${mi("exp","⧉","Im TradingView-Format kopieren")}${mi("share1","🔗","Link nur für diese Liste")}${mi("sync","🔗","Übertragungs-Link (alle Listen, Fähnchen, Notizen)")}<hr>
       <div class="mh">Listen · ★ = Favorit oben</div>${ord.map(i=>`<div class="ml1${i===W.cur?" cur":""}"><button data-ls="${i}">${esc(W.lists[i].name)} <small>${W.lists[i].items.filter(s=>!s.startsWith("###")).length}</small></button><button class="st${W.lists[i].fav?" on":""}" data-fav="${i}" title="Favorit">${W.lists[i].fav?"★":"☆"}</button></div>`).join("")}</div>`}
   if(menu==="view")h+=`<div class="wlMenu"><button data-v="tab">${ck(V.tab)}Tabellenansicht (aus = kompakt: nur Symbol und Änd %)</button><hr>
@@ -84,7 +93,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   // Kopfzeile wie in TradingView: Spalte antippen = sortieren, noch einmal = umdrehen, drittes Mal = eigene Reihenfolge
   h+=`<div class="wlTbl${fW<1?" eng":""}"><div style="min-width:${fW<=.5?Math.round(84+sumW*.5+gaps):0}px"><div class="wlHd" style="grid-template-columns:minmax(0,1fr) ${gw}">${[{s:"sym",t:"Symbol"}].concat(C).map(c=>c.s?`<button data-hs="${c.s}" class="${so.k===c.s?"on":""}" title="Nach ${c.t} sortieren">${c.t}${so.k===c.s?(so.d>0?" ▲":" ▼"):""}</button>`:`<span>${c.t}</span>`).join("")}</div><div class="wlRows">`;let n=0;
   // Kurs einer Zeile: Perp der gewählten Börse, sonst die echte Aktie aus dem Coin-Scanner (stündlich, nicht live) – gilt auch für das Sortieren
-  const qOf=s=>{const q=Q[s];if(q&&q.p)return q;const x=stk(s);return x&&x.p?{p:x.p,ch:x.ch,d:x.ch!=null?x.p-x.p/(1+x.ch/100):null,v:null,h:null,l:null,a:x.s}:{}};
+  const qOf=s=>{const dot=s.includes("."),q=dot?null:Q[s];if(q&&q.p)return q;const x=stk(s);return x&&x.p?{p:x.p,ch:x.ch,d:x.ch!=null?x.p-x.p/(1+x.ch/100):null,v:null,h:null,l:null,a:x.s}:dot?{a:x?x.s:s}:{}};
   const val=s=>{const q=qOf(s);return so.k==="sym"?s:so.k==="preis"?q.p:so.k==="ver"?q.d:so.k==="verp"?q.ch:so.k==="flag"?(FLAG[s]||99):so.k==="vol"?q.v:so.k==="ald"?(AD[s]==null?null:Math.abs(AD[s])):0};
   const srt=a=>sorted?a.slice().sort((a,b)=>{const x=val(a),y=val(b);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return-1;return(typeof x==="string"?x.localeCompare(y):x-y)*so.d}):a;
   const isS=s=>s.startsWith("###"),canEd=edit&&!filt&&!sorted&&V.grp==="sec";
@@ -97,13 +106,13 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   if(V.hide0&&Object.keys(Q).length){rows=rows.filter(s=>typeof s!=="string"||qOf(s).p);rows=rows.filter((s,i)=>typeof s==="string"||(typeof rows[i+1]==="string"))}
   rows.forEach(s=>{if(typeof s!=="string"){h+=`<div class="wlSec"${s.i!=null?` data-i="${s.i}"`:""}>${s.c?`<i class="sd" style="--c:${s.c}"></i>`:""}${esc(s.t)}${canEd&&s.i!=null?`<button data-rm="${s.i}" title="Entfernen">✕</button>`:""}</div>`;return}
     const f=FLAG[s]||0,i=l.items.indexOf(s);n++;const q=qOf(s),up=q.ch>0?"up":q.ch<0?"dn":"",cn=q.a?((stk(s)||{}).n||""):coinName(s),nm=V.nm==="name"?cn:"",isCur=q.a?S.mkt==="a"&&S.sym===q.a:S.mkt==="k"&&s===cur;
-    const lg=V.logo?`<i class="lgo" style="--h:${hue(s)}">${esc(s.replace(/^\d+/,"")[0]||s[0])}${BADLG.has(s)||q.a?"":`<img loading="lazy" alt="" data-lg="${esc(s)}"${lgUrl(s)?"":' data-t2="1"'} src="${esc(lgUrl(s)||`https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png`)}">`}</i>`:"";
+    const lg=V.logo?`<i class="lgo" style="--h:${hue(s)}">${esc(baseOf(s).replace(/^\d+/,"")[0]||s[0])}${BADLG.has(s)||q.a?"":`<img loading="lazy" alt="" data-lg="${esc(s)}"${lgUrl(s)?"":' data-t2="1"'} src="${esc(lgUrl(s)||`https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png`)}">`}</i>`:"";
     const cell=c=>c.k==="last"?`<span class="px">${q.p?CC.fmt(q.p):"–"}</span>`:c.k==="chg"?`<span class="ch ${up}">${q.d==null||!isFinite(q.d)?"–":(q.d>=0?"+":"−")+CC.fmt(Math.abs(q.d))}</span>`:c.k==="chgp"?`<span class="ch ${up}">${pct(q.ch)}</span>`
       :c.k==="vol"?`<span class="px vo">${fmtVol(q.v)}</span>`:c.k==="hl"?`<span class="px hl">${q.h?CC.fmt(q.h):"–"}<br>${q.l?CC.fmt(q.l):"–"}</span>`:`<span class="px vo">${AD[s]==null?"–":(AD[s]>=0?"+":"")+AD[s].toFixed(1).replace(".",",")+" %"}</span>`;
     h+=`<div class="wlRow${isCur?" cur":""}" style="grid-template-columns:18px minmax(0,1fr) ${gw} auto" data-s="${esc(s)}"${q.a?` data-y="${esc(q.a)}" title="Echte Aktie aus dem Coin-Scanner – stündlich aktualisiert, nicht live"`:cn?` title="${esc(cn)}"`:""} data-i="${canEd?i:-1}" ${canEd?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>
-      <span class="sy">${lg}${nm?`${esc(nm)}<small> ${esc(s)}</small>`:`${esc(s)}<small>${q.a?"":S.ex!=="binance"?".P":""}</small>`}${q.a?`<span class="tg">Aktie</span>`:""}${!nm&&V.sub&&cn?`<span class="cn">${esc(cn)}</span>`:""}${NOTE[s]?`<span class="nt">${esc(NOTE[s])}</span>`:""}</span>${C.map(cell).join("")}
+      <span class="sy">${lg}${nm?`${esc(nm)}<small> ${esc(s)}</small>`:`${esc(baseOf(s))}<small>${q.a?esc(sfxOf(s)):S.ex!=="binance"?".P":""}</small>`}${q.a?`<span class="tg">Aktie</span>`:""}${!nm&&V.sub&&cn?`<span class="cn">${esc(cn)}</span>`:""}${NOTE[s]?`<span class="nt">${esc(NOTE[s])}</span>`:""}</span>${C.map(cell).join("")}
       ${canEd?`<span class="ed"><button data-mv="${i}" data-d="-1" title="Nach oben">▲</button><button data-mv="${i}" data-d="1" title="Nach unten">▼</button><button data-rm="${i}" title="Entfernen">✕</button></span>`:""}</div>`;
-    if(pop===s)h+=`<div class="wlPop">${FL.map((x,k)=>k&&!x?"":`<button data-setf="${k}" data-s="${esc(s)}" class="dot" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("")}<button class="ntB" data-note="${esc(s)}">✎ Notiz</button></div>`});
+    if(pop===s)h+=`<div class="wlPop">${FL.map((x,k)=>k&&!x?"":`<button data-setf="${k}" data-s="${esc(s)}" class="dot" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("")}<button class="ntB" data-note="${esc(s)}">✎ Notiz</button>${alts(s).map(y=>`<button class="ntB" data-alt="${esc(y)}" data-s="${esc(s)}" title="${sfxOf(y)?"Als Aktie an der Börse "+SFX[sfxOf(y)][1]+" führen":"Als Perp bzw. US-Aktie führen"}">⇄ ${esc(y)}${sfxOf(y)?"":" (Perp/US)"}</button>`).join("")}</div>`});
   h+=`</div></div></div>`;if(!n)h+=`<p class="wlE">${filt?"Keine Symbole mit diesem Fähnchen.":"Noch leer – oben mit ＋ das aktuelle Symbol hinzufügen oder unter ⋯ importieren."}</p>`;
   h+=`<p class="wlE">Tipp: Antippen öffnet den Chart · Punkt links = Fähnchen · ↑/↓ wechselt das Symbol (Tastatur) · Änderung ${S.ex==="okx"||S.ex==="bitget"?"seit 0 Uhr UTC":"24 Std."}</p>`;
   b.innerHTML=h;
@@ -112,9 +121,17 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   // Datei gewählt → sofort als neue Liste importieren (Name = Dateiname)
   const fi=$("wlFile");if(fi)fi.onchange=async()=>{const f=fi.files[0];if(!f)return;impTxt=await f.text();impName=f.name.replace(/\.(txt|csv)$/i,"");act("imp")}}
 function parse(t){const out=[];for(let x of String(t).split(/[,\n\r;]+/)){x=x.trim();if(!x)continue;if(x.startsWith("###")){out.push("###"+x.slice(3).trim());continue}
+    // Börse aus TradingView behalten: XETR:MRK → MRK.DE, KRX:005930 → 005930.KS; „MRK.DE“ direkt geht auch
+    const m=/^([A-Z0-9_]+):(.+)$/i.exec(x),sf=m&&TVX[m[1].toUpperCase()],dy=x.toUpperCase();
+    if(sf||(!m&&/^[A-Z0-9]{1,12}\.[A-Z]{1,2}$/.test(dy)&&sfxOf(dy))){let y=dy;if(sf){const b=m[2].toUpperCase().replace(/[^A-Z0-9]/g,"");y=b?(sf===".HK"?b.padStart(4,"0"):b)+sf:""}if(y&&!out.includes(y))out.push(y);continue}
     x=x.replace(/^[A-Z0-9_]+:/i,"").replace(/\.P$/i,"").toUpperCase().replace(/(USDT|USDC|USD|PERP)$/,"").replace(/[^A-Z0-9]/g,"");if(x&&!out.includes(x))out.push(x)}return out}
 function act(a){const l=L();
-  if(a==="add"){const ns=S.sym.replace(/\..*$/,"").replace(/[^A-Za-z0-9]/g,"").toUpperCase();if(ns&&!l.items.includes(ns)){l.items.push(ns);saveW();quotes()}else toast(S.sym+" ist schon in der Liste")}
+  if(a==="add"){const y0=S.sym.toUpperCase(),ns=S.mkt==="a"&&/^[A-Z0-9]{1,12}\.[A-Z]{1,2}$/.test(y0)&&sfxOf(y0)?y0:S.sym.replace(/\..*$/,"").replace(/[^A-Za-z0-9]/g,"").toUpperCase();if(ns&&!l.items.includes(ns)){l.items.push(ns);saveW();quotes()}else toast(S.sym+" ist schon in der Liste")}
+  // Ganze Liste auf die Aktien einer Börse umstellen (z. B. eine DAX-Liste, die ohne Börse importiert wurde)
+  if(a==="stock"){menu=null;const cnt={};for(const s of l.items){if(s.startsWith("###")||s.includes("."))continue;for(const y of alts(s)){const x=sfxOf(y);(cnt[x]=cnt[x]||[]).push([s,y])}}
+    const ks=Object.keys(cnt).sort((a,b)=>cnt[b].length-cnt[a].length);if(!ks.length){toast("Für diese Liste wurden keine passenden Aktien an anderen Börsen gefunden");draw();return}
+    let k=ks[0];if(ks.length>1){const n=prompt("Welche Börse?\n"+ks.map((x,i)=>`${i+1} = ${SFX[x][1]} (${x}) – ${cnt[x].length} Treffer`).join("\n"),"1");if(n==null){draw();return}k=ks[+n-1];if(!k){toast("Nichts geändert");draw();return}}
+    if(confirm(`${cnt[k].length} Kürzel dieser Liste gibt es als Aktie an der Börse ${SFX[k][1]} (${k}).\nUmstellen? Sie zeigen dann immer diese Aktie – auch wenn es ein gleichnamiges Perpetual gibt.`)){cnt[k].forEach(([s,y])=>swapSym(l,s,y));saveW();saveF();sv("blcNote",NOTE);toast(cnt[k].length+" Kürzel umgestellt")}}
   if(a==="flAdd"){colIn.click();return}
   if(a==="sortm")sortOpen=!sortOpen;
   if(a==="edit")edit=!edit;if(a==="lmenu")menu=menu==="list"?null:"list";if(a==="vmenu")menu=menu==="view"?null:"view";if(a==="imp0"){imp=!imp;menu=null}
@@ -133,7 +150,7 @@ function act(a){const l=L();
     saveW();imp=false;impTxt="";impName="";toast(it.filter(s=>!s.startsWith("###")).length+" Symbole importiert");quotes()}
   if(a==="sync"){menu=null;const pl=btoa(unescape(encodeURIComponent(JSON.stringify({l:W.lists,f:FLAG,x:FLX,n:NOTE})))),url=location.origin+location.pathname+"#wl="+pl;
     if(navigator.share)navigator.share({title:"Meine Watchlist",url}).catch(()=>{});else(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast("Link kopiert – auf dem anderen Gerät öffnen")).catch(()=>prompt("Diesen Link auf dem anderen Gerät öffnen:",url))}
-  if(a==="exp"){menu=null;const t=l.items.map(s=>s.startsWith("###")?s:(typeof EX!=="undefined"&&EX.get(S.ex)?EX.get(S.ex).tv(s):S.ex==="okx"?"OKX:"+s+"USDT.P":"BINANCE:"+s+"USDT")).join(",");
+  if(a==="exp"){menu=null;const t=l.items.map(s=>s.startsWith("###")?s:tvOf(s)||(typeof EX!=="undefined"&&EX.get(S.ex)?EX.get(S.ex).tv(s):S.ex==="okx"?"OKX:"+s+"USDT.P":"BINANCE:"+s+"USDT")).join(",");
     (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Liste kopiert – in TradingView unter „Liste importieren“ einfügen")).catch(()=>prompt("Zum Kopieren:",t))}
   draw()}
 function setup(){const b=$("wlBody");
@@ -153,6 +170,7 @@ function setup(){const b=$("wlBody");
       setFilt(f);return draw()}
     if(d.fl!=null){e.stopPropagation();pop=pop===d.fl?null:d.fl;return draw()}
     if(d.note!=null){const s=d.note,t=prompt(`Notiz zu ${s} (leer = löschen):`,NOTE[s]||"");if(t!=null){if(t.trim())NOTE[s]=t.trim().slice(0,80);else delete NOTE[s];sv("blcNote",NOTE);pop=null}return draw()}
+    if(d.alt!=null){const l=L(),ls=l.items.includes(d.s)?[l]:W.lists;ls.forEach(x=>swapSym(x,d.s,d.alt));saveW();saveF();sv("blcNote",NOTE);pop=null;return draw()}
     if(d.setf!=null){const k=+d.setf;if(k)FLAG[d.s]=k;else delete FLAG[d.s];saveF();pop=null;return draw()}
     if(d.rm!=null){L().items.splice(+d.rm,1);saveW();return draw()}
     if(d.mv!=null){const it=L().items,i=+d.mv,j=i+ +d.d;if(j>=0&&j<it.length){[it[i],it[j]]=[it[j],it[i]];saveW()}return draw()}

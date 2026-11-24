@@ -83,7 +83,9 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   const fW=Math.max(.5,Math.min(1,(b.clientWidth-gaps-(C.length>3?84:100))/Math.max(1,sumW))),gw=C.map(c=>Math.floor(c.w*fW)+"px").join(" "),AD=C.some(c=>c.k==="ald")||so.k==="ald"?alarmDist():{};
   // Kopfzeile wie in TradingView: Spalte antippen = sortieren, noch einmal = umdrehen, drittes Mal = eigene Reihenfolge
   h+=`<div class="wlTbl${fW<1?" eng":""}"><div style="min-width:${fW<=.5?Math.round(84+sumW*.5+gaps):0}px"><div class="wlHd" style="grid-template-columns:minmax(0,1fr) ${gw}">${[{s:"sym",t:"Symbol"}].concat(C).map(c=>c.s?`<button data-hs="${c.s}" class="${so.k===c.s?"on":""}" title="Nach ${c.t} sortieren">${c.t}${so.k===c.s?(so.d>0?" ▲":" ▼"):""}</button>`:`<span>${c.t}</span>`).join("")}</div><div class="wlRows">`;let n=0;
-  const val=s=>{const q=Q[s]||{};return so.k==="sym"?s:so.k==="preis"?q.p:so.k==="ver"?q.d:so.k==="verp"?q.ch:so.k==="flag"?(FLAG[s]||99):so.k==="vol"?q.v:so.k==="ald"?(AD[s]==null?null:Math.abs(AD[s])):0};
+  // Kurs einer Zeile: Perp der gewählten Börse, sonst die echte Aktie aus dem Coin-Scanner (stündlich, nicht live) – gilt auch für das Sortieren
+  const qOf=s=>{const q=Q[s];if(q&&q.p)return q;const x=stk(s);return x&&x.p?{p:x.p,ch:x.ch,d:x.ch!=null?x.p-x.p/(1+x.ch/100):null,v:null,h:null,l:null,a:x.s}:{}};
+  const val=s=>{const q=qOf(s);return so.k==="sym"?s:so.k==="preis"?q.p:so.k==="ver"?q.d:so.k==="verp"?q.ch:so.k==="flag"?(FLAG[s]||99):so.k==="vol"?q.v:so.k==="ald"?(AD[s]==null?null:Math.abs(AD[s])):0};
   const srt=a=>sorted?a.slice().sort((a,b)=>{const x=val(a),y=val(b);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return-1;return(typeof x==="string"?x.localeCompare(y):x-y)*so.d}):a;
   const isS=s=>s.startsWith("###"),canEd=edit&&!filt&&!sorted&&V.grp==="sec";
   // Zeilen: Texte = Symbole, Objekte = Überschriften
@@ -92,11 +94,10 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   else if(V.grp==="none"||sorted)rows=srt(l.items.filter(s=>!isS(s)));
   else rows=l.items.map((s,i)=>isS(s)?{t:s.slice(3),i}:s);
   // Zeilen ohne Perp-Kurs: Kurs der echten Aktie aus dem Coin-Scanner zeigen (stündlich, nicht live); auf Wunsch Zeilen ganz ohne Kurs ausblenden
-  const qOf=s=>{const q=Q[s];if(q&&q.p)return q;const x=stk(s);return x&&x.p?{p:x.p,ch:x.ch,d:x.ch!=null?x.p-x.p/(1+x.ch/100):null,v:null,h:null,l:null,a:x.s}:{}};
   if(V.hide0&&Object.keys(Q).length){rows=rows.filter(s=>typeof s!=="string"||qOf(s).p);rows=rows.filter((s,i)=>typeof s==="string"||(typeof rows[i+1]==="string"))}
   rows.forEach(s=>{if(typeof s!=="string"){h+=`<div class="wlSec"${s.i!=null?` data-i="${s.i}"`:""}>${s.c?`<i class="sd" style="--c:${s.c}"></i>`:""}${esc(s.t)}${canEd&&s.i!=null?`<button data-rm="${s.i}" title="Entfernen">✕</button>`:""}</div>`;return}
-    const f=FLAG[s]||0,i=l.items.indexOf(s);n++;const q=qOf(s),up=q.ch>0?"up":q.ch<0?"dn":"",cn=coinName(s),nm=V.nm==="name"?cn:"",isCur=q.a?S.mkt==="a"&&S.sym===q.a:S.mkt==="k"&&s===cur;
-    const lg=V.logo?`<i class="lgo" style="--h:${hue(s)}">${esc(s.replace(/^\d+/,"")[0]||s[0])}${BADLG.has(s)?"":`<img loading="lazy" alt="" data-lg="${esc(s)}"${lgUrl(s)?"":' data-t2="1"'} src="${esc(lgUrl(s)||`https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png`)}">`}</i>`:"";
+    const f=FLAG[s]||0,i=l.items.indexOf(s);n++;const q=qOf(s),up=q.ch>0?"up":q.ch<0?"dn":"",cn=q.a?((stk(s)||{}).n||""):coinName(s),nm=V.nm==="name"?cn:"",isCur=q.a?S.mkt==="a"&&S.sym===q.a:S.mkt==="k"&&s===cur;
+    const lg=V.logo?`<i class="lgo" style="--h:${hue(s)}">${esc(s.replace(/^\d+/,"")[0]||s[0])}${BADLG.has(s)||q.a?"":`<img loading="lazy" alt="" data-lg="${esc(s)}"${lgUrl(s)?"":' data-t2="1"'} src="${esc(lgUrl(s)||`https://assets.coincap.io/assets/icons/${encodeURIComponent(s.replace(/^\d+/,"").toLowerCase())}@2x.png`)}">`}</i>`:"";
     const cell=c=>c.k==="last"?`<span class="px">${q.p?CC.fmt(q.p):"–"}</span>`:c.k==="chg"?`<span class="ch ${up}">${q.d==null||!isFinite(q.d)?"–":(q.d>=0?"+":"−")+CC.fmt(Math.abs(q.d))}</span>`:c.k==="chgp"?`<span class="ch ${up}">${pct(q.ch)}</span>`
       :c.k==="vol"?`<span class="px vo">${fmtVol(q.v)}</span>`:c.k==="hl"?`<span class="px hl">${q.h?CC.fmt(q.h):"–"}<br>${q.l?CC.fmt(q.l):"–"}</span>`:`<span class="px vo">${AD[s]==null?"–":(AD[s]>=0?"+":"")+AD[s].toFixed(1).replace(".",",")+" %"}</span>`;
     h+=`<div class="wlRow${isCur?" cur":""}" style="grid-template-columns:18px minmax(0,1fr) ${gw} auto" data-s="${esc(s)}"${q.a?` data-y="${esc(q.a)}" title="Echte Aktie aus dem Coin-Scanner – stündlich aktualisiert, nicht live"`:cn?` title="${esc(cn)}"`:""} data-i="${canEd?i:-1}" ${canEd?'draggable="true"':""}><button class="fl${f?" set":""}" data-fl="${esc(s)}" style="--c:${f?FL[f][0]:"transparent"}" title="Fähnchen"></button>

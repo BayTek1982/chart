@@ -14,7 +14,7 @@ const W=ld("blcWl",null)||{cur:0,lists:[]};W.lists=okLists(W.lists);if(!W.lists.
 const SORTS=[["eigen","Benutzerdefinierte Reihenfolge"],["sym","Nach Symbol"],["preis","Nach letztem Preis"],["ver","Nach Veränderung"],["verp","Nach Veränderung (%)"],["flag","Nach Fähnchen"],["vol","Nach Volumen"]];
 // Ansicht (Menü ⋯): Tabellenansicht, Gruppierung, Spalten, Logo, Symbol oder Name – je Gerät gespeichert
 const COLS=[{k:"last",t:"Kurs",w:92,s:"preis"},{k:"chg",t:"Änd",w:78,s:"ver"},{k:"chgp",t:"Änd %",w:74,s:"verp"},{k:"vol",t:"Volumen",w:76,s:"vol"},{k:"hl",t:"24h H/T",w:92},{k:"ald",t:"Alarm",w:66,s:"ald"}];
-const V=(()=>{const a=ld("blcWlView",{})||{},c=a.cols&&typeof a.cols==="object"?a.cols:{},o={tab:a.tab!==false,grp:["none","sec","flag"].includes(a.grp)?a.grp:"sec",logo:a.logo2!==false,sub:a.sub!==false,hide0:a.hide0===true,nm:a.nm==="name"?"name":"sym",cols:{}};
+const V=(()=>{const a=ld("blcWlView",{})||{},c=a.cols&&typeof a.cols==="object"?a.cols:{},o={tab:a.tab!==false,grp:["none","sec","flag","typ"].includes(a.grp)?a.grp:"sec",logo:a.logo2!==false,sub:a.sub!==false,hide0:a.hide0===true,nm:a.nm==="name"?"name":"sym",cols:{}};
   const def={last:1,chg:innerWidth>430?1:0,chgp:1,vol:0,hl:0,ald:0};COLS.forEach(x=>o.cols[x.k]=c[x.k]==null?!!def[x.k]:!!c[x.k]);return o})();
 const saveV=()=>sv("blcWlView",{...V,logo2:V.logo});
 // Logos: Bild-Adressen der 500 größten Coins von CoinGecko (dieselbe Quelle wie die Namenssuche), einmal am Tag geholt und gespeichert
@@ -71,12 +71,15 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   if(menu==="list"){const ord=W.lists.map((x,i)=>i).sort((a,b)=>(W.lists[b].fav?1:0)-(W.lists[a].fav?1:0)||(W.lists[b].used||0)-(W.lists[a].used||0));
     h+=`<div class="wlMenu">${mi("lalarm","⏰","Alarm auf der Liste hinzufügen …")}${mi("copy","⧉","Kopie erstellen …")}${mi("ren","✎","Umbenennen")}${mi("sec","☰","Abschnitt hinzufügen")}${mi("stock","🏛","Auf Aktien einer Börse umstellen …")}${mi("del","🗑","Liste löschen")}<hr>
       ${mi("new","＋","Neue Liste erstellen …")}${mi("imp0","⇪","Liste hochladen / aus TradingView importieren …")}${mi("exp","⧉","Im TradingView-Format kopieren")}${mi("share1","🔗","Link nur für diese Liste")}${mi("sync","🔗","Übertragungs-Link (alle Listen, Fähnchen, Notizen)")}<hr>
-      <div class="mh">Listen · ★ = Favorit oben</div>${ord.map(i=>`<div class="ml1${i===W.cur?" cur":""}"><button data-ls="${i}">${esc(W.lists[i].name)} <small>${W.lists[i].items.filter(s=>!s.startsWith("###")).length}</small></button><button class="st${W.lists[i].fav?" on":""}" data-fav="${i}" title="Favorit">${W.lists[i].fav?"★":"☆"}</button></div>`).join("")}</div>`}
+      <div class="mh">Listen · ★ = Favorit: steht oben und als runder Schnellwahl-Knopf</div>${ord.map(i=>`<div class="ml1${i===W.cur?" cur":""}"><button data-ls="${i}">${esc(W.lists[i].name)} <small>${W.lists[i].items.filter(s=>!s.startsWith("###")).length}</small></button><button class="st${W.lists[i].fav?" on":""}" data-fav="${i}" title="Favorit">${W.lists[i].fav?"★":"☆"}</button></div>`).join("")}</div>`}
   if(menu==="view")h+=`<div class="wlMenu"><button data-v="tab">${ck(V.tab)}Tabellenansicht (aus = kompakt: nur Symbol und Änd %)</button><hr>
-      <div class="mh">Gruppieren nach</div>${[["none","Keine Gruppe"],["sec","Benutzerdefinierte Abschnitte"],["flag","Fähnchen"]].map(([k,t])=>`<button data-vg="${k}">${ck(V.grp===k)}${t}</button>`).join("")}<hr>
+      <div class="mh">Gruppieren nach</div>${[["none","Keine Gruppe"],["sec","Benutzerdefinierte Abschnitte"],["flag","Fähnchen"],["typ","Art (Krypto / Aktie)"]].map(([k,t])=>`<button data-vg="${k}">${ck(V.grp===k)}${t}</button>`).join("")}<hr>
       <div class="mh">Spalten anpassen</div>${COLS.map(c=>`<button data-vc="${c.k}">${ck(V.cols[c.k])}${{last:"Zuletzt (Kurs)",chg:"Veränderung",chgp:"Veränderung %",vol:"Volumen (24 Std., in USDT)",hl:"24-Stunden-Hoch und -Tief",ald:"Abstand zum nächsten Alarm"}[c.k]}</button>`).join("")}<hr>
       <div class="mh">Symbolanzeige</div><button data-v="logo">${ck(V.logo)}Logo</button><button data-vn="sym">${ck(V.nm==="sym")}Symbol</button><button data-vn="name">${ck(V.nm==="name")}Name</button><button data-v="sub">${ck(V.sub)}Name klein hinter dem Symbol (welches Unternehmen / welcher Coin)</button><hr>
       <div class="mh">Ohne Daten</div><button data-v="hide0">${ck(V.hide0)}Symbole ohne Kurs ausblenden</button></div>`;
+  // Schnellwahl der Listen (runde Knöpfe wie in TradingView): die Favoriten ★, sonst alle Listen
+  if(W.lists.length>1){const all=W.lists.map((x,i)=>i),fv=all.filter(i=>W.lists[i].fav),ab=n=>{const w=n.trim().split(/[\s_\-]+/).filter(Boolean);return(w.length>1?w[0][0]+w[1][0]:n.trim().slice(0,2)).toUpperCase()};
+    h+=`<div class="wlQ">${(fv.length?fv:all).slice(0,14).map(i=>`<button data-ls="${i}" class="${i===W.cur?"on":""}" title="${esc(W.lists[i].name)}">${esc(ab(W.lists[i].name))}</button>`).join("")}</div>`}
   h+=`
     <div class="wlEx">Börse: <select id="wlExSel" aria-label="Börse">${[["okx","OKX Perpetual"],["binance","Binance Spot"]].concat(typeof EX!=="undefined"?Object.values(EX.all).map(a=>[a.id,a.name+(a.test?" (Test)":"")]):[]).map(([k,t])=>`<option value="${k}" ${S.ex===k?"selected":""}>${esc(t)}</option>`).join("")}</select>
     <span class="wlSrc">${S.src?"Chart: "+esc(S.src):""}</span></div>
@@ -100,6 +103,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   // Zeilen: Texte = Symbole, Objekte = Überschriften
   let rows;if(filt)rows=[{t:`Alle mit ${FL[filt][1].toLowerCase()}em Fähnchen`,c:FL[filt][0]}].concat(srt([...new Set(W.lists.flatMap(x=>x.items).concat(Object.keys(FLAG)))].filter(s=>!isS(s)&&FLAG[s]===filt).sort()));
   else if(V.grp==="flag"){const it=l.items.filter(s=>!isS(s));rows=[];FL.forEach((f,i)=>{if(!i||!f)return;const g=it.filter(s=>FLAG[s]===i);if(g.length)rows.push({t:f[1]+" · "+g.length,c:f[0]},...srt(g))});const g0=it.filter(s=>!FLAG[s]);if(g0.length)rows.push({t:"Ohne Fähnchen · "+g0.length},...srt(g0))}
+  else if(V.grp==="typ"){const it=l.items.filter(s=>!isS(s)),a=it.filter(s=>qOf(s).a),kr=it.filter(s=>!qOf(s).a);rows=[];if(kr.length)rows.push({t:"Krypto / Perpetuals · "+kr.length},...srt(kr));if(a.length)rows.push({t:"Aktien · "+a.length},...srt(a))}
   else if(V.grp==="none"||sorted)rows=srt(l.items.filter(s=>!isS(s)));
   else rows=l.items.map((s,i)=>isS(s)?{t:s.slice(3),i}:s);
   // Zeilen ohne Perp-Kurs: Kurs der echten Aktie aus dem Coin-Scanner zeigen (stündlich, nicht live); auf Wunsch Zeilen ganz ohne Kurs ausblenden

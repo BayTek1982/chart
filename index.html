@@ -447,7 +447,8 @@ const S={ext:null,cur:saved.cur||"orig",fx:null,F:1,ccy:"$",kO:[],tool:null,dw:[
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(SLOT||!h.get("s"))return;
   S.mkt=h.get("m")==="a"?"a":"k";S.sym=h.get("s").toUpperCase().replace(/[^A-Z0-9.^=\-]/g,"");if(h.get("tf"))S.tf=h.get("tf");if(!TF[S.mkt].includes(S.tf))S.tf="1d";
   if(h.get("i"))try{S.cfg=CC.withDefaults(JSON.parse(decodeURIComponent(escape(atob(h.get("i"))))))}catch(e){}
-  if(h.get("d"))try{S.hashDw=JSON.parse(decodeURIComponent(escape(atob(h.get("d")))))}catch(e){}})();
+  if(h.get("d"))try{S.hashDw=JSON.parse(decodeURIComponent(escape(atob(h.get("d")))))}catch(e){}
+  if(h.get("gz"))try{S.gz=JSON.parse(decodeURIComponent(escape(atob(h.get("gz")))));S.gz.sym=S.sym;S.gz.mkt=S.mkt}catch(e){S.gz=null}})();
 if(!TF[S.mkt].includes(S.tf))S.tf="1d";
 const save=()=>{if(SLOT){LS("blc1s"+SLOT,{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cur:S.cur});const m=LS("blc1")||{};LS("blc1",Object.assign(m,{cfg:S.cfg,profiles:S.profiles,mag5:S.mag}))}
   else LS("blc1",{ex:S.ex,mkt:S.mkt,sym:S.sym,tf:S.tf,cfg:S.cfg,profiles:S.profiles,cur:S.cur,mag5:S.mag})};
@@ -683,7 +684,7 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   // Fehler in einem Teil dürfen nicht den ganzen Chart anhalten: Canvas-Zustand zurücksetzen und weiterzeichnen
   const safe=f=>{try{f()}catch(e){console.error(e);cv.width=cv.width;ctx.setTransform(d,0,0,d,0,0)}};
   safe(()=>{L=CC.draw(ctx,r.width,r.height,{cd:cdText(),lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO})});
-  if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));if(L&&S.k.length)safe(()=>dwExtra(th));
+  if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));if(L&&S.k.length)safe(()=>dwExtra(th));if(L&&S.k.length)safe(()=>gzDraw(th));gzChip();
   // Setz-Markierung: Ring an der Stelle, an der der nächste Punkt landet (Handy und PC)
   if(L&&S.cross&&S.cross.y<L.mainH&&S.cross.x<=L.pw&&(PLC||S.pend||(S.tool&&plcOk(S.tool))))safe(()=>{ctx.save();ctx.lineWidth=2;ctx.strokeStyle=th.bg;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,7.5,0,7);ctx.stroke();ctx.strokeStyle=th.gold;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,6,0,7);ctx.stroke();ctx.fillStyle=th.gold;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,1.8,0,7);ctx.fill();ctx.restore()});if(L&&S.k.length&&!S.indHide){safe(()=>bsiPaint(th));safe(()=>bftPaint(th));safe(()=>bft2Paint(th));safe(()=>bwiPaint(th));if(window.bpsPaint)safe(()=>bpsPaint(th));safe(()=>bodMain(th));safe(()=>bodPaint(th))}safe(heatPaint);safe(rkPaint);{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&S._krN>0&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}if(PLC&&!S.tool&&!S.pend)plcEnd();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man);
   // 🔔＋ am Fadenkreuz (wie das „+“ an der Preisskala in TradingView): Alarm beim Preis unter dem Fadenkreuz
@@ -903,6 +904,21 @@ function saveDw(){S.dwShared=false;LS(dwKey(),S.dw);undoPush()}
 const nid=()=>Math.random().toString(36).slice(2,9);
 // gespeichert wird in Originalwährung, angezeigt in der aktuellen
 // Zusatz zu den Zeichnungen: Datum/Uhrzeit der Punkte an der unteren Achse (gewählte oder gerade gesetzte Zeichnung) und die Mehrfach-Auswahl
+// ---------- Level aus der Golden Zone des Scanners (Link mit gz=…) ----------
+// Zeichnet die Level der Karte genau so, wie sie im Scanner berechnet wurden; ✕ im Schild oben entfernt sie wieder.
+function gzOn(){return S.gz&&S.gz.sym===S.sym&&S.gz.mkt===S.mkt}
+function gzDraw(th){if(!gzOn())return;const g=S.gz,F=S.F||1,X=t=>t==null?0:(CC.tIdx(S.k,t,S.tf)-L.from+.5)*L.cw,top=L.mT!=null?L.mT:0,bot=L.mB!=null?L.mB:L.mainH;
+  ctx.save();ctx.beginPath();ctx.rect(0,top,L.pw,bot-top);ctx.clip();
+  (g.B||[]).forEach(([y1,y2,t])=>{const x0=Math.max(0,X(t)),a=L.Y(y1*F),b=L.Y(y2*F);ctx.fillStyle="rgba(240,163,58,.14)";ctx.fillRect(x0,Math.min(a,b),L.pw-x0,Math.abs(b-a))});
+  const labs=[];(g.L||[]).forEach(([y,lab,col,dash,t,w])=>{const yy=L.Y(y*F);if(yy<top-2||yy>bot+2)return;const x0=Math.max(0,X(t));
+    ctx.strokeStyle=col||th.gold;ctx.lineWidth=Math.max(1,(w||1)*1.2);ctx.setLineDash(dash?String(dash).split(/\s+/).map(Number):[]);ctx.beginPath();ctx.moveTo(x0,yy);ctx.lineTo(L.pw,yy);ctx.stroke();labs.push({yy,col,t:`◎ ${lab}  ${CC.fmt(y*F)}`})});
+  ctx.setLineDash([]);ctx.font='600 11px "JetBrains Mono",monospace';ctx.textBaseline="middle";labs.sort((a,b)=>a.yy-b.yy);let prev=-1e9;
+  labs.forEach(o=>{const y=Math.max(o.yy,prev+14);prev=y;const tw=ctx.measureText(o.t).width+10,x=L.pw-tw-6;ctx.fillStyle=th.bg;ctx.globalAlpha=.85;ctx.fillRect(x,y-7,tw,14);ctx.globalAlpha=1;ctx.fillStyle=o.col||th.gold;ctx.fillText(o.t,x+5,y)});
+  ctx.restore()}
+function gzChip(){let c=$("gzChip");if(!gzOn()){if(c)c.remove();return}
+  if(!c){c=document.createElement("div");c.id="gzChip";c.style.cssText="position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:8px;padding:5px 6px 5px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--gold,#f0a33a);color:var(--fg);font:600 12px var(--f-body,system-ui);box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:nowrap";
+    c.innerHTML=`<span>◎ ${S.gz.n||"Golden Zone"} aus dem Scanner${S.gz.tf&&S.gz.tf!==S.tf?` (berechnet im ${String(S.gz.tf).toUpperCase()})`:""}</span><button type="button" title="Level entfernen (zurücksetzen)" style="border:0;border-radius:999px;width:24px;height:24px;cursor:pointer;background:var(--chip);color:var(--fg);font-size:13px">✕</button>`;
+    c.querySelector("button").onclick=()=>{S.gz=null;try{const h=new URLSearchParams(location.hash.slice(1));h.delete("gz");history.replaceState(null,"","#"+h.toString())}catch(e){}c.remove();paint()};$("box").appendChild(c)}}
 function dwExtra(th){const X=t=>(CC.tIdx(S.k,t,S.tf)-L.from+.5)*L.cw,list=dispDw(),pid=S.pend&&S.pend.id,ax=[];
   list.forEach(d=>{if((d.id===S.sel||(pid!=null&&d.id===pid))&&d.type!=="hl"&&d.type!=="brush"){d.pts.forEach(q=>ax.push(q.t));if(d.type==="pos"&&d.t2)ax.push(d.t2)}});
   if(ax.length){ctx.save();ctx.font='600 10px "JetBrains Mono",monospace';ctx.textBaseline="middle";ctx.textAlign="center";const y=L.H-L.TA,xs=[...new Set(ax)].map(t=>({t,x:X(t)})).filter(o=>o.x>=0&&o.x<=L.pw).sort((a,b)=>a.x-b.x);

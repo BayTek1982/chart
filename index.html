@@ -94,6 +94,16 @@ html.emb #axAl{display:none!important}
 .it .pr label.wide{flex-basis:100%}
 input[type=checkbox]{accent-color:var(--gold);width:18px;height:18px}
 .prof{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.prof3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.prof3>div{display:grid;gap:5px;min-width:0}
+.prof3 button{width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:9px 6px;font-size:.8rem}.prof3 .sv{font-size:.74rem;padding:6px;color:var(--muted)}.profR{margin-top:6px;width:100%;font-size:.76rem;padding:7px 9px}
+.indT{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.indT .ic{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:84px;padding:14px 6px 9px;border:1px solid var(--line);border-radius:12px;background:var(--chip);cursor:pointer;text-align:center;color:var(--fg);user-select:none;-webkit-user-select:none}
+.indT .ic.on{border-color:var(--gold);background:var(--goldbg)}
+.indT .ic i{font:700 1.02rem var(--f-num);font-style:normal;line-height:1;color:var(--muted)}.indT .ic.on i{color:var(--gold)}
+.indT .ic span{font-size:.74rem;font-weight:600;line-height:1.2;overflow-wrap:anywhere}
+.indT .ic .gear{position:absolute;top:1px;right:1px;border:0;background:none;color:var(--muted);font-size:1rem;line-height:1;padding:6px;cursor:pointer;border-radius:8px}.indT .ic .gear:hover{color:var(--fg);background:var(--panel)}
+.indT .ic .dot{position:absolute;top:9px;left:9px;width:8px;height:8px;border-radius:50%;background:var(--line)}.indT .ic.on .dot{background:var(--up)}
+.indBk{width:100%;text-align:left;margin-bottom:4px}.indHint{font-size:.72rem;color:var(--muted);margin:6px 2px 0}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:9px;font-weight:600;font-size:.88rem;z-index:50;pointer-events:none}
 footer{font-size:.76rem;color:var(--muted)}
 
@@ -187,6 +197,9 @@ html .tools.c3{grid-template-columns:repeat(3,42px)!important}
 html .tools.c2s button{height:34px}
 @media (pointer:coarse){html .tools.c3{grid-template-columns:repeat(3,46px)!important}}
 html.emb .tools{grid-template-columns:repeat(3,30px)!important}
+html .tools{grid-auto-flow:row dense}html .tools .pr2{grid-column:span 2;display:flex;gap:4px}html.emb .tools .pr2{gap:2px}
+#msBar{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:8;display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:5px 8px 5px 12px;font-size:.8rem;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.35);white-space:nowrap}
+#msBar button{border:1px solid var(--line);background:var(--chip);color:var(--fg);border-radius:7px;padding:5px 9px;font:inherit;cursor:pointer}#msBar button[data-m="del"]{border-color:#f23645;color:#f23645}
 /* Setz-Modus am Handy: Hinweisleiste oben im Chart */
 #plcBar{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:10px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 8px 6px 10px;box-shadow:0 6px 18px rgba(0,0,0,.4);font-size:.82rem}
 #plcBar[hidden]{display:none}#plcBar b{background:var(--chip);border-radius:7px;padding:4px 8px;white-space:nowrap;font-family:var(--f-num)}#plcBar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#plcBar button{border:0;background:none;color:var(--fg);font-size:1.1rem;cursor:pointer;padding:4px 6px}
@@ -300,7 +313,8 @@ html.emb #toolTg{width:32px;height:28px;font-size:.85rem;bottom:26px}
 html.emb .ebar{top:4px;right:78px;max-width:calc(100% - 84px);padding:3px 6px;gap:4px 6px;font-size:.7rem}html.emb .ebar select,html.emb .ebar button{font-size:.68rem;padding:2px 5px}html.emb .ebar input[type=color]{width:24px;height:20px}
 html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66rem}html.emb #bodBox{display:none}
 .wl{padding:10px 12px;font-size:.86rem}
-.wlTop{display:flex;gap:6px;align-items:center}.wlTop select{flex:1;min-width:0;background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:6px}
+.wlTop{display:flex;gap:6px;align-items:center}
+.wlQ{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}.wlQ button{flex:none;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--fg);font:700 .68rem var(--f-num);cursor:pointer;padding:0}.wlQ button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}.wlTop select{flex:1;min-width:0;background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:6px}
 .wlTop .btn{padding:6px 9px;font-size:.8rem}.wlTop .btn.on{border-color:var(--acc,#f0a030)}
 .wlEx select{background:var(--bg);color:var(--fg,inherit);border:1px solid var(--line);border-radius:8px;padding:5px 6px;font:inherit;font-size:.8rem;max-width:60%}
 .wlEx{margin:8px 0 4px;display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:.78rem;opacity:.9}.wlEx button{background:none;border:1px solid var(--line);color:inherit;border-radius:7px;padding:3px 8px;cursor:pointer;font-size:.78rem}
@@ -393,7 +407,7 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 
 <script src="gz-core.js?v=3"></script>
 <script src="ex.js?v=1"></script>
-<script src="chart-core.js?v=38"></script>
+<script src="chart-core.js?v=39"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -669,7 +683,7 @@ function paint(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const 
   // Fehler in einem Teil dürfen nicht den ganzen Chart anhalten: Canvas-Zustand zurücksetzen und weiterzeichnen
   const safe=f=>{try{f()}catch(e){console.error(e);cv.width=cv.width;ctx.setTransform(d,0,0,d,0,0)}};
   safe(()=>{L=CC.draw(ctx,r.width,r.height,{cd:cdText(),lblN:S.lblN,k:S.k,I:S.indHide?Object.assign({},S.I,{ma:[]}):S.I,cfg:S.indHide?hideCfg():S.cfg,tf:S.tf,view:S.view||{from:0,to:1},cross:S.cross,th,minP:S.minP,paneOrd:S.paneOrd,paneH:S.paneH,paneZ:S.paneZ,paneO:S.paneO})});
-  if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));
+  if(L&&S.k.length)safe(()=>CC.drawDrawings(ctx,L,S.k,S.tf,dispDw(),S.sel,th));if(L&&S.k.length)safe(()=>dwExtra(th));
   // Setz-Markierung: Ring an der Stelle, an der der nächste Punkt landet (Handy und PC)
   if(L&&S.cross&&S.cross.y<L.mainH&&S.cross.x<=L.pw&&(PLC||S.pend||(S.tool&&plcOk(S.tool))))safe(()=>{ctx.save();ctx.lineWidth=2;ctx.strokeStyle=th.bg;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,7.5,0,7);ctx.stroke();ctx.strokeStyle=th.gold;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,6,0,7);ctx.stroke();ctx.fillStyle=th.gold;ctx.beginPath();ctx.arc(S.cross.x,S.cross.y,1.8,0,7);ctx.fill();ctx.restore()});if(L&&S.k.length&&!S.indHide){safe(()=>bsiPaint(th));safe(()=>bftPaint(th));safe(()=>bft2Paint(th));safe(()=>bwiPaint(th));if(window.bpsPaint)safe(()=>bpsPaint(th));safe(()=>bodMain(th));safe(()=>bodPaint(th))}safe(heatPaint);safe(rkPaint);{let m=LWN;(L&&L.lbR||[]).forEach(r=>{if(r.w>m)m=r.w});const old=S.lblW;S.lblW=m;if(S.keepR&&S._krN>0&&m>old+20&&!S._kr){S._kr=1;requestAnimationFrame(()=>{S._kr=0;paint()})}}if(PLC&&!S.tool&&!S.pend)plcEnd();renderEbar();ohlc();$("autoB").hidden=!(S.view&&S.view.man);
   // 🔔＋ am Fadenkreuz (wie das „+“ an der Preisskala in TradingView): Alarm beim Preis unter dem Fadenkreuz
@@ -726,6 +740,8 @@ const onAxis=(x,y)=>L&&x>L.pw&&y<L.mainH;
 function setMan(){if(S.view&&!S.view.man&&L){S.view.man=true;S.view.lo=L.lo;S.view.hi=L.hi}}
 function scaleY(f){setMan();const v=S.view,mid=(v.lo+v.hi)/2,half=(v.hi-v.lo)/2*f;v.lo=mid-half;v.hi=mid+half}
 cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
+  if(e.pointerType==="mouse"&&(e.ctrlKey||e.metaKey)&&!S.tool&&!S.pend&&!PLC){MS={x0:e.offsetX,y0:e.offsetY,x1:e.offsetX,y1:e.offsetY,base:S.msel.slice(),moved:false};S.sel=null;drag=null;return}
+  if(S.msel.length){S.msel=[];msBar()}
   // Setz-Modus (Handy): ein Finger bewegt die Markierung, zwei Finger zoomen wie gewohnt
   if(PLC&&e.pointerType==="touch"){if(ptrs.size===1){PLC.g={x:e.offsetX,y:e.offsetY,px:PLC.x,py:PLC.y,moved:false};drag=null;return}PLC.g=null}
   if(ptrs.size===1&&!S.tool&&!S.pend&&paneDown(e.offsetX,e.offsetY)){drag=null;return}
@@ -735,6 +751,7 @@ cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);ptrs.set
   if(ptrs.size===1&&S.view)drag={x:e.offsetX,y:e.offsetY,from:S.view.from,to:S.view.to,lo:L?L.lo:0,hi:L?L.hi:1,man:S.view.man,moved:false,vert:false,touch:e.pointerType==="touch",axis:onAxis(e.offsetX,e.offsetY),sub:(L&&e.offsetY>L.mainH&&L.panes&&L.panes.find(q=>!q.mini&&e.offsetY>q.top&&e.offsetY<q.top+q.h))||null};if(drag&&drag.sub)drag.po=S.paneO[drag.sub.s]||0;
   if(ptrs.size===2)clearTimeout(holdT);if(ptrs.size===2&&S.view){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),from:S.view.from,to:S.view.to,cx:(a.x+b.x)/2};drag=null}});
 cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
+  if(MS){if(e.buttons===0){MS=null;msBar();paint();return}MS.x1=e.offsetX;MS.y1=e.offsetY;if(Math.hypot(MS.x1-MS.x0,MS.y1-MS.y0)>4)MS.moved=true;if(MS.moved)S.msel=[...new Set(MS.base.concat(msHits(MS)))];cv.style.cursor="crosshair";paint();return}
   if(PLC&&PLC.g&&ptrs.size===1&&e.pointerType==="touch"){const g=PLC.g,dx=e.offsetX-g.x,dy=e.offsetY-g.y;if(Math.hypot(dx,dy)>8)g.moved=true;if(g.moved&&L){PLC.x=Math.max(0,Math.min(L.pw-1,g.px+dx));PLC.y=Math.max(0,Math.min(L.mainH-1,g.py+dy));plcShow()}return}
   {const pm=paneMove(e.offsetX,e.offsetY);if(pm===true)return;if(pm==="hover"&&!drag)return}
   if(dwMove(e.offsetX,e.offsetY,ptrs.has(e.pointerId)))return;
@@ -754,6 +771,7 @@ cv.addEventListener("pointermove",e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointe
 // Vorschau beim Zeichnen (auch mit der Maus): das Fadenkreuz steht dort, wo der Punkt gesetzt würde – es rastet je nach Magnet-Stufe sichtbar an Hoch/Tief/Open/Close ein
 function snapCross(x,y){if(!L||!S.k.length||!S.view||x>L.pw||y>L.mainH)return{x,y};const pt=toPt(x,y);return{x:Math.max(0,Math.min(L.pw-1,(CC.tIdx(S.k,pt.t,S.tf)-S.view.from+.5)*L.cw)),y:L.Y(pt.p*S.F)}}
 const up=e=>{ptrs.delete(e.pointerId);clearTimeout(holdT);
+  if(MS){if(!MS.moved){const h=msHits({x0:MS.x0-2,x1:MS.x0+2,y0:MS.y0-2,y1:MS.y0+2}).pop();if(h!=null)S.msel=S.msel.includes(h)?S.msel.filter(z=>z!==h):S.msel.concat(h)}MS=null;msBar();paint();return}
   if(PLC&&PLC.g){const g=PLC.g;PLC.g=null;if(!g.moved&&e.type==="pointerup")plcTap();if(!ptrs.size)drag=null;return}
   if(drag&&drag.xl){if(!drag.moved){S.xLock=false;S.cross=null;lastTap=null;paint()}if(!ptrs.size)drag=null;return}
   if(drag&&drag.locked){if(!ptrs.size)drag=null;return}if(drag&&drag.sub&&drag.moved)LS("blcPO",S.paneO);if(paneUp()){cv.style.cursor="crosshair";return}if(dwUp(e.offsetX,e.offsetY))return;if(ptrs.size<2)pinch=null;if(drag&&!drag.moved&&drag.touch&&!drag.axis){const now=Date.now();
@@ -792,7 +810,7 @@ const TCAT=[["trend","Trendtools"],["fib","Fibonacci"],["must","Muster"],["mess"
 const TOOLDEF=[["tl","╱","Trendlinie","trend"],["xline","⤡","Verlängerte Linie (in beide Richtungen endlos)","trend"],["ray","⟶","Horizontaler Strahl","trend"],["hl","─","Horizontale Linie","trend"],["vl","│","Vertikale Linie","trend"],["xl","┼","Kreuzlinie (waagerecht + senkrecht)","trend"],["chan","⫽","Paralleler Kanal","trend"],["info","ℹ","Info-Linie (Abstand in Preis, Prozent, Kerzen und Zeit)","trend"],["arrow","↗","Pfeil","trend"],
   ["fib","F","Fib-Retracement (SK-Level)","fib"],["fibx","F+","Fib-Erweiterung (3 Punkte: Start, Ende, Rücksetzer)","fib"],
   ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)","must"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)","must"],
-  ["long","L↑","Long-Position","mess"],["short","S↓","Short-Position","mess"],["measure","↔","Messen","mess"],["prange","⇕","Preisbereich","mess"],["drange","⇔","Datumsbereich","mess"],["vpr","▥","Volumenprofil für einen Bereich (POC, VAH, VAL)","mess"],
+  ["long","L↑","Long-Position","mess"],["short","S↓","Short-Position","mess"],["measure","📏","Messen (Maßband: Prozent, Preis, Kerzen)","mess"],["prange","⇕","Preisbereich","mess"],["drange","⇔","Datumsbereich","mess"],["vpr","▥","Volumenprofil für einen Bereich (POC, VAH, VAL)","mess"],
   ["rect","▭","Rechteck / Zone","form"],["ell","◯","Kreis / Ellipse","form"],["tri","△","Dreieck (3 Punkte)","form"],["brush","〰","Pinsel (frei zeichnen)","form"],["hlt","🖍","Leuchtstift (breit, durchscheinend)","form"],
   ["text","T","Text","anm"],["plabel","🏷","Preis-Label (Preis der Stelle, auf Wunsch mit Text)","anm"],["aup","⬆","Pfeil nach oben (Markierung)","anm"],["adn","⬇","Pfeil nach unten (Markierung)","anm"]];
 const TFAVDEF=["tl","hl","xl","ray","vl","rect","text","fib","long","short","measure","chan","arrow","ell","brush","fibx","prange","drange","abc","w5","xline","info","plabel","vpr"];
@@ -827,7 +845,9 @@ function eyeMenu(btn){let m=$("eyeMenu");if(m){m.remove();return}m=document.crea
     draw();renderTools();legend();paint()};
   setTimeout(()=>document.addEventListener("click",function cl(e){if(!m.contains(e.target)){m.remove();document.removeEventListener("click",cl)}}),0)}
 document.documentElement.classList.toggle("indHide",S.indHide);
-function renderTools(){$("tools").innerHTML=TOOLS().map(t=>t[0]==="-"?"<hr>":`<button data-tool="${t[0]}" title="${t[2]}" class="${(t[0]==="sel"&&!S.tool)||S.tool===t[0]||(t[0]==="mag"&&+S.mag)||(t[0]==="hide"&&(S.dwHide||S.indHide||S.posHide))?"on":""}">${t[1]}${t[0]==="mag"&&+S.mag?`<sup class="magN">${S.mag}</sup>`:""}</button>`).join("")}
+// Paare, die in der Leiste immer nebeneinander stehen (Fib/Fib+, Wellen 0C/1-5, Long/Short)
+const TPAIR={fib:"fibx",abc:"w5",long:"short"};
+function renderTools(){const T=TOOLS();$("tools").innerHTML=T.map((t,i)=>t[0]==="-"?"<hr>":`${T[i+1]&&TPAIR[t[0]]===T[i+1][0]?'<span class="pr2">':""}<button data-tool="${t[0]}" title="${t[2]}" class="${(t[0]==="sel"&&!S.tool)||S.tool===t[0]||(t[0]==="mag"&&+S.mag)||(t[0]==="hide"&&(S.dwHide||S.indHide||S.posHide))?"on":""}">${t[1]}${t[0]==="mag"&&+S.mag?`<sup class="magN">${S.mag}</sup>`:""}</button>${T[i-1]&&TPAIR[T[i-1][0]]===t[0]?"</span>":""}`).join("")}
 $("tools").addEventListener("click",e=>{const b=e.target.closest("[data-tool]");if(!b)return;const t=b.dataset.tool;
   if(t==="mag"){S.mag=((+S.mag||0)+1)%6;save();toast(["Magnet aus","Magnet Stufe 1 – rastet nur ganz nah ein","Magnet Stufe 2 – rastet nah ein","Magnet Stufe 3 – rastet in der Nähe ein","Magnet Stufe 4 – rastet weit ein","Magnet Stufe 5 – rastet immer an Hoch/Tief/Open/Close ein"][S.mag])}
   else if(t==="theme"){colMenu(b);return}
@@ -882,6 +902,26 @@ function loadDw(){if(S.hashDw){S.dw=dwClean(S.hashDw);S.hashDw=null;S.dwShared=t
 function saveDw(){S.dwShared=false;LS(dwKey(),S.dw);undoPush()}
 const nid=()=>Math.random().toString(36).slice(2,9);
 // gespeichert wird in Originalwährung, angezeigt in der aktuellen
+// Zusatz zu den Zeichnungen: Datum/Uhrzeit der Punkte an der unteren Achse (gewählte oder gerade gesetzte Zeichnung) und die Mehrfach-Auswahl
+function dwExtra(th){const X=t=>(CC.tIdx(S.k,t,S.tf)-L.from+.5)*L.cw,list=dispDw(),pid=S.pend&&S.pend.id,ax=[];
+  list.forEach(d=>{if((d.id===S.sel||(pid!=null&&d.id===pid))&&d.type!=="hl"&&d.type!=="brush"){d.pts.forEach(q=>ax.push(q.t));if(d.type==="pos"&&d.t2)ax.push(d.t2)}});
+  if(ax.length){ctx.save();ctx.font='600 10px "JetBrains Mono",monospace';ctx.textBaseline="middle";ctx.textAlign="center";const y=L.H-L.TA,xs=[...new Set(ax)].map(t=>({t,x:X(t)})).filter(o=>o.x>=0&&o.x<=L.pw).sort((a,b)=>a.x-b.x);
+    if(xs.length>1){ctx.fillStyle="rgba(41,98,255,.25)";ctx.fillRect(xs[0].x,y+2,xs[xs.length-1].x-xs[0].x,L.TA-4)}
+    let px=-1e9;xs.forEach(o=>{const tl=CC.tlab(o.t,S.tf,true),tw=ctx.measureText(tl).width+10,x0=Math.max(0,Math.min(L.pw-tw,o.x-tw/2));if(x0<px+2)return;px=x0+tw;ctx.fillStyle="#2962ff";ctx.fillRect(x0,y+2,tw,L.TA-4);ctx.fillStyle="#fff";ctx.fillText(tl,x0+tw/2,y+L.TA/2)});ctx.restore()}
+  if(S.msel.length){const ids=new Set(S.msel);let n=0;ctx.save();ctx.setLineDash([]);list.forEach(d=>{if(!ids.has(d.id))return;n++;let hs=CC.dwHandles(d,L,S.k,S.tf);if(!hs.length)hs=[d.pts[0],d.pts[d.pts.length-1]].map(q=>({x:X(q.t),y:L.Y(q.p)}));
+      hs.forEach(h=>{ctx.fillStyle=th.gold;ctx.strokeStyle=th.bg;ctx.lineWidth=1.5;ctx.beginPath();ctx.rect(h.x-5,h.y-5,10,10);ctx.fill();ctx.stroke()})});ctx.restore();if(!n&&!MS){S.msel=[];msBar()}}
+  if(MS){ctx.save();const x=Math.min(MS.x0,MS.x1),y=Math.min(MS.y0,MS.y1),w=Math.abs(MS.x1-MS.x0),h=Math.abs(MS.y1-MS.y0);ctx.fillStyle="rgba(240,180,41,.10)";ctx.fillRect(x,y,w,h);ctx.strokeStyle=th.gold;ctx.lineWidth=1;ctx.setLineDash([5,4]);ctx.strokeRect(x+.5,y+.5,w,h);ctx.restore()}}
+// ---------- Mehrfach-Auswahl: Strg halten und mit gedrückter Maus über den Chart ziehen markiert alle Zeichnungen im Rahmen; Strg+Klick nimmt eine einzelne dazu oder heraus ----------
+let MS=null;S.msel=[];
+function msHits(r){const out=[];if(!L||!S.k.length)return out;const x0=Math.min(r.x0,r.x1),x1=Math.max(r.x0,r.x1),y0=Math.min(r.y0,r.y1),y1=Math.max(r.y0,r.y1),st=Math.max(7,Math.min(12,Math.sqrt((x1-x0)*(y1-y0)/6000))),X=t=>(CC.tIdx(S.k,t,S.tf)-L.from+.5)*L.cw;
+  for(const d of dispDw()){let hit=d.type==="hl"?(y=>y>=y0&&y<=y1)(L.Y(d.pts[0].p)):d.pts.some(q=>{const x=X(q.t),y=L.Y(q.p);return x>=x0&&x<=x1&&y>=y0&&y<=y1});
+    for(let x=x0;!hit&&x<=x1;x+=st)for(let y=y0;y<=y1;y+=st)if(CC.dwHit(d,L,S.k,S.tf,x,y)){hit=true;break}
+    if(hit)out.push(d.id)}return out}
+function msBar(){let b=$("msBar");const n=S.msel.length;if(!n){if(b)b.remove();return}
+  if(!b){b=document.createElement("div");b.id="msBar";$("box").appendChild(b);b.addEventListener("pointerdown",e=>e.stopPropagation());b.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;if(t.dataset.m==="del")msDel();else{S.msel=[];msBar();paint()}})}
+  b.innerHTML=`<span>${n} markiert</span><button type="button" data-m="del" title="Markierte Zeichnungen löschen (Entf)">🗑 Löschen</button><button type="button" data-m="x" title="Auswahl aufheben (Esc)">✕</button>`}
+function msDel(){const ids=new Set(S.msel),lk=S.dw.filter(d=>ids.has(d.id)&&d.lock).length,n=S.dw.filter(d=>ids.has(d.id)&&!d.lock).length;S.dw=S.dw.filter(d=>!ids.has(d.id)||d.lock);if(ids.has(S.sel))S.sel=null;S.msel=[];if(n)saveDw();msBar();paint();
+  toast(`${n} Zeichnung${n===1?"":"en"} gelöscht${lk?` · ${lk} gesperrte bleib${lk===1?"t":"en"} stehen`:""} · Strg+Z holt sie zurück`)}
 function dispDw(){const F=S.F;if(S.dwHide&&S.posHide)return[];let src=S.dwHide?S.dw.filter(d=>d.type==="pos"):S.posHide?S.dw.filter(d=>d.type!=="pos"):S.dw;if(window.dwVis)src=src.filter(d=>dwVis(d)||d===S.pend);if(F===1)return src;return src.map(d=>({...d,pts:d.pts.map(q=>({t:q.t,p:q.p*F})),tp:d.tp!=null?d.tp*F:d.tp,sl:d.sl!=null?d.sl*F:d.sl,off:d.off!=null?d.off*F:d.off}))}
 function toPt(x,y){const k=S.k,i=Math.round(S.view.from+x/L.cw-0.5);let t=CC.idxT(k,S.view.from+x/L.cw-0.5,S.tf),p=L.P(y);
   if(S.mag&&i>=0&&i<k.length){const lim=[0,10,20,36,60,1e9][+S.mag]||36;let best=null;[k[i].o,k[i].h,k[i].l,k[i].c].forEach(v=>{const d=Math.abs(L.Y(v)-y);if(d<lim&&(!best||d<best.d))best={d,v}});if(best){p=best.v;t=k[i].t}}
@@ -944,8 +984,9 @@ addEventListener("keydown",e=>{if(e.target.matches("input,select,textarea"))retu
       d.pts=d.pts.map(q=>({t:q.t+dt,p:q.p+dp}));if(d.t2!=null)d.t2+=dt;if(d.tp!=null)d.tp+=dp;if(d.sl!=null)d.sl+=dp;saveDw();paint();return}}
   if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.key.toLowerCase()==="z"||e.key.toLowerCase()==="y")){e.preventDefault();dwUndo(e.key.toLowerCase()==="y"||e.shiftKey?1:-1);return}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"&&S.sel){e.preventDefault();const b=$("ebar").querySelector('[data-e="copy"]');if(b)b.click();return}
+  if((e.key==="Delete"||e.key==="Backspace")&&S.msel.length){e.preventDefault();msDel();return}
   if((e.key==="Delete"||e.key==="Backspace")&&S.sel){S.dw=S.dw.filter(z=>z.id!==S.sel);S.sel=null;saveDw();paint()}
-  if(e.key==="Escape"){if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;S.sel=null;plcEnd();S.cross=null;renderTools();paint()}});
+  if(e.key==="Escape"){if(S.msel.length){S.msel=[];msBar()}if(S.pend){S.dw=S.dw.filter(z=>z!==S.pend);S.pend=null}S.tool=null;S.sel=null;plcEnd();S.cross=null;renderTools();paint()}});
 
 let FAV;try{FAV=JSON.parse(localStorage.getItem("blcFav"))}catch(e){}if(!Array.isArray(FAV)||!FAV.length)FAV=["5m","15m","1h","4h","1d","1w"];
 // ---------- Oben: Markt, Symbol, Zeitrahmen ----------
@@ -1233,27 +1274,41 @@ function pInput(key,p){const v=S.cfg[key][p.k],id=`${key}.${p.k}`;
   if(p.type==="text")return`<label class="${p.wide?"wide":""}">${p.t} <input type="text" data-p="${id}" value="${esc(v)}"></label>`;
   return`<label>${p.t} <input type="number" data-p="${id}" value="${esc(v)}" min="${p.min??""}" max="${p.max??""}" step="${p.step||1}"></label>`}
 function normQ(t){return String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss").trim()}
-function renderDlg(){const c=S.cfg,Q=normQ($("indSrch").value);let h=Q?"":`<div class="grp"><div class="label">Profile</div><div class="prof">`+[1,2,3].map(n=>{const p=S.profiles[n];
-    return`<button class="btn ghost" data-load="${n}" ${p?"":"disabled"} title="${p?"Laden":"leer"}">${p?esc(p.name):"Profil "+n+" (leer)"}</button>`}).join("")+
-    `</div><div class="prof" style="margin-top:6px">`+[1,2,3].map(n=>`<button class="btn ghost" data-save="${n}" style="font-size:.76rem;padding:6px 9px">💾 als Profil ${n}</button>`).join("")+
-    `<button class="btn ghost" data-reset style="font-size:.76rem;padding:6px 9px">↺ Standard</button></div></div>`;
-  h+=`<div class="grp"><div class="label">Pivot-Länge (Hochs/Tiefs)</div><div class="it"><div class="pr"><label><input type="checkbox" data-p="pivot.auto" ${c.pivot.auto?"checked":""}> automatisch je Zeitrahmen (5m 5 · 15m 10 · 30m 5 · 1H 7 · 2H 10 · 4H 14 · 12H 12 · 1D 12 · 1W 15)</label><label>fest <input type="number" data-p="pivot.len" value="${c.pivot.len}" min="2" max="50"></label></div></div></div>`;
+function renderDlg(){const c=S.cfg,Q=normQ($("indSrch").value);let h=Q?"":`<div class="grp"><div class="label">Profile</div><div class="prof3">`+[1,2,3].map(n=>{const p=S.profiles[n];
+    return`<div><button class="btn ghost" data-load="${n}" ${p?"":"disabled"} title="${p?"„"+esc(p.name)+"“ laden":"Profil "+n+" ist noch leer"}">${p?esc(p.name):"– leer –"}</button><button class="btn ghost sv" data-save="${n}" title="Die jetzigen Einstellungen als Profil ${n} speichern">💾 Profil ${n}</button></div>`}).join("")+
+    `</div><button class="btn ghost profR" data-reset title="Alle Indikatoren auf die Standard-Einstellungen zurücksetzen">↺ Standard</button></div>`;
+  const pivH=`<div class="grp"><div class="label">Pivot-Länge (Hochs/Tiefs)</div><div class="it"><div class="pr"><label><input type="checkbox" data-p="pivot.auto" ${c.pivot.auto?"checked":""}> automatisch je Zeitrahmen (5m 5 · 15m 10 · 30m 5 · 1H 7 · 2H 10 · 4H 14 · 12H 12 · 1D 12 · 1W 15)</label><label>fest <input type="number" data-p="pivot.len" value="${c.pivot.len}" min="2" max="50"></label></div></div></div>`;
   if(Q)h="";
-  SCHEMA.forEach((g,gi)=>{
+  // Übersicht als Kacheln (wie das Werkzeug-Fenster): Antippen schaltet ein/aus, ⚙ öffnet die Einstellungen dieses Indikators
+  const IC={bsi:"BSI",bwi:"BWI",bps:"BPS",bft:"BFT",risk:"0–1",heat:"🔥",bod:"OI",vol:"▮▯▮",vp:"▥",ma1:"MA 1",ma2:"MA 2",ma3:"MA 3",boxes:"▭",dfib:"dFib",lsob:"LSOB"};
+  const tile=(gi,it,on,name)=>`<div class="ic${on?" on":""}" ${it?`data-ti="${it.k}"`:`data-tg="${gi}"`} title="${esc(name)} – antippen = ${on?"aus":"ein"}schalten"><b class="dot"></b><button type="button" class="gear" data-tset="${gi}${it?":"+it.k:""}" title="Einstellungen" aria-label="Einstellungen ${esc(name)}">⚙</button><i>${esc(it?(IC[it.k]||it.k.toUpperCase().slice(0,5)):(IC[SCHEMA[gi].items[0].k]||"★"))}</i><span>${esc(name)}</span></div>`;
+  if(!Q&&!IVW){SCHEMA.forEach((g,gi)=>{if(!g.items.length)return;
+      if(g.own){if(!gi||!SCHEMA[gi-1].own)h+=`<div class="grp"><div class="label">Bayazit Indikatoren</div><div class="indT">`;h+=tile(gi,null,g.items.some(it=>!it.always&&c[it.k].on),g.g.replace(/^Bayazit /,"").replace(/ \(.*$/,""));if(!SCHEMA[gi+1]||!SCHEMA[gi+1].own)h+=`</div></div>`}
+      else h+=`<div class="grp"><div class="label">${esc(g.g)}</div><div class="indT">${g.items.map(it=>tile(gi,it,c[it.k].on,it.ma?`${c[it.k].type} ${c[it.k].len}`:it.t)).join("")}</div></div>`});
+    h+=`<p class="indHint">Antippen = ein- oder ausschalten · ⚙ = Einstellungen · oben suchen findet jede Einstellung</p>`;
+    h+=pivH;$("dlgBody").innerHTML=h;return}
+  if(!Q&&IVW)h=`<button type="button" class="btn ghost indBk" data-tback>← Alle Indikatoren</button>`;
+  SCHEMA.forEach((g,gi)=>{if(!Q&&IVW&&gi!==IVW.gi)return;
     // Suche: Gruppe passt → ganz zeigen; sonst nur passende Indikatoren (Name, Beschreibung oder Einstellung)
     let items=g.items;if(Q&&!normQ(g.g+" "+(g.note||"")).includes(Q)){items=g.items.filter(it=>{const A=it;return normQ((it.t||"")+" "+(it.d||"")+" "+(A?(A.t+" "+A.d+" "+(A.p||[]).map(p=>p.t).join(" ")):"")).includes(Q)});if(!items.length)return}
-    g={...g,items};const op=Q?true:!!GOPEN[g.g],ar=`<span class="ga">${op?"▾":"▸"}</span>`;
+    if(!Q&&IVW&&IVW.k)items=items.filter(it=>it.k===IVW.k);g={...g,items};const op=Q||IVW?true:!!GOPEN[g.g],ar=`<span class="ga">${op?"▾":"▸"}</span>`;
     h+=`<div class="grp${op?"":" zu"}">`+(g.own?(g.items.length?`<div class="gh"><input type="checkbox" data-grp="${gi}" aria-label="${esc(g.g)} an/aus" ${g.items.some(it=>!it.always&&c[it.k].on)?"checked":""}><button type="button" class="gt" data-gt="${esc(g.g)}">${esc(g.g)}${ar}</button></div>`:`<div class="gh off">${esc(g.g)}</div>`)+(op&&g.note?`<p class="gnote">${esc(g.note)}</p>`:""):`<button type="button" class="gt label" data-gt="${esc(g.g)}">${g.g}${ar}</button>`);
     if(!op&&g.items.length){h+=`</div>`;return}g.items.forEach(it=>{const o=c[it.k];
     const params=it.ma?[{k:"type",t:"Art",type:"sel",o:[["EMA","EMA"],["SMA","SMA"]]},{k:"len",t:"Länge",type:"num",min:1,max:500},{k:"col",t:"Farbe",type:"col"}]:(it.p||[]);
     const title=it.ma?`${it.t}: ${o.type} ${o.len}`:it.t;
     h+=`<div class="it" style="margin-top:6px"><div class="hd"><label>${it.always?"":`<input type="checkbox" data-on="${it.k}" ${o.on?"checked":""}>`}<span>${esc(title)}${it.d?`<small>${esc(it.d)}</small>`:""}</span></label>${it.i?`<button type="button" class="ib" data-ib="${it.k}" aria-label="Info">ⓘ</button>`:""}</div>${it.i?`<div class="itx" id="ix-${it.k}" ${S.openInfo===it.k?"":"hidden"}>${esc(it.i)}</div>`:""}${params.length&&(o.on||it.always)?`<div class="pr">${params.map(p=>pInput(it.k,p)).join("")}</div>`:""}</div>`});h+=`</div>`});
   $("dlgBody").innerHTML=h}
-let GOPEN=LS("blcGrpOpen")||{};
+let GOPEN=LS("blcGrpOpen")||{},IVW=null;
+// Kachel antippen = Indikator (oder die ganze Bayazit-Gruppe) ein-/ausschalten
+function indToggle(gi,k){const c=S.cfg;if(k)c[k].on=!c[k].on;else{const g=SCHEMA[gi],ks=g.items.filter(it=>!it.always).map(it=>it.k);if(!ks.length){IVW={gi,k:null};renderDlg();return}
+    if(!ks.some(x=>c[x].on)){let o=g.mem&&g.mem.length?g.mem:ks.filter(x=>CC.DEF[x].on);if(!o.length)o=ks.slice(0,1);o.forEach(x=>c[x].on=true)}else{g.mem=ks.filter(x=>c[x].on);ks.forEach(x=>c[x].on=false)}}
+  save();const sc=$("side").scrollTop;refreshExt().then(()=>{recompute();renderDlg();$("side").scrollTop=sc})}
+$("dlgBody").addEventListener("click",e=>{const g=e.target.closest("[data-tset]");if(g){const [gi,k]=g.dataset.tset.split(":");IVW={gi:+gi,k:k||null};renderDlg();$("side").scrollTop=0;return}
+  if(e.target.closest("[data-tback]")){IVW=null;renderDlg();return}const t=e.target.closest(".indT .ic");if(t)indToggle(t.dataset.tg!=null?+t.dataset.tg:null,t.dataset.ti||null)});
 $("indSrch").addEventListener("input",()=>renderDlg());
 $("dlgBody").addEventListener("click",e=>{const b=e.target.closest("[data-gt]");if(!b)return;const k=b.dataset.gt;GOPEN[k]=!GOPEN[k];LS("blcGrpOpen",GOPEN);renderDlg()});
 function sideOpen(o){$("side").hidden=!o;$("stage").classList.toggle("open",o);["wl","ind","al","ana"].forEach(m=>$(m+"Btn").classList.toggle("on",o&&typeof sideM!=="undefined"&&sideM===m));if(o)renderDlg();paint()}
-$("indBtn").onclick=()=>sideOpen($("side").hidden);$("sideX").onclick=()=>sideOpen(false);
+$("indBtn").onclick=()=>{IVW=null;sideOpen($("side").hidden)};$("sideX").onclick=()=>sideOpen(false);
 $("dlgBody").addEventListener("change",e=>{const t=e.target;
   if(t.dataset.grp){const g=SCHEMA[+t.dataset.grp],ks=g.items.filter(it=>!it.always).map(it=>it.k);
     if(t.checked){let on=g.mem&&g.mem.length?g.mem:ks.filter(k=>CC.DEF[k].on);if(!on.length)on=ks.slice(0,1);on.forEach(k=>S.cfg[k].on=true)}
@@ -2381,7 +2436,7 @@ function bsVP(th){const c=S.cfg.bsi,R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;const 
 </script>
 <script src="bps.js?v=8"></script>
 <script src="dw.js?v=5"></script>
-<script src="wl.js?v=16"></script>
+<script src="wl.js?v=17"></script>
 <script src="al.js?v=4"></script>
 <script src="split.js?v=1"></script>
 </body>

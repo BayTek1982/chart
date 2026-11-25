@@ -597,7 +597,8 @@ function drawDrawings(ctx,L,k,tf,list,sel,th){if(!L||!list||!list.length)return;
         ctx.fillStyle=ra(col,.14);ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));ln(x1,y1,x2,y2,col,1.5);
         const pc=(p[1].p/p[0].p-1)*100,bars=Math.round(tIdx(k,p[1].t,tf)-tIdx(k,p[0].t,tf));
         const t=`${pc>=0?"+":""}${nf(pc,2)} % · ${fmt(p[1].p-p[0].p)} · ${Math.abs(bars)} Kerzen`;ctx.font='700 11px "JetBrains Mono",monospace';const tw=ctx.measureText(t).width;
-        const lx=(x1+x2)/2-tw/2-6,ly=up?Math.min(y1,y2)-18:Math.max(y1,y2)+4;ctx.fillStyle=col;ctx.fillRect(lx,ly,tw+12,15);tx(t,lx+6,ly+7.5,"#fff");break}
+        // Ergebnis mit Abstand über bzw. unter der Box, damit es weder die Griffe noch ein Hoch/Tief-Schild direkt an der Kerze verdeckt
+        const lx=(x1+x2)/2-tw/2-6,top=Math.min(y1,y2),bot=Math.max(y1,y2);let ly=up?top-36:bot+22;if(ly<2)ly=bot+22;if(ly+15>L.mainH-2)ly=top-36;ctx.fillStyle=col;ctx.fillRect(lx,ly,tw+12,17);tx(t,lx+6,ly+8.5,"#fff");break}
       case"chan":{if(p.length<2)break;const x1=X(p[0].t),x2=X(p[1].t),y1=Y(p[0].p),y2=Y(p[1].p),o=Y(p[0].p+(d.off||0))-y1;
         ctx.fillStyle=ra(d.fill||c,(d.fop!=null?+d.fop:8)/100);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x2,y2+o);ctx.lineTo(x1,y1+o);ctx.closePath();ctx.fill();
         ln(x1,y1,x2,y2,c,w,ds);ln(x1,y1+o,x2,y2+o,c,w,ds);ln(x1,y1+o/2,x2,y2+o/2,ra(c,.5),1,[4,4]);break}}

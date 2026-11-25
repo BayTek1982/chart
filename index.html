@@ -1256,14 +1256,14 @@ ALL.bod={k:"bod",t:"OI & Delta Monitor",d:"Open Interest, Volumen-Delta und CVD 
    C("vtOn","17) VP-Tabelle anzeigen"),SL("vtPos","17) Position",POS),SL("vtSz","17) Größe",GR.slice(0,3)),C("vtPoc","17) Spalte POC"),C("vtLage","17) Spalte Lage")],
    i:"Nachbau deines Pattern Scanner V2.5. Standard wie in deinem Code: Trendlinien, Seitwärtskasten, HTF-Level, Volumenprofil-Level und MTF-Trendlinien an; Kerzenmuster, Chart-Pattern und S/R-Zonen aus (Schnellschalter unter 0). Achtung: „Anzeige erst ab Timeframe“ steht wie bei dir auf 15m – auf 1m und 5m bleibt der Chart dann leer. Tippe auf ein Schild für die Erklärung. Tabellen: Doppelklick legt sie in den Hintergrund, noch einmal minimiert, ein drittes Mal normal."}}
  const G=[
-  ["Bayazit Strategie Indikator v2.26","Nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB, Volume Profile, Marktstruktur, Linien/VWAP, Intermarket-Geldfluss, Checkliste. Ohne Alarme.",["bsi"]],
-  ["Bayazit Wellen Indikator V2.30","Nachbau aus deinem Pine-Code: SK-System, Setup-Tabelle mit Positions-Box, MTF-Tabelle, Elliott, RSI-Divergenz, Liquidität. Ohne Alarme.",["bwi"]],
-  ["Bayazit Pattern Scanner V2.5","Nach deinem Pine-Code: Kerzenmuster, Chart-Pattern + SFP, Trendlinien, S/R-Zonen, Seitwärtskasten, HTF-Level, MTF-Trendlinien + Tabelle, Volumenprofil-Level + Tabelle. Ohne Alarme.",["bps"]],
-  ["Bayazit Fibonacci Trend V2.4","Nach deinem Pine-Code: Struktur, Fibonacci, Kerzen nach Trend (mit RSI-Extrem), RSI-Divergenzen, Liquiditäts-Sweeps, Volumenprofil-Level, Haupt-Trendlinien, Linien/VWAP, S/R-Zonen, FVG, Orderblöcke, Risiko-Tabelle. Ohne Alarme.",["bft"]],
-  ["Bayazit Risiko-Indikator (0 bis 1)","",["risk"]],
-  ["Bayazit Hitze (Kurs / 20-Wochen-Schnitt)","Früher „Blasen-Risiko“. Säulen ab 1,0, Farbzonen, Tabelle, Kerzen einfärben. Ohne Alarme.",["heat"]],
-  ["Bayazit OI & Delta Monitor V1.8","Open Interest, ΔOI, Volumen-Delta, CVD und die Tabelle mit Fazit. Ohne Alarme.",["bod"]]];
- const neu=G.map(([g,note,ks])=>({g,note,own:1,items:ks.map(k=>ALL[k])}));
+  ["Strategie Indikator v2.26","Nach deinem Pine-Code: Fibonacci, Golden Zone, MTF-Bias, FVG, LSOB, Volume Profile, Marktstruktur, Linien/VWAP, Intermarket-Geldfluss, Checkliste. Ohne Alarme.",["bsi"]],
+  ["Wellen Indikator V2.30","Nachbau aus deinem Pine-Code: SK-System, Setup-Tabelle mit Positions-Box, MTF-Tabelle, Elliott, RSI-Divergenz, Liquidität. Ohne Alarme.",["bwi"]],
+  ["Pattern Scanner V2.5","Nach deinem Pine-Code: Kerzenmuster, Chart-Pattern + SFP, Trendlinien, S/R-Zonen, Seitwärtskasten, HTF-Level, MTF-Trendlinien + Tabelle, Volumenprofil-Level + Tabelle. Ohne Alarme.",["bps"]],
+  ["Fibonacci Trend V2.4","Nach deinem Pine-Code: Struktur, Fibonacci, Kerzen nach Trend (mit RSI-Extrem), RSI-Divergenzen, Liquiditäts-Sweeps, Volumenprofil-Level, Haupt-Trendlinien, Linien/VWAP, S/R-Zonen, FVG, Orderblöcke, Risiko-Tabelle. Ohne Alarme.",["bft"]],
+  ["Risiko-Indikator (0 bis 1)","",["risk"],1],
+  ["Hitze (Kurs / 20-Wochen-Schnitt)","Früher „Blasen-Risiko“. Säulen ab 1,0, Farbzonen, Tabelle, Kerzen einfärben. Ohne Alarme.",["heat"],1],
+  ["OI & Delta Monitor V1.8","Open Interest, ΔOI, Volumen-Delta, CVD und die Tabelle mit Fazit. Ohne Alarme.",["bod"],1]];
+ const neu=G.map(([g,note,ks,pan])=>({g,note,own:1,pan:!!pan,items:ks.map(k=>ALL[k])}));
  neu.push({g:"Standard",items:["vol","rsi","bb","macd","dfib","lsob","vp","ma1","ma2","ma3","vwap","fib","ms","gz","fvg","ob","boxes"].map(k=>ALL[k])});
  SCHEMA.splice(0,SCHEMA.length,...neu)}
 
@@ -1283,7 +1283,7 @@ function renderDlg(){const c=S.cfg,Q=normQ($("indSrch").value);let h=Q?"":`<div 
   const IC={bsi:"BSI",bwi:"BWI",bps:"BPS",bft:"BFT",risk:"0–1",heat:"🔥",bod:"OI",vol:"▮▯▮",vp:"▥",ma1:"MA 1",ma2:"MA 2",ma3:"MA 3",boxes:"▭",dfib:"dFib",lsob:"LSOB"};
   const tile=(gi,it,on,name)=>`<div class="ic${on?" on":""}" ${it?`data-ti="${it.k}"`:`data-tg="${gi}"`} title="${esc(name)} – antippen = ${on?"aus":"ein"}schalten"><b class="dot"></b><button type="button" class="gear" data-tset="${gi}${it?":"+it.k:""}" title="Einstellungen" aria-label="Einstellungen ${esc(name)}">⚙</button><i>${esc(it?(IC[it.k]||it.k.toUpperCase().slice(0,5)):(IC[SCHEMA[gi].items[0].k]||"★"))}</i><span>${esc(name)}</span></div>`;
   if(!Q&&!IVW){SCHEMA.forEach((g,gi)=>{if(!g.items.length)return;
-      if(g.own){if(!gi||!SCHEMA[gi-1].own)h+=`<div class="grp"><div class="label">Bayazit Indikatoren</div><div class="indT">`;h+=tile(gi,null,g.items.some(it=>!it.always&&c[it.k].on),g.g.replace(/^Bayazit /,"").replace(/ \(.*$/,""));if(!SCHEMA[gi+1]||!SCHEMA[gi+1].own)h+=`</div></div>`}
+      if(g.own){const nx=SCHEMA[gi+1],pv=SCHEMA[gi-1];if(!pv||!pv.own||pv.pan!==g.pan)h+=`<div class="grp"><div class="label">${g.pan?"Panel":"Indikatoren"}</div><div class="indT">`;h+=tile(gi,null,g.items.some(it=>!it.always&&c[it.k].on),g.g.replace(/ \(.*$/,""));if(!nx||!nx.own||nx.pan!==g.pan)h+=`</div></div>`}
       else h+=`<div class="grp"><div class="label">${esc(g.g)}</div><div class="indT">${g.items.map(it=>tile(gi,it,c[it.k].on,it.ma?`${c[it.k].type} ${c[it.k].len}`:it.t)).join("")}</div></div>`});
     h+=`<p class="indHint">Antippen = ein- oder ausschalten · ⚙ = Einstellungen · oben suchen findet jede Einstellung</p>`;
     h+=pivH;$("dlgBody").innerHTML=h;return}
@@ -1298,8 +1298,8 @@ function renderDlg(){const c=S.cfg,Q=normQ($("indSrch").value);let h=Q?"":`<div 
     const title=it.ma?`${it.t}: ${o.type} ${o.len}`:it.t;
     h+=`<div class="it" style="margin-top:6px"><div class="hd"><label>${it.always?"":`<input type="checkbox" data-on="${it.k}" ${o.on?"checked":""}>`}<span>${esc(title)}${it.d?`<small>${esc(it.d)}</small>`:""}</span></label>${it.i?`<button type="button" class="ib" data-ib="${it.k}" aria-label="Info">ⓘ</button>`:""}</div>${it.i?`<div class="itx" id="ix-${it.k}" ${S.openInfo===it.k?"":"hidden"}>${esc(it.i)}</div>`:""}${params.length&&(o.on||it.always)?`<div class="pr">${params.map(p=>pInput(it.k,p)).join("")}</div>`:""}</div>`});h+=`</div>`});
   $("dlgBody").innerHTML=h}
-let GOPEN=LS("blcGrpOpen")||{},IVW=null;
-// Kachel antippen = Indikator (oder die ganze Bayazit-Gruppe) ein-/ausschalten
+let GOPEN=LS("blcGrpOpen")||{},IVW=null;for(const k of Object.keys(GOPEN))if(k.startsWith("Bayazit ")){GOPEN[k.slice(8)]=GOPEN[k];delete GOPEN[k]}
+// Kachel antippen = Indikator (oder die ganze Gruppe) ein-/ausschalten
 function indToggle(gi,k){const c=S.cfg;if(k)c[k].on=!c[k].on;else{const g=SCHEMA[gi],ks=g.items.filter(it=>!it.always).map(it=>it.k);if(!ks.length){IVW={gi,k:null};renderDlg();return}
     if(!ks.some(x=>c[x].on)){let o=g.mem&&g.mem.length?g.mem:ks.filter(x=>CC.DEF[x].on);if(!o.length)o=ks.slice(0,1);o.forEach(x=>c[x].on=true)}else{g.mem=ks.filter(x=>c[x].on);ks.forEach(x=>c[x].on=false)}}
   save();const sc=$("side").scrollTop;refreshExt().then(()=>{recompute();renderDlg();$("side").scrollTop=sc})}

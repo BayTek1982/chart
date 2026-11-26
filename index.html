@@ -976,6 +976,8 @@ function dwMove(x,y,pressed){if(!L)return false;
     // Seiten- und Eck-Griffe (Rechteck & Co.): nur Breite, nur Höhe oder die freie Ecke ziehen
     else if(typeof g.h==="string"&&/^(x0|x1|y0|y1|c01|c10)$/.test(g.h)&&d.pts.length>1){const a=d.pts[0],b=d.pts[1];if(g.h==="x0")a.t=pt.t;else if(g.h==="x1")b.t=pt.t;else if(g.h==="y0")a.p=pt.p;else if(g.h==="y1")b.p=pt.p;else if(g.h==="c01"){a.t=pt.t;b.p=pt.p}else{b.t=pt.t;a.p=pt.p}}
     else d.pts[g.h]=pt;
+    // Fadenkreuz geht beim Ziehen mit (waagerechte Linie + Preis rechts auf der Höhe des gezogenen Punkts), damit man sieht, auf welcher Ebene man gerade ist
+    if(g.moved)S.cross=g.h==null?{x,y}:snapCross(x,y);
     paint();return true}
   if(!pressed&&L){cv.style.cursor=S.tool?"crosshair":hitDw(x,y)?"move":cv.style.cursor}
   return false}

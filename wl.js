@@ -52,15 +52,23 @@ const colIn=document.createElement("input");colIn.type="color";colIn.value="#ffd
 colIn.addEventListener("change",()=>{const c=colIn.value.toLowerCase();if(FL.some(x=>x&&x[0]===c)){toast("Diese Farbe gibt es schon");return}if(FLX.filter(Boolean).length>=12){toast("Höchstens 12 eigene Fähnchen");return}
   const i=FLX.indexOf(null);if(i>=0)FLX[i]=c;else FLX.push(c);sv("blcFlagX",FLX);mkFL();toast("Neues Fähnchen angelegt");if(open())draw();if(typeof legend==="function")legend()});
 // Kurse: OKX = alle Perps in einem Abruf (Änderung seit 0 Uhr UTC wie TradingView), Binance = 24h
+// Tagesänderung bei allen Börsen „seit 0 Uhr UTC“ (wie OKX und TradingView) statt der letzten 24 Stunden: der Eröffnungskurs des Tages wird je Symbol der Listen einmal am Tag aus der Tageskerze geholt und gemerkt
+let DO=ld("blcDayO",null);if(!DO||typeof DO!=="object"||!DO.m||typeof DO.m!=="object")DO={k:"",m:{}};
+function dayApply(q){for(const s in DO.m){const o=DO.m[s],x=q[s];if(x&&o>0&&x.p>0){x.ch=(x.p/o-1)*100;x.d=x.p-o}}}
+async function dayOpen(id,kl,q){const day=Math.floor(Date.now()/864e5),key=id+"|"+day;if(DO.k!==key)DO={k:key,m:{}};dayApply(q);
+  const syms=[...new Set(W.lists.flatMap(l=>l.items).filter(s=>!s.startsWith("###")&&!s.includes(".")))];if(S.mkt==="k"&&S.sym)syms.push(S.sym);
+  const miss=syms.filter(s=>q[s]&&DO.m[s]==null).slice(0,120);if(!miss.length)return;let i=0;
+  const run=async()=>{while(i<miss.length){const s=miss[i++];try{const o=await kl(s,day*864e5);if(DO.k===key)DO.m[s]=o>0?o:0}catch(e){}}};
+  Promise.all([run(),run(),run(),run()]).then(()=>{if(DO.k!==key)return;sv("blcDayO",DO);dayApply(Q);if(open()&&!imp&&!menu)draw()})}
 async function quotes(){if(qBusy)return;qBusy=true;try{
   const A=typeof EX!=="undefined"&&EX.get(S.ex);
-  if(A){const q={};(await A.tick()).forEach(x=>{q[x.s]={p:x.p,ch:x.ch,d:x.d,v:x.v,h:x.h,l:x.l}});Q=q}
+  if(A){const q={};(await A.tick()).forEach(x=>{q[x.s]={p:x.p,ch:x.ch,d:x.d,v:x.v,h:x.h,l:x.l}});Q=q;if(A.id!=="bitget")dayOpen(A.id,async(s,t0)=>{const a=await A.kl(s,"1d",2),c=a.find(x=>x.t===t0);return c?c.o:0},q)}
   else if(S.ex==="okx"){const j=await getJSON("https://www.okx.com/api/v5/market/tickers?instType=SWAP",10000);const q={};
     for(const x of j.data||[])if(/-USDT-SWAP$/.test(x.instId)){const o=+x.sodUtc0||+x.open24h;q[x.instId.slice(0,-10)]={p:+x.last,ch:o?(+x.last/o-1)*100:null,d:o?+x.last-o:null,v:+x.volCcy24h*+x.last,h:+x.high24h||null,l:+x.low24h||null}}Q=q}
   else{const syms=[...new Set(W.lists.flatMap(l=>l.items).filter(s=>!s.startsWith("###")))];if(syms.length){
     const j=await getJSON(`https://data-api.binance.vision/api/v3/ticker/24hr?symbols=${encodeURIComponent(JSON.stringify(syms.map(s=>s+"USDT")))}`,10000).catch(async()=>{
       const a=await getJSON("https://data-api.binance.vision/api/v3/ticker/24hr?type=MINI",15000);return a.map(x=>({symbol:x.symbol,lastPrice:x.lastPrice,highPrice:x.highPrice,lowPrice:x.lowPrice,priceChange:x.lastPrice-x.openPrice,quoteVolume:x.quoteVolume,priceChangePercent:x.openPrice>0?((x.lastPrice/x.openPrice-1)*100):null}))});
-    const q={};for(const x of j||[])if(/USDT$/.test(x.symbol))q[x.symbol.slice(0,-4)]={p:+x.lastPrice,ch:x.priceChangePercent==null?null:+x.priceChangePercent,d:x.priceChange==null?null:+x.priceChange,v:+x.quoteVolume||0,h:+x.highPrice||null,l:+x.lowPrice||null};Q=q}}
+    const q={};for(const x of j||[])if(/USDT$/.test(x.symbol))q[x.symbol.slice(0,-4)]={p:+x.lastPrice,ch:x.priceChangePercent==null?null:+x.priceChangePercent,d:x.priceChange==null?null:+x.priceChange,v:+x.quoteVolume||0,h:+x.highPrice||null,l:+x.lowPrice||null};Q=q;dayOpen("binance",async(s,t0)=>{const a=await getJSON(`https://data-api.binance.vision/api/v3/klines?symbol=${s}USDT&interval=1d&limit=2`,10000),c=(Array.isArray(a)?a:[]).find(r=>+r[0]===t0);return c?+c[1]:0},q)}}
   }catch(e){}finally{qBusy=false}if(open()&&!imp&&!menu)draw()}
 const open=()=>!$("side").hidden&&!$("wlBody").hidden;
 const pct=v=>v==null||!isFinite(v)?"–":(v>=0?"+":"")+v.toFixed(2).replace(".",",")+" %";
@@ -81,7 +89,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
   if(W.lists.length>1){const all=W.lists.map((x,i)=>i),fv=all.filter(i=>W.lists[i].fav),ab=n=>{const w=n.trim().split(/[\s_\-]+/).filter(Boolean);return(w.length>1?w[0][0]+w[1][0]:n.trim().slice(0,2)).toUpperCase()};
     h+=`<div class="wlQ">${(fv.length?fv:all).slice(0,14).map(i=>`<button data-ls="${i}" class="${i===W.cur?"on":""}" title="${esc(W.lists[i].name)}">${esc(ab(W.lists[i].name))}</button>`).join("")}</div>`}
   h+=`
-    <div class="wlEx">Börse: <select id="wlExSel" aria-label="Börse">${[["okx","OKX Perpetual"],["binance","Binance Spot"]].concat(typeof EX!=="undefined"?Object.values(EX.all).map(a=>[a.id,a.name+(a.test?" (Test)":"")]):[]).map(([k,t])=>`<option value="${k}" ${S.ex===k?"selected":""}>${esc(t)}</option>`).join("")}</select>
+    <div class="wlEx">Börse: <select id="wlExSel" aria-label="Börse">${[["okx","OKX Perpetual"],["binance","Binance Spot"]].concat(typeof EX!=="undefined"?Object.values(EX.all).filter(a=>!a.off||a.id===S.ex).map(a=>[a.id,a.name+(a.test?" (Test)":"")]):[]).map(([k,t])=>`<option value="${k}" ${S.ex===k?"selected":""}>${esc(t)}</option>`).join("")}</select>
     <span class="wlSrc">${S.src?"Chart: "+esc(S.src):""}</span></div>
     <div class="wlFl"><button data-f="0" class="${filt===0?"on":""}">Alle</button>${FL.map((f,i)=>i&&f?`<button data-f="${i}" class="dot${filt===i?" on":""}${edit&&i>=FL0.length?" del":""}" style="--c:${f[0]}" title="${edit&&i>=FL0.length?"Eigenes Fähnchen löschen":"Nur "+f[1]}">${edit&&i>=FL0.length?"✕":""}</button>`:"").join("")}<button data-a="flAdd" class="flAdd" title="Eigenes Fähnchen (Farbe) hinzufügen">＋</button></div>`;
   if(sortOpen){const so=l.sort||{k:"eigen",d:1};h+=`<div class="wlSort">${SORTS.map(([k,t])=>`<button data-sort="${k}" class="${so.k===k?"on":""}">${t}${so.k===k&&k!=="eigen"?(so.d>0?" ↑":" ↓"):""}</button>`).join("")}</div>`}
@@ -118,7 +126,7 @@ function draw(){const b=$("wlBody");if(!b)return;const l=L(),cur=S.sym;
       ${canEd?`<span class="ed"><button data-mv="${i}" data-d="-1" title="Nach oben">▲</button><button data-mv="${i}" data-d="1" title="Nach unten">▼</button><button data-rm="${i}" title="Entfernen">✕</button></span>`:""}</div>`;
     if(pop===s)h+=`<div class="wlPop">${FL.map((x,k)=>k&&!x?"":`<button data-setf="${k}" data-s="${esc(s)}" class="dot" style="--c:${x?x[0]:"transparent"}" title="${x?x[1]:"Kein Fähnchen"}">${x?"":"✕"}</button>`).join("")}<button class="ntB" data-note="${esc(s)}">✎ Notiz</button>${alts(s).map(y=>`<button class="ntB" data-alt="${esc(y)}" data-s="${esc(s)}" title="${sfxOf(y)?"Als Aktie an der Börse "+SFX[sfxOf(y)][1]+" führen":"Als Perp bzw. US-Aktie führen"}">⇄ ${esc(y)}${sfxOf(y)?"":" (Perp/US)"}</button>`).join("")}</div>`});
   h+=`</div></div></div>`;if(!n)h+=`<p class="wlE">${filt?"Keine Symbole mit diesem Fähnchen.":"Noch leer – oben mit ＋ das aktuelle Symbol hinzufügen oder unter ⋯ importieren."}</p>`;
-  h+=`<p class="wlE">Tipp: Antippen öffnet den Chart · Punkt links = Fähnchen · ↑/↓ wechselt das Symbol (Tastatur) · Änderung ${S.ex==="okx"||S.ex==="bitget"?"seit 0 Uhr UTC":"24 Std."}</p>`;
+  h+=`<p class="wlE">Tipp: Antippen öffnet den Chart · Punkt links = Fähnchen · ↑/↓ wechselt das Symbol (Tastatur) · Änderung seit 0 Uhr UTC</p>`;
   b.innerHTML=h;
   const exs=$("wlExSel");if(exs)exs.onchange=()=>{if(exs.value!==S.ex){S.ex=exs.value;save();Q={};S.list.k=[];loadList();load();quotes()}draw()};
   const ta=$("wlTxt");if(ta)ta.oninput=()=>{impTxt=ta.value};

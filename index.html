@@ -5,7 +5,7 @@
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e131b">
-<title>Live-Chart · Bayazit</title>
+<title>Live-Chart</title>
 <link rel="icon" type="image/svg+xml" href="icons/chart.svg">
 <link rel="apple-touch-icon" href="icons/chart-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -231,7 +231,7 @@ html .tools{grid-auto-flow:row dense}html .tools .pr2{grid-column:span 2;display
 @media (max-width:480px){#dwDlg .rw{grid-template-columns:104px 1fr}#dwDlg .lvg{grid-template-columns:1fr}}
 /* Seitenleiste rechts wie in TradingView (ab 901 px Breite): Alarme, Layout, Analyse, Teilen, Bild – die obere Leiste bleibt dadurch frei */
 #rail{display:none}
-@media (min-width:901px){
+@media (min-width:680px){
   .stage{grid-template-columns:minmax(0,1fr) 46px!important}
   #rail{display:flex;flex-direction:column;gap:6px;align-items:center;padding:6px 3px;background:var(--panel);border:1px solid var(--line);border-radius:12px;min-height:0}
   #rail .btn{width:38px;height:38px;padding:0!important;display:grid;place-items:center;font-size:1.05rem;background:none;color:var(--fg);border-radius:9px}
@@ -239,6 +239,9 @@ html .tools{grid-auto-flow:row dense}html .tools .pr2{grid-column:span 2;display
   #rail .lb,#rail .ml{display:none!important}
 }
 @media (min-width:1000px){.stage.open{grid-template-columns:minmax(0,1fr) var(--sideW,390px) 46px!important}}
+#railT{width:38px;height:22px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:.9rem;border-radius:7px;padding:0}#railT:hover{background:var(--chip);color:var(--fg)}
+@media (min-width:680px){html.railOff .stage{grid-template-columns:minmax(0,1fr) 20px!important}html.railOff #rail{padding:6px 0;border-radius:8px}html.railOff #railT{width:18px}}
+@media (min-width:1000px){html.railOff .stage.open{grid-template-columns:minmax(0,1fr) var(--sideW,390px) 20px!important}}
 html.emb #rail,html.split #rail{display:none!important}html.emb .stage,html.split .stage{grid-template-columns:minmax(0,1fr)!important}
 /* Infozeilen links oben (Kurse O/H/L/C und Indikator-Namen) ein- und ausklappbar */
 .ov .t .ovTg{pointer-events:auto;border:0;background:none;color:var(--muted);font-size:.8rem;padding:2px 6px 2px 0;cursor:pointer;vertical-align:1px}
@@ -406,8 +409,8 @@ html.emb .ov .t{font-size:.86rem}html.emb .ov .o,html.emb .ov .lg{font-size:.66r
 </div>
 
 <script src="gz-core.js?v=3"></script>
-<script src="ex.js?v=1"></script>
-<script src="chart-core.js?v=40"></script>
+<script src="ex.js?v=2"></script>
+<script src="chart-core.js?v=41"></script>
 <script>
 "use strict";
 const RAW="https://raw.githubusercontent.com/BayTek1982/coin-scanner/gz-data/";
@@ -853,7 +856,7 @@ const TOOLDEF=[["tl","╱","Trendlinie","trend"],["xline","⤡","Verlängerte Li
   ["abc","0C","Wellen 0-A-B-C (SK-System, 4 Punkte)","must"],["w5","1-5","Impulswelle 0-1-2-3-4-5 (6 Punkte)","must"],
   ["long","L↑","Long-Position","mess"],["short","S↓","Short-Position","mess"],["measure","📏","Messen (Maßband: Prozent, Preis, Kerzen)","mess"],["prange","⇕","Preisbereich","mess"],["drange","⇔","Datumsbereich","mess"],["vpr","▥","Volumenprofil für einen Bereich (POC, VAH, VAL)","mess"],
   ["rect","▭","Rechteck / Zone","form"],["ell","◯","Kreis / Ellipse","form"],["tri","△","Dreieck (3 Punkte)","form"],["brush","〰","Pinsel (frei zeichnen)","form"],["hlt","🖍","Leuchtstift (breit, durchscheinend)","form"],
-  ["text","T","Text","anm"],["plabel","🏷","Preis-Label (Preis der Stelle, auf Wunsch mit Text)","anm"],["aup","⬆","Pfeil nach oben (Markierung)","anm"],["adn","⬇","Pfeil nach unten (Markierung)","anm"]];
+  ["text","T","Text","anm"],["note","💬","Sprechblase (Notiz mit Pfeil auf eine Stelle)","anm"],["plabel","🏷","Preis-Label (Preis der Stelle, auf Wunsch mit Text)","anm"],["aup","⬆","Pfeil nach oben (Markierung)","anm"],["adn","⬇","Pfeil nach unten (Markierung)","anm"]];
 const TFAVDEF=["tl","hl","xl","ray","vl","rect","text","fib","long","short","measure","chan","arrow","ell","brush","fibx","prange","drange","abc","w5","xline","info","plabel","vpr"];
 let TFAV=(()=>{const a=LS("blcToolFav");return Array.isArray(a)?a.filter(x=>TOOLDEF.some(t=>t[0]===x)):TFAVDEF.slice()})();
 const TEND=[["undo","↶","Rückgängig (Strg+Z)"],["redo","↷","Wiederholen (Strg+Y)"],["mag","🧲","Magnet in 5 Stufen (rastet an Hoch/Tief/Open/Close ein) – weiterklicken = stärker"],["hide","👁","Ausblenden: Zeichnungen, Indikatoren, Positionen"],["theme","◐","Anzeige & Farben: hell/dunkel, Helligkeit, Farben, Abstand der Beschriftungen"],["clear","🗑","Zeichnungen dieses Werts löschen: alle oder nur die nicht gesperrten"]];
@@ -932,7 +935,7 @@ function dwtSet(d,k){if(d.type==="pos")return;const t=DWT[d.type]||(DWT[d.type]=
 function dwClean(a){const col=/^#[0-9a-f]{6}$/i,num=v=>typeof v==="number"&&isFinite(v);if(!Array.isArray(a))return[];
   return a.filter(d=>d&&typeof d==="object"&&typeof d.type==="string"&&/^[a-z0-9]{1,10}$/.test(d.type)&&Array.isArray(d.pts)&&d.pts.length&&d.pts.length<=700&&d.pts.every(q=>q&&num(q.t)&&num(q.p))&&(d.type!=="pos"||(num(d.tp)&&num(d.sl)&&num(d.t2)))).slice(0,300).map(d=>{
     const o={id:String(d.id||"").replace(/[^a-z0-9]/gi,"").slice(0,12)||nid(),type:d.type,col:col.test(d.col)?d.col:"#f0a33a",w:Math.max(1,Math.min(4,Math.round(+d.w)||2)),pts:d.pts.map(q=>({t:q.t,p:q.p}))};
-    Object.assign(o,dwStyle(d));for(const k of["tp","sl","t2","off"])if(num(d[k]))o[k]=d[k];if(typeof d.text==="string")o.text=d.text.slice(0,80);for(const k of["ext","lock","alarm","alarmOnce"])if(d[k]===true)o[k]=true;return o})}
+    Object.assign(o,dwStyle(d));for(const k of["tp","sl","t2","off"])if(num(d[k]))o[k]=d[k];if(typeof d.text==="string")o.text=d.text.slice(0,80);for(const k of["ext","lock","alarm","alarmOnce"])if(d[k]===true)o[k]=true;if(d.mid===false)o.mid=false;return o})}
 // Rückgängig / Wiederholen für Zeichnungen: jeder gespeicherte Stand kommt auf einen Stapel (je Coin, bis 60 Schritte, gilt bis zum Coin-Wechsel oder Neuladen)
 const UNDO={key:"",st:[],i:-1};
 function undoPush(){const j=JSON.stringify(S.dw),k=dwKey();if(UNDO.key!==k){UNDO.key=k;UNDO.st=[j];UNDO.i=0;return}if(UNDO.st[UNDO.i]===j)return;
@@ -1028,8 +1031,8 @@ function renderEbar(){const b=$("ebar"),d=S.dw.find(z=>z.id===S.sel);if(!d){b.hi
   if(b.dataset.id===d.id&&b.dataset.t===d.type)return;b.dataset.id=d.id;b.dataset.t=d.type;
   const names={tl:"Trendlinie",hl:"Horizontale Linie",ray:"Strahl",vl:"Vertikale Linie",rect:"Rechteck",text:"Text",fib:"Fibonacci",pos:"Position",measure:"Messen",chan:"Kanal",arrow:"Pfeil",ell:"Kreis",brush:"Pinsel",fibx:"Fib-Erweiterung",prange:"Preisbereich",drange:"Datumsbereich",abc:"Wellen 0-A-B-C",w5:"Impulswelle 1-5",info:"Info-Linie",note:"Sprechblase",vpr:"Volumenprofil",plabel:"Preis-Label",aup:"Pfeil nach oben",adn:"Pfeil nach unten",tri:"Dreieck"};
   const noCol=["pos","measure","prange","drange"].includes(d.type),dash=!["pos","measure","prange","drange","text","vl","note","vpr","plabel","aup","adn"].includes(d.type);
-  b.innerHTML=`<b>${names[d.type]||""}</b><button data-e="cfg" title="Alle Einstellungen: Stil, Koordinaten, Sichtbarkeit, Vorlage (auch per Doppelklick auf die Zeichnung)">⚙</button>${!noCol?`<input type="color" data-e="col" value="${/^#[0-9a-f]{6}$/i.test(d.col)?d.col:"#f0a33a"}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${["tl","hl","ray"].includes(d.type)?`<label title="Meldung, wenn der Kurs die Linie kreuzt"><input type="checkbox" data-e="alarm" ${d.alarm?"checked":""}> 🔔 Alarm</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}${DWT[d.type]?`<button data-e="tpl0" title="Gemerkte Farbe/Stärke/Linienart für dieses Werkzeug vergessen (wieder Standard)">↺ Vorlage</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
-$("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col"){d.col=e.target.value;dwtSet(d,"col")}if(k==="w"){d.w=+e.target.value;dwtSet(d,"w")}if(k==="ext")d.ext=e.target.checked;if(k==="alarm"){d.alarm=e.target.checked;if(d.alarm&&window.alPerm)alPerm();toast(d.alarm?"🔔 Alarm aktiv – meldet, wenn der Kurs die Linie kreuzt":"Alarm aus")}if(k==="ds"){d.ds=e.target.value;dwtSet(d,"ds")}if(k==="lock")d.lock=e.target.checked;saveDw();paint()});
+  b.innerHTML=`<b>${names[d.type]||""}</b><button data-e="cfg" title="Alle Einstellungen: Stil, Koordinaten, Sichtbarkeit, Vorlage (auch per Doppelklick auf die Zeichnung)">⚙</button>${!noCol?`<input type="color" data-e="col" value="${/^#[0-9a-f]{6}$/i.test(d.col)?d.col:"#f0a33a"}" title="Farbe"><select data-e="w" title="Stärke">${[1,2,3,4].map(n=>`<option ${+d.w===n?"selected":""}>${n}</option>`).join("")}</select>`:""}${dash?`<select data-e="ds" title="Linienart"><option value="s" ${!d.ds||d.ds==="s"?"selected":""}>━ durchgezogen</option><option value="d" ${d.ds==="d"?"selected":""}>╍ gestrichelt</option><option value="p" ${d.ds==="p"?"selected":""}>┈ gepunktet</option></select>`:""}${d.type==="tl"?`<label><input type="checkbox" data-e="ext" ${d.ext?"checked":""}> verlängern</label>`:""}${d.type==="rect"?`<label title="Gestrichelte Linie in der Mitte des Rechtecks"><input type="checkbox" data-e="mid" ${d.mid!==false?"checked":""}> Mittellinie</label>`:""}${["tl","hl","ray"].includes(d.type)?`<label title="Meldung, wenn der Kurs die Linie kreuzt"><input type="checkbox" data-e="alarm" ${d.alarm?"checked":""}> 🔔 Alarm</label>`:""}${d.type==="text"?`<button data-e="txt">Text ändern</button>`:""}${DWT[d.type]?`<button data-e="tpl0" title="Gemerkte Farbe/Stärke/Linienart für dieses Werkzeug vergessen (wieder Standard)">↺ Vorlage</button>`:""}<label title="Gesperrt = nicht verschiebbar"><input type="checkbox" data-e="lock" ${d.lock?"checked":""}> 🔒</label><button data-e="copy" title="Kopie daneben anlegen">⧉ Kopieren</button><button data-e="del" title="Löschen (Entf)">🗑 Löschen</button>`}
+$("ebar").addEventListener("input",e=>{const d=S.dw.find(z=>z.id===S.sel);if(!d)return;const k=e.target.dataset.e;if(k==="col"){d.col=e.target.value;dwtSet(d,"col")}if(k==="w"){d.w=+e.target.value;dwtSet(d,"w")}if(k==="ext")d.ext=e.target.checked;if(k==="mid"){if(e.target.checked)delete d.mid;else d.mid=false}if(k==="alarm"){d.alarm=e.target.checked;if(d.alarm&&window.alPerm)alPerm();toast(d.alarm?"🔔 Alarm aktiv – meldet, wenn der Kurs die Linie kreuzt":"Alarm aus")}if(k==="ds"){d.ds=e.target.value;dwtSet(d,"ds")}if(k==="lock")d.lock=e.target.checked;saveDw();paint()});
 $("ebar").addEventListener("click",e=>{const k=e.target.dataset&&e.target.dataset.e,d=S.dw.find(z=>z.id===S.sel);if(!d)return;
   if(k==="cfg"){if(window.dwDlgOpen)dwDlgOpen(d);return}
   if(k==="tpl0"){delete DWT[d.type];LS("blcDwT",DWT);$("ebar").dataset.id="";paint();toast("Vorlage zurückgesetzt – neue Zeichnungen wieder im Standard");return}
@@ -1403,7 +1406,7 @@ $("pngBtn").onclick=()=>{const d=devicePixelRatio||1,c2=document.createElement("
   x.fillStyle=th.fg;x.fillText(title,14,20);x.font='500 11px "JetBrains Mono",monospace';x.fillStyle=th.txt;
   const k=S.k[S.k.length-1];x.fillText(`${date} · Kurs ${CC.fmt(k?k.c:null)}`,14,39);
   let lx=14;x.font='600 11px "JetBrains Mono",monospace';items.forEach(it=>{const w=x.measureText(it.t).width;if(lx+w>Math.min(W-90,tw+24)){return}x.fillStyle=it.col;x.fillText(it.t,lx,58);lx+=w+10});
-  x.font='600 11px Archivo,system-ui,sans-serif';x.fillStyle=th.txt;x.textAlign="right";x.globalAlpha=.8;x.fillText("✦ Bayazit Live-Chart",W-82,H-32);x.globalAlpha=1;
+  x.font='600 11px Archivo,system-ui,sans-serif';x.fillStyle=th.txt;x.textAlign="right";x.globalAlpha=.8;x.fillText("✦ Live-Chart",W-82,H-32);x.globalAlpha=1;
   const a=document.createElement("a");a.download=`${S.sym}_${TFLAB[S.tf]}_${now.getFullYear()}${p2(now.getMonth()+1)}${p2(now.getDate())}.png`;a.href=c2.toDataURL("image/png");a.click()};
 
 // ---------- Start ----------
@@ -1415,18 +1418,20 @@ addEventListener("storage",e=>{if(e.key!=="blc1"||!e.newValue)return;try{const m
 // ---------- Obere Leiste: passt sich der Breite an ----------
 // Was nicht in eine Zeile passt, wandert von selbst ins Menü ⋯ (dort mit ausgeschriebenem Namen) – zuerst das Unwichtigste.
 // Neue Knöpfe einfach in BARPRI eintragen; die Leiste wird dadurch nie enger.
-const BARPRI=["pngBtn","shareBtn","curSeg","anaBtn","layBtn","alBtn","thBtn","refresh","wlBtn"];
+const BARPRI=["pngBtn","shareBtn","curSeg","anaBtn","layBtn","thBtn","refresh","alBtn","wlBtn"];
 const BARHOME=BARPRI.map(id=>{const el=$(id),ph=document.createComment(id);el.parentNode.insertBefore(ph,el);return{el,ph}});
 // „Indikatoren“ wandert nie ins Menü ⋯, am PC aber in die Seitenleiste – deshalb eigener Platzhalter für den Rückweg
 const INDHOME=(()=>{const el=$("indBtn"),ph=document.createComment("indBtn");el.parentNode.insertBefore(ph,el);return{el,ph}})();
 function fitBar(){const top=$("barTop"),tf=$("tfSeg"),dyn=$("moreDyn");if(!top||!tf)return;
   BARHOME.concat(INDHOME).forEach(o=>o.ph.parentNode.insertBefore(o.el,o.ph.nextSibling));
   // Breite Bildschirme: diese Knöpfe stehen in der Seitenleiste rechts statt oben
-  const rail=$("rail"),inRail=innerWidth>900&&!SLOT&&!document.documentElement.classList.contains("split")?["wlBtn","indBtn","alBtn","layBtn","anaBtn","shareBtn","pngBtn"]:[]; // Reihenfolge von oben: Watchlist, Indikatoren, Alarme, …
+  const rail=$("rail"),RW=innerWidth>=680,railOff=!!LS("blcRailOff");document.documentElement.classList.toggle("railOff",railOff);
+  if(!$("railT")){const b=document.createElement("button");b.id="railT";b.type="button";b.onclick=()=>{LS("blcRailOff",!LS("blcRailOff"));fitBar();paint()};rail.prepend(b)}$("railT").textContent=railOff?"‹":"›";$("railT").title=railOff?"Seitenleiste aufklappen":"Seitenleiste einklappen";
+  const inRail=RW&&!railOff&&!SLOT&&!document.documentElement.classList.contains("split")?["wlBtn","indBtn","alBtn","layBtn","anaBtn","shareBtn","pngBtn"]:[]; // Reihenfolge von oben: Watchlist, Indikatoren, Alarme, …
   inRail.forEach(id=>rail.appendChild($(id)));
-  const fits=()=>{const need=innerWidth<=900||SLOT?0:Math.min(tf.scrollWidth,Math.max(150,top.clientWidth*.4));return top.scrollWidth<=top.clientWidth+1&&tf.clientWidth>=need-2};
+  const fits=()=>{const need=!RW||SLOT?0:Math.min(tf.scrollWidth,Math.max(150,top.clientWidth*.4));return top.scrollWidth<=top.clientWidth+1&&tf.clientWidth>=need-2};
   // Handy: außen bleiben nur Watchlist, Indikatoren, Neu laden und Hell/Dunkel (dafür breiter) – alles andere steht im Menü ⋯
-  const phone=innerWidth<=900,keep=["wlBtn","refresh","thBtn"];
+  const phone=!RW||(railOff&&innerWidth<=900),keep=["wlBtn","alBtn","refresh","thBtn"];
   for(const o of BARHOME){if(inRail.includes(o.el.id))continue;const force=phone&&!keep.includes(o.el.id);if(!force&&fits())break;if(getComputedStyle(o.el).display==="none")continue;dyn.appendChild(o.el)}}
 function moreClose(){$("moreMenu").hidden=true}
 $("moreBtn").onclick=e=>{e.stopPropagation();const m=$("moreMenu");if(!m.hidden){moreClose();return}m.hidden=false;const r=$("moreBtn").getBoundingClientRect(),w=m.offsetWidth;m.style.top=(r.bottom+6)+"px";m.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+"px"};
@@ -1496,7 +1501,9 @@ function wsStart(){if(document.documentElement.classList.contains("split")){wsSt
   // weitere Börsen (ex.js): anmelden, wach halten, jede Nachricht in eine Kerze übersetzen
   if(A){if(A.ws.binary)sock.binaryType="arraybuffer";
     sock.onopen=()=>{try{A.ws.sub(sock,sym,tf)}catch(_){}sock._l=Date.now();sock._p=setInterval(()=>{if(!A.ws.quiet&&Date.now()-sock._l>60000){try{sock.close()}catch(_){}if(sock.onclose)sock.onclose();return}try{A.ws.ping(sock)}catch(_){}},20000)};
-    sock.onmessage=async e=>{sock._l=Date.now();if(sock!==ws)return;try{const c=await A.ws.msg(e.data,sym,tf,sock);if(c&&sock===ws&&c.c>0&&c.t>0){got=true;tick({t:c.t,o:c.o,h:c.h,l:c.l,c:c.c,v:c.v,V:c.b,i:tf,s:sym+"USDT"})}}catch(_){}}}
+    {const t0=Date.now();let busy=false;const id=setInterval(async()=>{if(sock!==ws){clearInterval(id);return}if(busy||document.visibilityState!=="visible"||Date.now()-(sock._c||t0)<12000)return;busy=true;
+      try{const a=await A.kl(sym,tf,2);if(sock===ws)for(const c of a.slice(-2))if(c.c>0&&c.t>0){got=true;tick({t:c.t,o:c.o,h:c.h,l:c.l,c:c.c,v:c.v,V:c.b,i:tf,s:sym+"USDT"})}}catch(_){}busy=false},5000)}
+    sock.onmessage=async e=>{sock._l=Date.now();if(sock!==ws)return;try{const c=await A.ws.msg(e.data,sym,tf,sock);if(c&&sock===ws&&c.c>0&&c.t>0){got=true;sock._c=Date.now();tick({t:c.t,o:c.o,h:c.h,l:c.l,c:c.c,v:c.v,V:c.b,i:tf,s:sym+"USDT"})}}catch(_){}}}
   else{
   if(okx)sock.onopen=()=>{try{sock.send(JSON.stringify({op:"subscribe",args:[{channel:"candle"+OKXB[tf],instId:sym+"-USDT-SWAP"}]}))}catch(_){}sock._l=Date.now();
     // alle 20 s „ping“; kommt 50 s lang gar nichts zurück, gilt die Verbindung als tot → neu verbinden
@@ -2500,7 +2507,7 @@ function bsVP(th){const c=xcfg("bsi"),R=BS.R;if(!c.vpOn||!R.M.vp||!L)return;cons
 </script>
 <script src="bps.js?v=9"></script>
 <script src="dw.js?v=5"></script>
-<script src="wl.js?v=17"></script>
+<script src="wl.js?v=18"></script>
 <script src="al.js?v=4"></script>
 <script src="split.js?v=1"></script>
 </body>

@@ -1,4 +1,4 @@
-# Bayazit Live-Chart
+# Live-Chart
 
 Eigener Live-Chart für Krypto unter **chart.kompassapps.de**.
 

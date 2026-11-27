@@ -30,6 +30,10 @@ const DEF={
   bb:{on:false,len:20,mult:2,col:"#5b9bff"},
   vol:{on:true},
   rsic:{on:false,len:14,hi:80,lo:20,cHi:"#ffeb3b",cLo:"#e040fb"},
+// Einzel-Kacheln: Teile der großen Indikatoren einzeln einschalten (Live-Chart)
+solo:{pK:false,pC:false,pT:false,pS:false,pR:false,pH:false,pV:false,pM:false,sB:false,sI:false,fT:false,fC:false,fR:false,fS:false},
+// Jens Rabe Academy – Indicator 1
+jra:{on:false,dday:true,clx:true,w52:true,e10:true,e21:true,s30:true,s40:true,s50:true,s150:true,s200:true},
   rsi:{on:true,len:14,hi:80,lo:20,div:true,col:"#b388ff",cDivUp:"#00e5ff",cDivDn:"#ff4081"},
   macd:{on:false,f:12,s:26,sig:9,cM:"#5b9bff",cS:"#ff9800"},
   risk:{on:false,table:true,step:0.1,price:true,share:true,pos:"or",gr:"klein",warm:365},
@@ -328,7 +332,9 @@ function draw(ctx,W,H,S){const th=S.th||THEME.dark,k=S.k,I=S.I||{},cfg=S.cfg,tf=
     const lv=String(cfg.fib.levels).split(/[,; ]+/).map(Number).filter(x=>isFinite(x));
     const f=cfg.fib;if(f.zone)band(px(0.618),px(0.667),anchor,ra(C(f.cZone),.14));
     lv.forEach(x=>{const col=C(x>1?(Math.abs(x-1.272)<0.01?f.cExt1:f.cExt2):(x>=0.6&&x<=0.67?f.cGold:f.cLevel)),dash=x>1.5?[5,4]:null;
-      hl(px(x),anchor,col,1,dash,`${nf(x*100,1).replace(",0","")} %`)});hl(h,anchor,th.grey,1,null,"0 %")}
+      hl(px(x),anchor,col,1,dash,`${nf(x*100,1).replace(",0","")} %`)});hl(h,anchor,th.grey,1,null,"0 %");
+    // gestrichelte Linie vom 1-Punkt zum 0-Punkt: zeigt, über welche Bewegung die Fibonacci gezogen ist
+    if(gz.Hi!=null&&gz.Li!=null){const xa=X(gz.Li),ya=Y(l),xb=X(gz.Hi),yb=Y(h);line(xa,ya,xb,yb,th.grey,1,[5,4]);ctx.save();ctx.font='700 10px "JetBrains Mono",monospace';ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle=th.grey;ctx.fillText("1",xa,ya+(ya>yb?11:-11));ctx.fillText("0",xb,yb+(yb>ya?11:-11));ctx.restore()}}
   // Dynamische Fibonacci (BSI)
   const df=I.dfib;
   if(cfg.dfib.on&&df){const f=cfg.dfib,lastL=df.isLong[last],dirC=C(lastL?f.cLong:f.cShort),fm=x=>String(+x.toFixed(3)).replace(".",",");

@@ -59,7 +59,7 @@ const hl={id:"hl",name:"Hyperliquid",short:"Hyperliquid",perp:true,tfs:Object.ke
 
 // ---------- BingX (Perpetuals; auch Forex, Indizes, Rohstoffe, Aktien mit den Vorsilben NCFX / NCSI / NCCO / NCSK) ----------
 const BXG={NCFX:"Forex",NCSI:"Index",NCCO:"Rohstoff",NCSK:"Aktie"};
-const bingx={id:"bingx",name:"BingX Perp",short:"BingX",perp:true,test:true,tfs:Object.keys(MS),tv:s=>"BINGX:"+s.replace(/^NC(FX|SI|CO|SK)/,"").replace("2USD","USD")+(/^NC/.test(s)?"":"USDT.P"),
+const bingx={id:"bingx",name:"BingX Perp",short:"BingX",perp:true,test:true,off:true,tfs:Object.keys(MS),tv:s=>"BINGX:"+s.replace(/^NC(FX|SI|CO|SK)/,"").replace("2USD","USD")+(/^NC/.test(s)?"":"USDT.P"),
   async kl(sym,tf,limit,end){const j=await gj(`https://open-api.bingx.com/openApi/swap/v3/quote/klines?symbol=${sym}-USDT&interval=${tf}&limit=${Math.min(1000,limit||1000)}${end?"&endTime="+end:""}`);
     return j.code===0&&Array.isArray(j.data)?asc(j.data.map(r=>({t:+r.time,o:+r.open,h:+r.high,l:+r.low,c:+r.close,v:+r.volume}))):[]},
   async tick(){const j=await gj("https://open-api.bingx.com/openApi/swap/v2/quote/ticker");return(Array.isArray(j.data)?j.data:[]).filter(x=>/-USDT$/.test(x.symbol)).map(x=>{const s=x.symbol.slice(0,-5).replace(/[^A-Za-z0-9]/g,"").toUpperCase(),p=+x.lastPrice,o=+x.openPrice,pre=s.slice(0,4);

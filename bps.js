@@ -252,7 +252,7 @@ function tlParams(hk,p,cnt,body,mEnd){const lo=hk.map(q=>body?Math.min(q.o,q.c):
   return{s:Sv&&{...Sv,since:sS},r:Rv&&{...Rv,since:rS}}}
 
 // ---------- Hauptberechnung ----------
-function bpsCalc(){const c=S.cfg.bps;BP.R=null;if(!c||!c.on||S.k.length<30)return;const k=S.k,n=k.length,nc=n-1,last=n-1,cs=sec(S.tf),need=[],M=mk(c),F=M.F;
+function bpsCalc(){const c=xcfg("bps");BP.R=null;if(!c||!c.on||S.k.length<30)return;const k=S.k,n=k.length,nc=n-1,last=n-1,cs=sec(S.tf),need=[],M=mk(c),F=M.F;
   const tfOk=!c.tfMin||cs>=sec(c.tfMin);
   // Grundreihen
   const key=[S.sym,S.tf,n,k[0].t,k[nc-1].t,k[nc-1].c,S.F||1,JSON.stringify(c)].join("|");
@@ -337,7 +337,7 @@ function bpVP(c,need,tNow,cs){const day=864e5,d0=Math.floor(tNow/day)*day,wk=Mat
   return{lv,sl,rows}}
 
 // ---------- Zeichnen ----------
-function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=[];if(!c||!c.on||!R||!L){if(mt)mt.hidden=true;if(vt)vt.hidden=true;return}
+function bpsPaint(th){const c=xcfg("bps"),R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=[];if(!c||!c.on||!R||!L){if(mt)mt.hidden=true;if(vt)vt.hidden=true;return}
   const X=L.X,Y=L.Y,cw=L.cw,last=S.k.length-1;
   ctx.save();ctx.beginPath();ctx.rect(0,0,L.pw,L.mainH);ctx.clip();
   for(const b of R.Xs){const x1=X(b.x1)-cw/2,x2=X(b.x2)+cw/2,y1=Y(Math.max(b.y1,b.y2)),y2=Y(Math.min(b.y1,b.y2));if(x2<0||x1>L.pw)continue;
@@ -380,6 +380,6 @@ function bpsPaint(th){const c=S.cfg.bps,R=BP.R,mt=$("bpMt"),vt=$("bpVt");BP.hit=
       if(c.vtLage){const lg=r.poc||H==null||Lo==null?"–":C>H?"über VA":C<Lo?"unter VA":"in VA";h+=cell(lg,lg==="über VA"?"#26a69a":lg==="unter VA"?"#ef5350":lg==="in VA"?"#fff":"#888")}}
     vt.style.gridTemplateColumns=`repeat(${cols.length},auto)`;vt.innerHTML=h;vt.hidden=false;bwPlace(vt,c.vtPos,0,0,c.vtSz)}else if(vt)vt.hidden=true}
 window.bpsCalc=bpsCalc;window.bpsPaint=bpsPaint;
-if(S.k&&S.k.length&&S.cfg.bps&&S.cfg.bps.on)recompute();
-setInterval(()=>{if(document.visibilityState==="visible"&&S.cfg.bps&&S.cfg.bps.on&&BP.need.length)bfHtfLoad(BP.need)},60000);
+if(S.k&&S.k.length&&S.cfg.bps&&xcfg("bps").on)recompute();
+setInterval(()=>{if(document.visibilityState==="visible"&&S.cfg.bps&&xcfg("bps").on&&BP.need.length)bfHtfLoad(BP.need)},60000);
 })();
